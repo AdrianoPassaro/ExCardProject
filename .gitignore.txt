@@ -1,0 +1,42 @@
+# === Java & Maven ===
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# === Gradle (se lo usi) ===
+.gradle/
+build/
+
+# === IntelliJ IDEA ===
+.idea/
+*.iml
+*.iws
+
+# === Eclipse ===
+*.classpath
+*.project
+*.settings/
+
+# === VSCode ===
+.vscode/
+
+# === Sistema Operativo ===
+.DS_Store
+Thumbs.db
+
+# === Backend (Spring Boot) ===
+application.properties
+application.yml
+.env
+
+# === Frontend (HTML/CSS/JS statico) ===
+# Nessun file da ignorare se sono solo file statici.
+# Se hai build tool come vite, parcel, webpack ecc., aggiungi:
+# /dist/
+# /build/
+
+# === MongoDB ===
+# Nessun file da ignorare per MongoDB se lo usi tramite connessione
