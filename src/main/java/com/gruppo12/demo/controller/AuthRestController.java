@@ -2,7 +2,7 @@ package com.gruppo12.demo.controller;
 
 import com.gruppo12.demo.model.User;
 import com.gruppo12.demo.repository.UserRepository;
-import com.gruppo12.demo.util.JwtUtil;
+import com.gruppo12.demo.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
