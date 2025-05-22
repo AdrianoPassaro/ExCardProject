@@ -1,20 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
     <meta charset="UTF-8" />
-    <title>Login</title>
+    <title>ExCard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background-color: #f5f6fa;
+        }
+
+        .login-form {
+            max-width: 350px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .flex-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .lf--label {
+            margin-right: 10px;
+        }
+
+        .lf--input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .lf--submit {
+            width: 100%;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .lf--submit:hover {
+            background: #2980b9;
+        }
+
+        .lf--forgot {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .lf--forgot:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<h1>Login</h1>
-<form action="/login" method="post">
-    <label for="username">Username:</label>
-    <input id="username" name="username" type="text" required /><br/><br/>
 
-    <label for="password">Password:</label>
-    <input id="password" name="password" type="password" required /><br/><br/>
+<div style="text-align: center; margin-bottom: 20px;">
+    <img src="Immagine1.png" alt="ExCard Logo" style="max-width: 200px; height: auto;">
+</div>
 
-    <button type="submit">Accedi</button>
+<form class="login-form" id="loginForm">
+    <div class="flex-row">
+        <label class="lf--label" for="username">
+            <svg x="0px" y="0px" width="12px" height="13px">
+                <path fill="#B1B7C4" d="M8.9,7.2...Z" />
+            </svg>
+        </label>
+        <input id="username" name="username" class="lf--input" placeholder="Username" type="text" required>
+    </div>
+
+    <div class="flex-row">
+        <label class="lf--label" for="password">
+            <svg x="0px" y="0px" width="15px" height="5px">
+                <g><path fill="#B1B7C4" d="M6,2L6,2...Z" /></g>
+            </svg>
+        </label>
+        <input id="password" name="password" class="lf--input" placeholder="Password" type="password" required>
+    </div>
+
+    <input class="lf--submit" type="submit" value="LOGIN">
 </form>
+
+<p style="text-align: center;">Non hai un account? <a href="register.html">Registrati</a></p>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Login fallito");
+                return response.json();
+            })
+            .then(data => {
+                localStorage.setItem('jwtToken', data.token);
+                window.location.href = 'welcome.html';
+            })
+            .catch(() => {
+                alert('Credenziali errate. Riprova.');
+            });
+    });
+</script>
+
 </body>
 </html>
-

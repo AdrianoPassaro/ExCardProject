@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
     <meta charset="UTF-8" />
-    <title>Register</title>
+    <title>Registrazione</title>
 </head>
 <body>
-<h1>Pagina di registrazione</h1>
-<form action="/register" method="post">
+<h1>Registrazione</h1>
+<form id="registerForm">
     <label for="username">Username:</label>
     <input id="username" name="username" type="text" required /><br/><br/>
 
@@ -15,5 +15,35 @@
 
     <button type="submit">Registrati</button>
 </form>
+
+<p>Hai già un account? <a href="login.html">Accedi</a></p>
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Utente già esistente");
+                }
+                alert('Registrazione completata. Effettua il login.');
+                window.location.href = 'login.html';
+            })
+            .catch(() => {
+                alert('Errore: utente già esistente.');
+            });
+    });
+</script>
 </body>
 </html>
+
