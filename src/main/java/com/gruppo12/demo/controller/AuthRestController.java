@@ -22,7 +22,6 @@ public class AuthRestController {
         if (userRepository.findByUsername(user.getUsername()) != null) {
             return ResponseEntity.badRequest().body("Utente già esistente");
         }
-
         userRepository.save(user);
         return ResponseEntity.ok("Registrazione completata");
     }
