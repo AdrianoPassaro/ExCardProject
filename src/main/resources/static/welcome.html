@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-    <meta charset="UTF-8" />
-    <title>Welcome</title>
+    <meta charset="UTF-8">
+    <title>Benvenuto</title>
 </head>
 <body>
 <h1>Benvenuto!</h1>
-<p>Login effettuato con successo.</p>
+<p>Hai effettuato l'accesso con successo.</p>
+<script>
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert("Accesso non autorizzato.");
+        window.location.href = "login.html";
+    }
+</script>
 </body>
 </html>
-

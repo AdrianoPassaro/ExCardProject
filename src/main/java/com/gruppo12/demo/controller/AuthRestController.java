@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController // <-- usa @RestController invece di @Controller
+@RestController
 @RequestMapping("/api/auth")
 public class AuthRestController {
 
@@ -24,19 +24,20 @@ public class AuthRestController {
         }
 
         userRepository.save(user);
-        return ResponseEntity.ok("Registrazione avvenuta con successo");
+        return ResponseEntity.ok("Registrazione completata");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
+    public ResponseEntity<?> login(@RequestBody User user) {
         User existingUser = userRepository.findByUsername(user.getUsername());
         if (existingUser != null && existingUser.getPassword().equals(user.getPassword())) {
-            return ResponseEntity.ok("Login OK");
+            String token = jwtUtil.generateToken(existingUser.getUsername());
+            return ResponseEntity.ok(new AuthResponse(token));
         }
         return ResponseEntity.status(401).body("Credenziali errate");
     }
 
-    // Inner static class per risposta JWT
+    // Risposta JWT
     static class AuthResponse {
         private String token;
 
@@ -53,4 +54,5 @@ public class AuthRestController {
         }
     }
 }
+
 
