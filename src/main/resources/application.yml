@@ -4,6 +4,6 @@ server:
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/authdb
+      uri: mongodb://localhost:27017/excard_db
   thymeleaf:
     cache: false
