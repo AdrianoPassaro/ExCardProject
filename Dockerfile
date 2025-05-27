@@ -23,7 +23,7 @@ WORKDIR /app
 COPY --from=build /app/target/demo-0.0.1-SNAPSHOT.jar app.jar
 
 # Esponi la porta del servizio (modifica se non è 8080)
-EXPOSE 8081
+EXPOSE 8080
 
 # Comando di avvio
 ENTRYPOINT ["java", "-jar", "app.jar"]
