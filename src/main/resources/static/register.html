@@ -1,49 +1,124 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8" />
-    <title>Registrazione</title>
+    <meta charset="UTF-8">
+    <title>Registrazione Utente</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f0ff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        table {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 60, 130, 0.1);
+            padding: 30px;
+            width: 420px;
+            border-collapse: separate;
+        }
+
+        td {
+            padding: 10px 15px;
+        }
+
+        td:first-child {
+            text-align: right;
+            font-weight: 500;
+            color: #1f4e99;
+            width: 40%;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #b3d1ff;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border-color: #1f4e99;
+            outline: none;
+        }
+
+        input[type="submit"] {
+            background-color: #1f4e99;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #003d80;
+        }
+
+        h2 {
+            text-align: center;
+            color: #1f4e99;
+            margin-bottom: 20px;
+        }
+
+        tr:last-child td {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-<h1>Registrazione</h1>
-<form id="registerForm">
-    <label for="username">Username:</label>
-    <input id="username" name="username" type="text" required /><br/><br/>
 
-    <label for="password">Password:</label>
-    <input id="password" name="password" type="password" required /><br/><br/>
+<form action="/register" method="post">
+    <table>
+        <tr>
+            <td colspan="2"><h2>Registrazione</h2></td>
+        </tr>
+        <tr>
+            <td>Nome:</td>
+            <td><input type="text" name="nome" required></td>
+        </tr>
+        <tr>
+            <td>Cognome:</td>
+            <td><input type="text" name="cognome" required></td>
+        </tr>
+        <tr>
+            <td>Indirizzo:</td>
+            <td><input type="text" name="indirizzo" required></td>
+        </tr>
+        <tr>
+            <td>Email:</td>
+            <td><input type="email" name="email" required></td>
+        </tr>
+        <tr>
+            <td>Username:</td>
+            <td><input type="text" name="username" required></td>
+        </tr>
+        <tr>
+            <td>Password:</td>
+            <td><input type="password" name="password" required></td>
+        </tr>
 
-    <button type="submit">Registrati</button>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Registrati">
+            </td>
+        </tr>
+    </table>
 </form>
 
-<p>Hai già un account? <a href="login.html">Accedi</a></p>
-
-<script>
-    document.getElementById('registerForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        fetch('/api/auth/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Utente già esistente");
-                }
-                alert('Registrazione completata. Effettua il login.');
-                window.location.href = 'login.html';
-            })
-            .catch(() => {
-                alert('Errore: utente già esistente.');
-            });
-    });
-</script>
 </body>
 </html>
-
