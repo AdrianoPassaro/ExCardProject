@@ -1,6 +1,5 @@
 #Usa un'immagine Maven per costruire l'applicazione
 FROM maven:3.9.4-eclipse-temurin-21 AS build
-
 LABEL maintaner="gruppo12"
 
 # Imposta la directory di lavoro
