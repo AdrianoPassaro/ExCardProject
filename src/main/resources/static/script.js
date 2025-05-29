@@ -35,21 +35,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.querySelector('form');
 
     registerForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
+        event.preventDefault(); // Evita il comportamento di default del form
 
-        const username = document.getElementById('username').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = passwordInput.value;
+        // Recupera tutti i dati dal form
+        const userData = {
+            nome: document.getElementById('nome').value.trim(),
+            cognome: document.getElementById('cognome').value.trim(),
+            dataNascita: document.getElementById('dataNascita').value,
+            indirizzo: document.getElementById('indirizzo').value.trim(),
+            cap: document.getElementById('cap').value.trim(),
+            citta: document.getElementById('citta').value.trim(),
+            provincia: document.getElementById('provincia').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            telefono: document.getElementById('telefono').value.trim(),
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password').value
+        };
 
         try {
-            const response = await fetch('/api/auth/register', {
+            const response = await fetch('http://localhost:8080/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username,
-                    email,
-                    password
-                })
+                body: JSON.stringify(userData)
             });
 
             if (!response.ok) {
@@ -57,8 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorText || 'Errore durante la registrazione.');
             }
 
-            alert('Registrazione completata con successo! Ora puoi accedere.');
-            window.location.href = 'index.html';
+            alert('Registrazione completata con successo!');
+            window.location.href = 'index.html'; // Torna alla pagina di login
 
         } catch (error) {
             alert('Registrazione fallita: ' + error.message);
