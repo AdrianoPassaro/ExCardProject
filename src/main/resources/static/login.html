@@ -2,123 +2,55 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8" />
-    <title>ExCard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            background-color: #ffffff;
-        }
-
-        .login-form {
-            max-width: 350px;
-            margin: auto;
-            padding: 20px;
-            background: #122339;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .flex-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .lf--label {
-            margin-right: -15px;
-        }
-
-        .lf--input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .lf--submit {
-            width: 100%;
-            padding: 10px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .lf--submit:hover {
-            background: #2980b9;
-        }
-
-        .lf--forgot {
-            display: block;
-            text-align: center;
-            margin-top: 10px;
-            color: #3498db;
-            text-decoration: none;
-        }
-
-        .lf--forgot:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ExCard: Login</title>
+    <link rel="stylesheet" href="stile.css" />
 </head>
 <body>
-
-<div style="text-align: center; margin-bottom: 20px;">
-    <img src="Immagine1.png" alt="ExCard Logo" style="max-width: 200px; height: auto;">
-</div>
-
-<form class="login-form" id="loginForm">
-    <div class="flex-row">
-        <label class="lf--label" for="username">
-            <svg x="0px" y="0px" width="12px" height="13px">
-                <path fill="#B1B7C4" d="M8.9,7.2...Z" />
-            </svg>
-        </label>
-        <input id="username" name="username" class="lf--input" placeholder="Username" type="text" required>
+<form class="form-container" action="/login" method="post" autocomplete="off">
+    <h2>Login</h2>
+    <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text"
+               id="username"
+               name="username"
+               required
+        />
     </div>
-
-    <div class="flex-row">
-        <label class="lf--label" for="password">
-            <svg x="0px" y="0px" width="15px" height="5px">
-                <g><path fill="#B1B7C4" d="M6,2L6,2...Z" /></g>
+    <div class="form-group password-group">
+        <label for="password">Password</label>
+        <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                minlength="8"
+                autocomplete="off"
+        />
+        <button type="button" id="togglePassword" aria-label="Mostra/Nascondi password">
+            <!-- Occhio SVG -->
+            <svg
+                    id="eyeIcon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    viewBox="0 0 24 24"
+            >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle id="eyePupil" cx="12" cy="12" r="3" />
             </svg>
-        </label>
-        <input id="password" name="password" class="lf--input" placeholder="Password" type="password" required>
+        </button>
     </div>
+    <input type="submit" value="Login" />
+    <p class="register-link">
+        Non hai un account? <a href="register.html">Registrati</a>
+    </p>
 
-    <input class="lf--submit" type="submit" value="LOGIN">
 </form>
 
-<p style="text-align: center;">Non hai un account? <a href="register.html">Registrati</a></p>
-
-<script>
-    document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        })
-            .then(response => {
-                if (!response.ok) throw new Error("Login fallito");
-                return response.json();
-            })
-            .then(data => {
-                localStorage.setItem('jwtToken', data.token);
-                window.location.href = 'welcome.html';
-            })
-            .catch(() => {
-                alert('Credenziali errate. Riprova.');
-            });
-    });
-</script>
-
+<script src="login.js"></script>
 </body>
 </html>

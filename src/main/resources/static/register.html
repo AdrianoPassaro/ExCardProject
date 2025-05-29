@@ -1,124 +1,134 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <title>Registrazione Utente</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e0f0ff;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        table {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 60, 130, 0.1);
-            padding: 30px;
-            width: 420px;
-            border-collapse: separate;
-        }
-
-        td {
-            padding: 10px 15px;
-        }
-
-        td:first-child {
-            text-align: right;
-            font-weight: 500;
-            color: #1f4e99;
-            width: 40%;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #b3d1ff;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border 0.3s ease;
-        }
-
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        input[type="password"]:focus {
-            border-color: #1f4e99;
-            outline: none;
-        }
-
-        input[type="submit"] {
-            background-color: #1f4e99;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #003d80;
-        }
-
-        h2 {
-            text-align: center;
-            color: #1f4e99;
-            margin-bottom: 20px;
-        }
-
-        tr:last-child td {
-            text-align: center;
-        }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ExCard: Registrazione Utente</title>
+    <link rel="stylesheet" href="stile.css" />
 </head>
 <body>
+<form class="form-container" action="/register" method="post" autocomplete="off">
+    <h2>Registrazione</h2>
+    <div class="form-grid">
 
-<form action="/register" method="post">
-    <table>
-        <tr>
-            <td colspan="2"><h2>Registrazione</h2></td>
-        </tr>
-        <tr>
-            <td>Nome:</td>
-            <td><input type="text" name="nome" required></td>
-        </tr>
-        <tr>
-            <td>Cognome:</td>
-            <td><input type="text" name="cognome" required></td>
-        </tr>
-        <tr>
-            <td>Indirizzo:</td>
-            <td><input type="text" name="indirizzo" required></td>
-        </tr>
-        <tr>
-            <td>Email:</td>
-            <td><input type="email" name="email" required></td>
-        </tr>
-        <tr>
-            <td>Username:</td>
-            <td><input type="text" name="username" required></td>
-        </tr>
-        <tr>
-            <td>Password:</td>
-            <td><input type="password" name="password" required></td>
-        </tr>
+        <!-- Dati Anagrafici -->
+        <div class="section-title">Dati Anagrafici</div>
 
-        <tr>
-            <td colspan="2">
-                <input type="submit" value="Registrati">
-            </td>
-        </tr>
-    </table>
+        <div class="form-group">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" required />
+        </div>
+
+        <div class="form-group">
+            <label for="cognome">Cognome</label>
+            <input type="text" id="cognome" name="cognome" required />
+        </div>
+
+        <div class="form-group">
+            <label for="dataNascita">Data di nascita</label>
+            <input type="date" id="dataNascita" name="dataNascita" required />
+        </div>
+
+        <!-- Indirizzo -->
+        <div class="section-title">Indirizzo</div>
+
+        <div class="form-group">
+            <label for="indirizzo">Indirizzo</label>
+            <input type="text" id="indirizzo" name="indirizzo" required />
+        </div>
+
+        <div class="form-group">
+            <label for="cap">CAP</label>
+            <input
+                    type="text"
+                    id="cap"
+                    name="cap"
+                    required
+                    pattern="\d{5}"
+                    title="Inserisci un CAP valido"
+            />
+        </div>
+
+        <div class="form-group">
+            <label for="citta">Città</label>
+            <input type="text" id="citta" name="citta" required />
+        </div>
+
+        <div class="form-group">
+            <label for="provincia">Provincia</label>
+            <input
+                    type="text"
+                    id="provincia"
+                    name="provincia"
+                    required
+                    maxlength="2"
+                    placeholder="Es. RM"
+            />
+        </div>
+
+        <!-- Contatti -->
+        <div class="section-title">Contatti</div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+        </div>
+
+        <div class="form-group">
+            <label for="telefono">Telefono</label>
+            <input
+                    type="tel"
+                    id="telefono"
+                    name="telefono"
+                    required
+                    pattern="[0-9]{10}"
+                    title="Inserisci 10 cifre"
+            />
+        </div>
+
+        <!-- Credenziali -->
+        <div class="section-title">Credenziali</div>
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required />
+        </div>
+
+        <div class="form-group password-group">
+            <label for="password">Password</label>
+            <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                    minlength="8"
+                    autocomplete="off"
+                    placeholder="Minimo 8 caratteri"
+            />
+            <button type="button" id="togglePassword" aria-label="Mostra/Nascondi password">
+                <!-- Occhio SVG -->
+                <svg
+                        id="eyeIcon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        viewBox="0 0 24 24"
+                >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle id="eyePupil" cx="12" cy="12" r="3" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Pulsante -->
+        <input type="submit" value="Registrati" />
+    </div>
 </form>
+<script src="script.js"></script>
+
 
 </body>
 </html>
