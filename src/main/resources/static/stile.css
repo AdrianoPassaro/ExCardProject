@@ -66,7 +66,7 @@ h2 {
     border-bottom: 2px solid var(--accent);
     padding-bottom: 3px;
     margin-bottom: 6px;
-    grid-column: span 2;
+    grid-column: span 3;
 }
 
 /* ------------------------------
@@ -74,7 +74,7 @@ h2 {
 ------------------------------ */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--gap);
 }
 
@@ -115,7 +115,7 @@ input:focus {
    BOTTONE SUBMIT
 ------------------------------ */
 input[type="submit"] {
-    grid-column: span 2;
+    grid-column: span 3;
     padding: 0.65rem;
     background-color: var(--primary);
     color: white;
@@ -183,6 +183,7 @@ input[type="submit"]:hover {
 }
 
 .register-link a {
+    text-align: center;
     color: var(--primary);
     text-decoration: none;
     font-weight: 600;
