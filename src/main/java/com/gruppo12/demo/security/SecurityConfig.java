@@ -24,8 +24,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()  // Permetti login e registrazione
-                        .anyRequest().authenticated()                // Tutto il resto richiede autenticazione
+                        // ✅ Permetti accesso alla pagina HTML e al form POST di registrazione
+                        .requestMatchers(
+                                "/register",         // POST (form submission)
+                                "/register.html",    // Se accesso diretto da browser
+                                "/static/**",        // File statici (JS/CSS/HTML se da /static)
+                                "/css/**", "/js/**", "/images/**",
+                                "/api/auth/**"       // Già presente per API pubbliche
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
