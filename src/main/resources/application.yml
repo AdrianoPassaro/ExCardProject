@@ -1,9 +1,9 @@
 server:
-  port: 8081
+  port: 8080
 
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/authdb
+      uri: mongodb://localhost:27017/excard_db
   thymeleaf:
     cache: false
