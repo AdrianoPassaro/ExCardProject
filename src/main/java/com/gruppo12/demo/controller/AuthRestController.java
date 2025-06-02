@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @RestController
 public class AuthRestController {
@@ -16,6 +17,9 @@ public class AuthRestController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // Per form HTML (application/x-www-form-urlencoded)
     @PostMapping("/register")
@@ -47,6 +51,9 @@ public class AuthRestController {
         if (userRepository.findByEmail(user.getEmail()) != null) {
             return ResponseEntity.badRequest().body("Email già registrata");
         }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         userRepository.save(user);
         return ResponseEntity.ok("Registrazione completata");
     }
@@ -54,7 +61,7 @@ public class AuthRestController {
     @PostMapping("/api/auth/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         User existingUser = userRepository.findByUsername(user.getUsername());
-        if (existingUser != null && existingUser.getPassword().equals(user.getPassword())) {
+        if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
             String token = jwtUtil.generateToken(existingUser.getUsername());
             return ResponseEntity.ok(new AuthResponse(token));
         }
