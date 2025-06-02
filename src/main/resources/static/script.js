@@ -46,8 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const indirizzo = document.getElementById('indirizzo').value.trim();
         const cap = document.getElementById('cap').value.trim();
         const citta = document.getElementById('citta').value.trim()
-        const provincia = document.getElementById('provincia').value.trim;
-        const telefono = document.getElementById('telefono').value.trim;
+        const provincia = document.getElementById('provincia').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
 
         try {
             const response = await fetch('/api/auth/register', {

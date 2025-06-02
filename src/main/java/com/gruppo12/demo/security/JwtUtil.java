@@ -7,17 +7,27 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.function.Function;
 
 @Component
 public class JwtUtil {
 
-    //la chiave deve essere resa sicura e in variabile di ambiente
-    private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    @Value("${jwt.secret}")
+    private String secret;
+
+    //chiave resa sicura, variabile di ambiente e impostata nel docker
+    private Key secretKey;
 
     //durata del token (dovrebbe essere un'ora)
     private final long expirationTimeMs = 60 * 60 * 1000;
+
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = Base64.getDecoder().decode(secret);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     // Genera il token
     public String generateToken(String username) {
