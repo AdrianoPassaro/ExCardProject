@@ -42,7 +42,10 @@ public class AuthRestController {
     @PostMapping("/api/auth/register")
     public ResponseEntity<String> register(@RequestBody User user) {
         if (userRepository.findByUsername(user.getUsername()) != null) {
-            return ResponseEntity.badRequest().body("Utente già esistente");
+            return ResponseEntity.badRequest().body("Username non disponibile");
+        }
+        if (userRepository.findByEmail(user.getEmail()) != null) {
+            return ResponseEntity.badRequest().body("Email già registrata");
         }
         userRepository.save(user);
         return ResponseEntity.ok("Registrazione completata");
