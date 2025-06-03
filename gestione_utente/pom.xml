@@ -8,7 +8,7 @@
         <version>3.5.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>it.unisannio</groupId>
+    <groupId>com.gruppo12</groupId>
     <artifactId>gestione_utente</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>gestione_utente</name>
