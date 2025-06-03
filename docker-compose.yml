@@ -3,7 +3,7 @@ services:
     image: excard-auth-service
     container_name: auth-service
     build:
-      context: .
+      context: ./authentication_autorization
       dockerfile: Dockerfile
     ports:
       - "8080:8080"

@@ -1,4 +1,4 @@
-package com.gruppo12.demo.model;
+package com.gruppo12.authentication_autorization.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -53,6 +53,3 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 }
-
-
-

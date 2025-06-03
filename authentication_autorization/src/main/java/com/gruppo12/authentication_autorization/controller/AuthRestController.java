@@ -1,8 +1,8 @@
-package com.gruppo12.demo.controller;
+package com.gruppo12.authentication_autorization.controller;
 
-import com.gruppo12.demo.model.User;
-import com.gruppo12.demo.repository.UserRepository;
-import com.gruppo12.demo.security.JwtUtil;
+import com.gruppo12.authentication_autorization.model.User;
+import com.gruppo12.authentication_autorization.repository.UserRepository;
+import com.gruppo12.authentication_autorization.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -75,6 +75,3 @@ public class AuthRestController {
         public void setToken(String token) { this.token = token; }
     }
 }
-
-
-

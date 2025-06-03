@@ -1,5 +1,4 @@
-package com.gruppo12.demo.security;
-
+package com.gruppo12.authentication_autorization.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -53,3 +52,4 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
 }
+

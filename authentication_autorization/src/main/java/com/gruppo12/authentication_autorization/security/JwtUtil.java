@@ -1,4 +1,4 @@
-package com.gruppo12.demo.security;
+package com.gruppo12.authentication_autorization.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

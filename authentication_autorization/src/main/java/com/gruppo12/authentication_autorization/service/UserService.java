@@ -1,7 +1,7 @@
-package com.gruppo12.demo.service;
+package com.gruppo12.authentication_autorization.service;
 
-import com.gruppo12.demo.model.User;
-import com.gruppo12.demo.repository.UserRepository;
+import com.gruppo12.authentication_autorization.model.User;
+import com.gruppo12.authentication_autorization.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,4 +23,3 @@ public class UserService {
         return existing != null && existing.getPassword().equals(user.getPassword());
     }
 }
-
