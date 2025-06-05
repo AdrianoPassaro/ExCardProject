@@ -13,6 +13,20 @@ services:
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/excard_db
       JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
 
+  management-service:
+    image: excard-management-service
+    container_name: management-service
+    build:
+      context: ./gestione_utente
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/excard_gestione_utente
+      JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
+
   mongo:
     image: mongo:6.0
     container_name: mongo
