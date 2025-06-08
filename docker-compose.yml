@@ -12,6 +12,9 @@ services:
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/excard_db
       JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
+    networks:
+      - excard_net
+    restart: unless-stopped
 
   card-loader:
     image: excard_load_service
@@ -25,6 +28,9 @@ services:
       - mongo
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/excard_db
+    networks:
+      - excard_net
+    restart: unless-stopped
 
   mongo:
     image: mongo:6.0
@@ -33,6 +39,12 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - excard_net
+    restart: unless-stopped
 
 volumes:
   mongodb_data:
+
+networks:
+  excard_net:

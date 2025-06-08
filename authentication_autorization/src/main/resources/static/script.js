@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorText || 'Errore durante la registrazione.');
             }
 
-            alert('Registrazione completata con successo! Ora puoi accedere.');
-            window.location.href = 'index.html';
+            alert('Registrazione completata con successo!.');
+            window.location.href = 'homepage.html';
 
         } catch (error) {
             alert('Registrazione fallita: ' + error.message);
