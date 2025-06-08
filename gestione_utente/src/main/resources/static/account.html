@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Profilo Utente</title>
+    <link rel="stylesheet" href="stile.css" />
+    <style>
+        .form-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .form-row input {
+            flex: 1;
+        }
+        .edit-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            font-size: 1.2rem;
+        }
+        .edit-btn:hover {
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+<form id="profileForm" class="form-container" autocomplete="off">
+    <h2>Profilo Utente</h2>
+
+    <div class="form-grid">
+        <div class="form-row">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('nome')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="cognome">Cognome</label>
+            <input type="text" id="cognome" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('cognome')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="dataNascita">Data di Nascita</label>
+            <input type="date" id="dataNascita" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('dataNascita')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="indirizzo">Indirizzo</label>
+            <input type="text" id="indirizzo" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('indirizzo')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="cap">CAP</label>
+            <input type="text" id="cap" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('cap')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="citta">Città</label>
+            <input type="text" id="citta" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('citta')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="provincia">Provincia</label>
+            <input type="text" id="provincia" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('provincia')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="email">Email</label>
+            <input type="email" id="email" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('email')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="telefono">Telefono</label>
+            <input type="tel" id="telefono" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('telefono')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="username">Username</label>
+            <input type="text" id="username" disabled />
+            <button type="button" class="edit-btn" onclick="enableEdit('username')">✏️</button>
+        </div>
+
+        <div class="form-row">
+            <label for="password">Password</label>
+            <input type="password" id="password" disabled placeholder="Nuova password (min 8 caratteri)" />
+            <button type="button" class="edit-btn" onclick="enableEdit('password')">✏️</button>
+        </div>
+
+        <button type="button" id="saveBtn">Salva Modifiche</button>
+    </div>
+</form>
+
+<script src="account.js"></script>
+</body>
+</html>
+
+
