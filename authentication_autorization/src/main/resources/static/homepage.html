@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ExCard: Homepage</title>
+    <link rel="stylesheet" href="stile.css" />
+</head>
+<body>
+
+<!-- HEADER FISSO -->
+<header class="navbar">
+    <div class="logo">ExCard</div>
+
+    <form class="search-bar" action="/search" method="get">
+        <input type="text" name="q" placeholder="Cerca un prodotto..."/>
+        <button type="submit">🔍</button>
+    </form>
+
+    <div class="nav-buttons">
+        <a href="login.html" class="btn">Login</a>
+        <a href="register.html" class="btn">Registrati</a>
+    </div>
+</header>
+
+<nav class="sub-navbar">
+    <a href="#" data-protected="/collezione.html">La tua collezione</a>
+</nav>
+
+<!-- CONTENUTO DI PAGINA -->
+<main class="main-content">
+    <h1>Benvenuto su ExCard</h1>
+    <p>Qui troverai le migliori carte collezionabili!</p>
+    <!-- Altri contenuti qui -->
+</main>
+<script src="homepage.js"></script>
+</body>
+</html>

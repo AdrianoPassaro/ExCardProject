@@ -40,14 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const username = document.getElementById('username').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = passwordInput.value;
-        const nome = document.getElementById('nome').value.trim();
-        const cognome = document.getElementById('cognome').value.trim();
-        const dataNascita = document.getElementById('dataNascita').value.trim();
-        const indirizzo = document.getElementById('indirizzo').value.trim();
-        const cap = document.getElementById('cap').value.trim();
-        const citta = document.getElementById('citta').value.trim()
-        const provincia = document.getElementById('provincia').value.trim();
-        const telefono = document.getElementById('telefono').value.trim();
 
         try {
             const response = await fetch('/api/auth/register', {
@@ -56,15 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     username,
                     email,
-                    password,
-                    nome,
-                    cognome,
-                    dataNascita,
-                    indirizzo,
-                    cap,
-                    citta,
-                    provincia,
-                    telefono
+                    password
                 })
             });
 
