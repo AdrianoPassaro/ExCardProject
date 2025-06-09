@@ -10,6 +10,11 @@ public class UserProfileRequest {
     private String indirizzo;
     private String password;
     private String provincia;
+    private String username;
+
+    public UserProfileRequest(){
+
+    }
 
     public String getTelefono() { return telefono; }
     public String getCitta() { return citta; }
@@ -29,6 +34,8 @@ public class UserProfileRequest {
     public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
     public void setPassword(String password) { this.password = password; }
     public void setProvincia(String provincia) { this.provincia = provincia; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
 }
 

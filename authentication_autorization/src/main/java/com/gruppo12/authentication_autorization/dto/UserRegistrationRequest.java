@@ -25,6 +25,15 @@ public class UserRegistrationRequest {
     public void setTelefono(String telefono) { this.telefono = telefono; }
     public void setCitta(String citta) { this.citta = citta; }
     public void setCap(String cap) { this.cap = cap; }
+    public String getNome() { return nome; }
+    public String getCognome() { return cognome; }
+    public String getDataNascita() { return dataNascita; }
+    public String getIndirizzo() { return indirizzo; }
+    public String getProvincia() { return provincia; }
+    public void setNome(String nome) { this.nome = nome; }
+    public void setCognome(String cognome) { this.cognome = cognome; }
+    public void setDataNascita(String dataNascita) { this.dataNascita = dataNascita; }
+    public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
 
 }
 

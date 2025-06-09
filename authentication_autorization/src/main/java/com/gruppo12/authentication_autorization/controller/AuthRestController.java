@@ -55,7 +55,7 @@ public class AuthRestController {
             return ResponseEntity.badRequest().body("Email già registrata");
         }
 
-        request.setPassword(passwordEncoder.encode(request.getPassword()));
+        //request.setPassword(passwordEncoder.encode(request.getPassword())); non serve
 
         // Salva solo username + password in auth-service
         User user = new User();
@@ -65,9 +65,15 @@ public class AuthRestController {
         userRepository.save(user);
 
         UserProfileRequest profile = new UserProfileRequest();
+        profile.setUsername(request.getUsername());
+        profile.setNome(request.getNome());
+        profile.setCognome(request.getCognome());
+        profile.setDataNascita(request.getDataNascita());
         profile.setTelefono(request.getTelefono());
         profile.setCitta(request.getCitta());
         profile.setCap(request.getCap());
+        profile.setProvincia(request.getProvincia());
+        profile.setIndirizzo(request.getIndirizzo());
 
         // Envía los datos al user-service
         RestTemplate restTemplate = new RestTemplate();

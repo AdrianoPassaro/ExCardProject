@@ -28,9 +28,9 @@ public class UserService {
         existing.setCitta(updated.getCitta());
         existing.setProvincia(updated.getProvincia());
         existing.setTelefono(updated.getTelefono());
-        if (updated.getPassword() != null && !updated.getPassword().isBlank()) {
+        /*if (updated.getPassword() != null && !updated.getPassword().isBlank()) {
             existing.setPassword(passwordEncoder.encode(updated.getPassword()));
-        }
+        }*/
         return userRepository.save(existing);
     }
 }

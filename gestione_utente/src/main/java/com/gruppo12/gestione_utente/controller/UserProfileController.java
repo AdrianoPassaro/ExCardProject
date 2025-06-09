@@ -56,10 +56,21 @@ public class UserProfileController {
     private UserProfileRepository repository;
 
     @PostMapping("/profile")
-    public ResponseEntity<?> createProfile(@RequestBody UserProfile profile) {
-        if (repository.findByUsername(profile.getUsername()).isPresent()) {
+    public ResponseEntity<?> createProfile(@RequestBody UserProfileRequest profileRequest) {
+        if (repository.findByUsername(profileRequest.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Profilo già esistente");
         }
+
+        UserProfile profile = new UserProfile();
+        profile.setCitta(profileRequest.getCitta());
+        profile.setTelefono(profileRequest.getTelefono());
+        profile.setCap(profileRequest.getCap());
+        profile.setIndirizzo(profileRequest.getIndirizzo());
+        profile.setProvincia(profileRequest.getProvincia());
+        profile.setNome(profileRequest.getNome());
+        profile.setCognome(profileRequest.getCognome());
+        profile.setDataNascita(profileRequest.getDataNascita());
+
         repository.save(profile);
         return ResponseEntity.ok().build();
     }
