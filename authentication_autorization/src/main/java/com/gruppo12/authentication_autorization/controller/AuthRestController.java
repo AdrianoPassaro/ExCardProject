@@ -1,11 +1,14 @@
 package com.gruppo12.authentication_autorization.controller;
 
+import com.gruppo12.authentication_autorization.dto.UserProfileRequest;
+import com.gruppo12.authentication_autorization.dto.UserRegistrationRequest;
 import com.gruppo12.authentication_autorization.model.User;
 import com.gruppo12.authentication_autorization.repository.UserRepository;
 import com.gruppo12.authentication_autorization.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -44,17 +47,42 @@ public class AuthRestController {
 
     // Per chiamate API JSON
     @PostMapping("/api/auth/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
-        if (userRepository.findByUsername(user.getUsername()) != null) {
+    public ResponseEntity<String> register(@RequestBody UserRegistrationRequest request) {
+        if (userRepository.findByUsername(request.getUsername()) != null) {
             return ResponseEntity.badRequest().body("Username non disponibile");
         }
-        if (userRepository.findByEmail(user.getEmail()) != null) {
+        if (userRepository.findByEmail(request.getEmail()) != null) {
             return ResponseEntity.badRequest().body("Email già registrata");
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        //request.setPassword(passwordEncoder.encode(request.getPassword())); non serve
 
+        // Salva solo username + password in auth-service
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
+
+        UserProfileRequest profile = new UserProfileRequest();
+        profile.setUsername(request.getUsername());
+        profile.setNome(request.getNome());
+        profile.setCognome(request.getCognome());
+        profile.setDataNascita(request.getDataNascita());
+        profile.setTelefono(request.getTelefono());
+        profile.setCitta(request.getCitta());
+        profile.setCap(request.getCap());
+        profile.setProvincia(request.getProvincia());
+        profile.setIndirizzo(request.getIndirizzo());
+
+        // Envía los datos al user-service
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            restTemplate.postForEntity("http://localhost:8081/api/user/profile", profile, Void.class);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Registrazione utente fallita nel user-service");
+        }
+
         return ResponseEntity.ok("Registrazione completata");
     }
 
