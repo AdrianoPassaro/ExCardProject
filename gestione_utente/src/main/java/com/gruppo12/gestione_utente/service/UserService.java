@@ -1,37 +1,42 @@
 package com.gruppo12.gestione_utente.service;
 
-import com.gruppo12.gestione_utente.dto.UserProfileRequest;
 import com.gruppo12.gestione_utente.model.UserProfile;
 import com.gruppo12.gestione_utente.repository.UserProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
+
+import java.util.Map;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserProfileRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
-    public Optional<UserProfile> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    @Autowired
+    private UserProfileRepository profileRepository;
+
+    // Método para obtener perfil (usado por GET /profile)
+    public UserProfile getProfile(String username) {
+        return profileRepository.findByUsername(username);
     }
 
-    public UserProfile updateUser(UserProfile existing, UserProfileRequest updated) {
-        existing.setNome(updated.getNome());
-        existing.setCognome(updated.getCognome());
-        existing.setDataNascita(updated.getDataNascita());
-        existing.setIndirizzo(updated.getIndirizzo());
-        existing.setCap(updated.getCap());
-        existing.setCitta(updated.getCitta());
-        existing.setProvincia(updated.getProvincia());
-        existing.setTelefono(updated.getTelefono());
-        /*if (updated.getPassword() != null && !updated.getPassword().isBlank()) {
-            existing.setPassword(passwordEncoder.encode(updated.getPassword()));
-        }*/
-        return userRepository.save(existing);
+    // Método para actualización parcial (usado por PATCH /profile)
+    public UserProfile updateProfileFields(String username, Map<String, String> updates) {
+        UserProfile profile = profileRepository.findByUsername(username);
+        if (profile != null) {
+            updates.forEach((key, value) -> {
+                switch (key) {
+                    case "nome": profile.setNome(value); break;
+                    case "cognome": profile.setCognome(value); break;
+                    case "dataNascita": profile.setDataNascita(value); break;
+                    case "indirizzo": profile.setIndirizzo(value); break;
+                    case "cap": profile.setCap(value); break;
+                    case "citta": profile.setCitta(value); break;
+                    case "provincia": profile.setProvincia(value); break;
+                    case "telefono": profile.setTelefono(value); break;
+                }
+            });
+            return profileRepository.save(profile);
+        }
+        return null;
     }
 }
 

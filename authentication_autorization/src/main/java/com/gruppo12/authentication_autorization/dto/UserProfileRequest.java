@@ -8,7 +8,7 @@ public class UserProfileRequest {
     private String cognome;
     private String dataNascita;
     private String indirizzo;
-    private String password;
+    //private String password;
     private String provincia;
     private String username;
 
@@ -26,13 +26,13 @@ public class UserProfileRequest {
     public String getCognome() { return cognome; }
     public String getDataNascita() { return dataNascita; }
     public String getIndirizzo() { return indirizzo; }
-    public String getPassword() { return password; }
+    //public String getPassword() { return password; }
     public String getProvincia() { return provincia; }
     public void setNome(String nome) { this.nome = nome; }
     public void setCognome(String cognome) { this.cognome = cognome; }
     public void setDataNascita(String dataNascita) { this.dataNascita = dataNascita; }
     public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
-    public void setPassword(String password) { this.password = password; }
+    //public void setPassword(String password) { this.password = password; }
     public void setProvincia(String provincia) { this.provincia = provincia; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

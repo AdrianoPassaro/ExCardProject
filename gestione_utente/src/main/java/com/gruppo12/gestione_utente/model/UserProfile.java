@@ -14,20 +14,19 @@ public class UserProfile {
     private String cap;
     private String citta;
     private String provincia;
-    private String email;
     private String telefono;
     private String username;
-    private String password;
 
     public UserProfile() {}
 
-    public UserProfile(String username, String password) {
+    public UserProfile(String username) {
         this.username = username;
-        this.password = password;
     }
 
     // Getters e setters per tutti i campi
     public String getId() { return id; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public String getCognome() { return cognome; }
@@ -42,14 +41,8 @@ public class UserProfile {
     public void setCitta(String citta) { this.citta = citta; }
     public String getProvincia() { return provincia; }
     public void setProvincia(String provincia) { this.provincia = provincia; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
     public String getTelefono() { return telefono; }
     public void setTelefono(String telefono) { this.telefono = telefono; }
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
 }
 
 

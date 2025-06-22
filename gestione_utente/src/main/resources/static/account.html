@@ -1,105 +1,76 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Profilo Utente</title>
-    <link rel="stylesheet" href="stile.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExCard - Profilo Utente</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .form-row {
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .profile-field {
             display: flex;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f5f5f5;
         }
-        .form-row input {
+
+        .profile-field label {
             flex: 1;
+            font-weight: bold;
         }
+
+        .profile-field input {
+            flex: 2;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        .profile-field input:disabled {
+            background-color: #f5f5f5;
+            border: none;
+        }
+
         .edit-btn {
+            margin-left: 10px;
             background: none;
             border: none;
+            color: #007bff;
             cursor: pointer;
-            margin-left: 0.5rem;
-            font-size: 1.2rem;
         }
-        .edit-btn:hover {
-            color: #007BFF;
+
+        .save-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-<form id="profileForm" class="form-container" autocomplete="off">
-    <h2>Profilo Utente</h2>
+<div class="profile-container">
+    <h2>Il Tuo Profilo</h2>
 
-    <div class="form-grid">
-        <div class="form-row">
-            <label for="nome">Nome</label>
-            <input type="text" id="nome" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('nome')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="cognome">Cognome</label>
-            <input type="text" id="cognome" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('cognome')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="dataNascita">Data di Nascita</label>
-            <input type="date" id="dataNascita" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('dataNascita')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="indirizzo">Indirizzo</label>
-            <input type="text" id="indirizzo" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('indirizzo')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="cap">CAP</label>
-            <input type="text" id="cap" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('cap')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="citta">Città</label>
-            <input type="text" id="citta" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('citta')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="provincia">Provincia</label>
-            <input type="text" id="provincia" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('provincia')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="email">Email</label>
-            <input type="email" id="email" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('email')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="telefono">Telefono</label>
-            <input type="tel" id="telefono" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('telefono')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="username">Username</label>
-            <input type="text" id="username" disabled />
-            <button type="button" class="edit-btn" onclick="enableEdit('username')">✏️</button>
-        </div>
-
-        <div class="form-row">
-            <label for="password">Password</label>
-            <input type="password" id="password" disabled placeholder="Nuova password (min 8 caratteri)" />
-            <button type="button" class="edit-btn" onclick="enableEdit('password')">✏️</button>
-        </div>
-
-        <button type="button" id="saveBtn">Salva Modifiche</button>
+    <div id="profileFields">
+        <!-- Los campos se llenarán dinámicamente con JavaScript -->
     </div>
-</form>
+
+    <button id="saveChanges" class="save-btn" disabled>Salva Modifiche</button>
+</div>
 
 <script src="account.js"></script>
 </body>

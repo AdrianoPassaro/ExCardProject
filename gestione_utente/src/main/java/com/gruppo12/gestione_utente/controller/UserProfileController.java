@@ -1,79 +1,100 @@
 package com.gruppo12.gestione_utente.controller;
 
-import com.gruppo12.gestione_utente.dto.UserProfileRequest;
 import com.gruppo12.gestione_utente.model.UserProfile;
 import com.gruppo12.gestione_utente.repository.UserProfileRepository;
-import com.gruppo12.gestione_utente.service.UserService;
-import com.gruppo12.gestione_utente.security.JwtUtil;
-import io.jsonwebtoken.Jwts;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import java.util.Optional;
+import com.gruppo12.gestione_utente.dto.UserProfileRequest;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
 public class UserProfileController {
-    private final UserService service;
-    private final JwtUtil jwtUtil;
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    public UserProfileController(UserService s, JwtUtil j) {
-        this.service = s; this.jwtUtil = j;
-    }
-
-    private String extractUsername(String token){
-        return Jwts.parserBuilder()
-                .setSigningKey(jwtSecret.getBytes())
-                .build().parseClaimsJws(token.replace("Bearer ",""))
-                .getBody().getSubject();
-    }
 
     @Autowired
-    private UserService userService;
+    private UserProfileRepository profileRepository;
 
     @GetMapping("/profile")
-    public UserProfile getProfile(@AuthenticationPrincipal UserDetails userDetails) {
-        return userService.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+    public ResponseEntity<UserProfile> getProfile(@AuthenticationPrincipal String username) {
+        UserProfile profile = profileRepository.findByUsername(username);
+        if (profile == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(profile);
     }
 
-    @PutMapping("/update")
-    public UserProfile updateProfile(@RequestBody UserProfileRequest updatedProfile,
-                                     @AuthenticationPrincipal UserDetails userDetails) {
-        String username = userDetails.getUsername();
-        UserProfile existing = userService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
-        return userService.updateUser(existing, updatedProfile);
-    }
+    // Actualizar campo específico
+    @PatchMapping("/profile")
+    public ResponseEntity<UserProfile> updateProfileField(
+            @AuthenticationPrincipal String username,
+            @RequestBody Map<String, String> updates) {
 
-    @Autowired
-    private UserProfileRepository repository;
-
-    @PostMapping("/profile")
-    public ResponseEntity<?> createProfile(@RequestBody UserProfileRequest profileRequest) {
-        if (repository.findByUsername(profileRequest.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Profilo già esistente");
+        UserProfile profile = profileRepository.findByUsername(username);
+        if (profile == null) {
+            return ResponseEntity.notFound().build();
         }
 
-        UserProfile profile = new UserProfile();
-        profile.setCitta(profileRequest.getCitta());
-        profile.setTelefono(profileRequest.getTelefono());
-        profile.setCap(profileRequest.getCap());
-        profile.setIndirizzo(profileRequest.getIndirizzo());
-        profile.setProvincia(profileRequest.getProvincia());
-        profile.setNome(profileRequest.getNome());
-        profile.setCognome(profileRequest.getCognome());
-        profile.setDataNascita(profileRequest.getDataNascita());
+        updates.forEach((key, value) -> {
+            switch (key) {
+                case "nome": profile.setNome(value); break;
+                case "cognome": profile.setCognome(value); break;
+                case "dataNascita": profile.setDataNascita(value); break;
+                case "indirizzo": profile.setIndirizzo(value); break;
+                case "cap": profile.setCap(value); break;
+                case "citta": profile.setCitta(value); break;
+                case "provincia": profile.setProvincia(value); break;
+                case "telefono": profile.setTelefono(value); break;
+            }
+        });
 
-        repository.save(profile);
+        UserProfile updatedProfile = profileRepository.save(profile);
+        return ResponseEntity.ok(updatedProfile);
+    }
+
+    @GetMapping("/verify-token")
+    public ResponseEntity<Void> verifyToken(@AuthenticationPrincipal String username) {
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/profile")
+    public ResponseEntity<String> createProfile(@RequestBody UserProfileRequest profileRequest) {
+        try {
+            // Verificar si ya existe un perfil para este username
+            UserProfile existingProfile = profileRepository.findByUsername(profileRequest.getUsername());
+            if (existingProfile != null) {
+                return ResponseEntity.badRequest().body("Perfil già esistente per questo username");
+            }
+
+            // Crear nuevo perfil
+            UserProfile newProfile = new UserProfile();
+            newProfile.setUsername(profileRequest.getUsername());
+            newProfile.setNome(profileRequest.getNome());
+            newProfile.setCognome(profileRequest.getCognome());
+            newProfile.setDataNascita(profileRequest.getDataNascita());
+            newProfile.setIndirizzo(profileRequest.getIndirizzo());
+            newProfile.setCap(profileRequest.getCap());
+            newProfile.setCitta(profileRequest.getCitta());
+            newProfile.setProvincia(profileRequest.getProvincia());
+            newProfile.setTelefono(profileRequest.getTelefono());
+
+            // Guardar el perfil
+            UserProfile savedProfile = profileRepository.save(newProfile);
+
+            System.out.println("Perfil creado exitosamente para usuario: " + profileRequest.getUsername());
+            return ResponseEntity.ok("Perfil creado con successo");
+
+        } catch (Exception e) {
+            System.err.println("Error al crear perfil para usuario " + profileRequest.getUsername() + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Errore interno durante la creazione del profilo");
+        }
+    }
+
 }
 
 

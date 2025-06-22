@@ -9,8 +9,9 @@ services:
       - "8080:8080"
     depends_on:
       - mongo
+      - management-service
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/excard_db
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/auth_db
       JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
     networks:
       - excard_net
@@ -43,8 +44,11 @@ services:
     depends_on:
       - mongo
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/excard_gestione_utente
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/management_db
       JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
+    networks:
+      - excard_net
+    restart: unless-stopped
 
   mongo:
     image: mongo:6.0

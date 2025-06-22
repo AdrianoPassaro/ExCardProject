@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Controllo che il token sia presente nella risposta
             if ('token' in data) {
                 localStorage.setItem('jwtToken', data.token);
+                console.log("Token salvato:", data.token);
                 window.location.href = 'homepage.html';  // Redirect dopo login
             } else {
                 alert('Login fallito: Token non ricevuto dal server.');
