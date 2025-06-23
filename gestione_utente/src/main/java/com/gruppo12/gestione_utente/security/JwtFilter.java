@@ -1,5 +1,6 @@
 package com.gruppo12.gestione_utente.security;
 
+import com.gruppo12.gestione_utente.security.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
