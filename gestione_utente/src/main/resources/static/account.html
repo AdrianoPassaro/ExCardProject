@@ -6,6 +6,32 @@
     <title>ExCard - Profilo Utente</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #1f4e99;
+            --accent: #b3d1ff;
+            --bg: #e0f0ff;
+            --border-radius: 6px;
+            --gap: 1rem;
+            --font-size: 0.85rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            padding: 0.5rem;
+        }
+
         .profile-container {
             max-width: 800px;
             margin: 0 auto;
@@ -59,9 +85,79 @@
             cursor: pointer;
             font-size: 16px;
         }
+
+        .home-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #493a3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 60px;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--accent);
+            box-shadow: 0 2px 8px rgba(0, 60, 130, 0.1);
+            z-index: 1000;
+        }
+
+        nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-buttons .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-size: var(--font-size);
+            font-weight: 600;
+            border: 2px solid var(--primary);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-buttons .btn:hover {
+            background-color: #003d80;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+
     </style>
 </head>
 <body>
+
+<header class="navbar">
+    <a href="http://localhost:8080/homepage.html" class="logo">ExCard</a>
+
+    <div class="nav-buttons">
+        <a href="prova.html" class="btn">Logout</a>
+    </div>
+</header>
+
 <div class="profile-container">
     <h2>Il Tuo Profilo</h2>
 
@@ -69,7 +165,9 @@
         <!-- Los campos se llenarán dinámicamente con JavaScript -->
     </div>
 
-    <button id="saveChanges" class="save-btn" disabled>Salva Modifiche</button>
+    <div class="button-container">
+        <button id="saveChanges" class="save-btn" disabled> Salva Modifiche</button>
+    </div>
 </div>
 
 <script src="account.js"></script>

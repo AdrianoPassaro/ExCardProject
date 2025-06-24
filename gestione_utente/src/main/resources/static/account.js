@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         citta: 'Città',
         provincia: 'Provincia',
         telefono: 'Telefono',
-        username: 'Username'
     };
 
     // Función para verificar token con el backend

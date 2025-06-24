@@ -10,7 +10,7 @@
 
 <!-- HEADER FISSO -->
 <header class="navbar">
-    <div class="logo">ExCard</div>
+    <a href="homepage.html" class="logo">ExCard</a>
 
     <form class="search-bar" action="/search" method="get">
         <input type="text" name="q" placeholder="Cerca un prodotto..."/>
@@ -23,14 +23,31 @@
     </div>
 </header>
 
-<nav class="sub-navbar">
-    <a href="#" data-protected="/collezione.html">La tua collezione</a>
-</nav>
-
 <!-- CONTENUTO DI PAGINA -->
 <main class="main-content">
-    <h1>Benvenuto su ExCard</h1>
-    <!-- Altri contenuti qui -->
+    <div id="guest-content">
+        <h1>Benvenuto su ExCard</h1>
+        <p class="slogan">Il marketplace definitivo per collezionisti di carte</p>
+        <p class="sub-message">Compra, vendi, scambia e gestisci la tua collezione in un unico posto</p>
+    </div>
+
+    <div id="user-content" class="hidden">
+        <h1>Benvenuto su ExCard</h1>
+        <div class="action-grid">
+            <a href="http://localhost:8081/account.html" class="action-card">
+                <div class="action-title">Profilo</div>
+            </a>
+            <div class="action-card">
+                <div class="action-title">Vendi</div>
+            </div>
+            <div class="action-card">
+                <div class="action-title">Scambia</div>
+            </div>
+            <div class="action-card">
+                <div class="action-title">La tua collezione</div>
+            </div>
+        </div>
+    </div>
 </main>
 <script src="homepage.js"></script>
 </body>

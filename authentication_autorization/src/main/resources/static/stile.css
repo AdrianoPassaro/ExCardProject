@@ -309,3 +309,66 @@ input[type="submit"]:hover {
         max-width: 100%;
     }
 }
+
+/* CONTENUTO HOME */
+#guest-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.slogan {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.sub-message {
+    font-size: 1rem;
+    color: #666;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 2rem auto;
+}
+
+.action-card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--accent);
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.action-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .action-grid {
+        grid-template-columns: 1fr;
+        max-width: 300px;
+    }
+}
