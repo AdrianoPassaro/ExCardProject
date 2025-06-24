@@ -1,9 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('jwtToken');
+    // 1. Primero verifica si el token viene por URL (primer acceso desde login en 8080)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
 
-    // 1. Verificación mejorada del token
-    if (!token || token === 'null' || token === 'undefined') {
-        localStorage.removeItem('jwtToken');
+    if (urlToken) {
+        // Guarda el token en localStorage DEL PUERTO 8081
+        localStorage.setItem('jwtToken', urlToken);
+        // Limpia la URL para que no quede visible
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // 2. Ahora verifica el token en localStorage
+    const token = localStorage.getItem('jwtToken');
+    console.log('Token obtenido:', token); // Debug
+
+    if (!token) {
+        // Redirige de vuelta al login EN 8080
         window.location.href = 'http://localhost:8080/login.html';
         return;
     }
@@ -26,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         username: 'Username'
     };
 
-    // 2. Función para verificar token antes de cargar el perfil
+    // Función para verificar token con el backend
     const verifyToken = async () => {
         try {
             const response = await fetch('http://localhost:8081/api/user/verify-token', {
@@ -58,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderProfileFields(originalProfile);
         } catch (error) {
             alert('Errore: ' + error.message);
-            // 3. Redirección a login con limpieza de token
             localStorage.removeItem('jwtToken');
             window.location.href = 'http://localhost:8080/login.html';
         }
@@ -147,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 4. Flujo principal mejorado
+    // Flujo principal
     const init = async () => {
         const isTokenValid = await verifyToken();
         if (!isTokenValid) {
@@ -160,7 +171,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
-
-
-
-

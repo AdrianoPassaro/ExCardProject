@@ -27,7 +27,7 @@ public class UserProfileController {
         return ResponseEntity.ok(profile);
     }
 
-    // Actualizar campo específico
+    // Aggiorna uno o più campi del profilo utente (parziale)
     @PatchMapping("/profile")
     public ResponseEntity<UserProfile> updateProfileField(
             @AuthenticationPrincipal String username,
@@ -55,6 +55,7 @@ public class UserProfileController {
         return ResponseEntity.ok(updatedProfile);
     }
 
+    // Verifica la validità del token JWT
     @GetMapping("/verify-token")
     public ResponseEntity<Void> verifyToken(@AuthenticationPrincipal String username) {
         return ResponseEntity.ok().build();
@@ -63,13 +64,13 @@ public class UserProfileController {
     @PostMapping("/profile")
     public ResponseEntity<String> createProfile(@RequestBody UserProfileRequest profileRequest) {
         try {
-            // Verificar si ya existe un perfil para este username
+            // Verifica se esiste già un profilo per questo username
             UserProfile existingProfile = profileRepository.findByUsername(profileRequest.getUsername());
             if (existingProfile != null) {
-                return ResponseEntity.badRequest().body("Perfil già esistente per questo username");
+                return ResponseEntity.badRequest().body("Profilo già esistente per questo username");
             }
 
-            // Crear nuevo perfil
+            // Crea un nuovo profilo
             UserProfile newProfile = new UserProfile();
             newProfile.setUsername(profileRequest.getUsername());
             newProfile.setNome(profileRequest.getNome());
@@ -81,23 +82,17 @@ public class UserProfileController {
             newProfile.setProvincia(profileRequest.getProvincia());
             newProfile.setTelefono(profileRequest.getTelefono());
 
-            // Guardar el perfil
+            // Salva il profilo nel database
             UserProfile savedProfile = profileRepository.save(newProfile);
 
-            System.out.println("Perfil creado exitosamente para usuario: " + profileRequest.getUsername());
-            return ResponseEntity.ok("Perfil creado con successo");
+            System.out.println("Profilo creato con successo per utente: " + profileRequest.getUsername());
+            return ResponseEntity.ok("Profilo creato con successo");
 
         } catch (Exception e) {
-            System.err.println("Error al crear perfil para usuario " + profileRequest.getUsername() + ": " + e.getMessage());
+            System.err.println("Errore nella creazione del profilo per utente " + profileRequest.getUsername() + ": " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Errore interno durante la creazione del profilo");
         }
     }
-
 }
-
-
-
-
-

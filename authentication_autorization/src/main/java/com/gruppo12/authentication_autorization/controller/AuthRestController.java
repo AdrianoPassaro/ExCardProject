@@ -33,6 +33,8 @@ public class AuthRestController {
         if (userRepository.findByUsername(user.getUsername()) != null) {
             return new RedirectView("/register.html?error=exists");
         }
+        // Codifica della password per maggiore sicurezza
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return new RedirectView("/login.html?success=1");
     }
@@ -41,7 +43,8 @@ public class AuthRestController {
     @PostMapping("/login")
     public RedirectView loginForm(User user) {
         User existingUser = userRepository.findByUsername(user.getUsername());
-        if (existingUser != null && existingUser.getPassword().equals(user.getPassword())) {
+        // Verifica sicura della password con passwordEncoder
+        if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
             // Puoi salvare il token in un cookie o in un header se fai fetch
             return new RedirectView("/home.html?token=" + jwtUtil.generateToken(existingUser.getUsername()));
         }
@@ -108,7 +111,7 @@ public class AuthRestController {
             );
 
             if (!profileResponse.getStatusCode().is2xxSuccessful()) {
-                // Si falla, eliminar el usuario creado (rollback)
+                // Se il profilo fallisce, elimino l'utente (rollback manuale)
                 userRepository.delete(user);
                 throw new RuntimeException("Errore in management-service. Status: " + profileResponse.getStatusCode());
             }
