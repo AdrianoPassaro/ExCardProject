@@ -58,9 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Invia richiesta POST al backend con username e password in JSON
             const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                "method": 'POST',
+                "headers": { 'Content-Type': 'application/json' },
+                "body": JSON.stringify({ username, password })
             });
 
             // Se la risposta non è OK, prova a recuperare il messaggio di errore dal JSON o testo semplice
@@ -82,8 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if ('token' in data) {
                 const token = data.token;
                 localStorage.setItem('jwtToken', token);
-                console.log("Token salvato:", data.token);
-                window.location.href = `http://localhost:8081/account.html?token=${encodeURIComponent(token)}`;  // Redirect dopo login
+                await initializeTokenAcrossPorts(token, [8081]);
+
+                window.location.replace('http://localhost:8080/homepage.html');  // Redirect dopo login
             } else {
                 alert('Login fallito: Token non ricevuto dal server.');
                 submitBtn.disabled = false;
@@ -96,4 +97,27 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = false;  // Riabilita il bottone submit sempre alla fine
         }
     });
+
+    async function initializeTokenAcrossPorts(token, ports) {
+        const iframePromises = ports.map(port => {
+            return new Promise((resolve) => {
+                const iframe = document.createElement('iframe');
+                iframe.src = `http://localhost:${port}/init-token.html?token=${encodeURIComponent(token)}`;
+                iframe.style.display = 'none';
+
+                const messageListener = (event) => {
+                    if (event.source === iframe.contentWindow && event.data === 'token_saved') {
+                        window.removeEventListener('message', messageListener);
+                        iframe.remove();
+                        resolve();
+                    }
+                };
+
+                window.addEventListener('message', messageListener);
+                document.body.appendChild(iframe);
+            });
+        });
+
+        await Promise.all(iframePromises);
+    }
 });

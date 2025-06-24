@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    if (token) {
+        localStorage.setItem('jwtToken', token);
+        console.log(`Token salvato nella porta ${window.location.port}`);
+    }
+
+    // Notifica al padre que el token fue guardado
+    if (window.parent !== window) {
+        window.parent.postMessage('token_saved', '*');
+    }
+</script>
+</body>
+</html>

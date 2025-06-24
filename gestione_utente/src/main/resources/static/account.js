@@ -1,14 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Primero verifica si el token viene por URL (primer acceso desde login en 8080)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get('token');
+    //const urlParams = new URLSearchParams(window.location.search);
+    //const urlToken = urlParams.get('token');
 
-    if (urlToken) {
+    //if (urlToken) {
         // Guarda el token en localStorage DEL PUERTO 8081
-        localStorage.setItem('jwtToken', urlToken);
+        //localStorage.setItem('jwtToken', urlToken);
         // Limpia la URL para que no quede visible
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
+        //window.history.replaceState({}, document.title, window.location.pathname);
+    //}
 
     // 2. Ahora verifica el token en localStorage
     const token = localStorage.getItem('jwtToken');
