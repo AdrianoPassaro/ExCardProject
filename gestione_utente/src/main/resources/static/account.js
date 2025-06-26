@@ -39,6 +39,30 @@ document.addEventListener('DOMContentLoaded', () => {
         usernameDisplay.textContent = `👤 ${username}`;
     }
 
+    async function deleteTokenAcrossPorts(ports) {
+        const iframePromises = ports.map(port => {
+            return new Promise((resolve) => {
+                const iframe = document.createElement('iframe');
+                iframe.src = `http://localhost:${port}/del-token.html`;
+                iframe.style.display = 'none';
+
+                const messageListener = (event) => {
+                    if (event.source === iframe.contentWindow && event.data === 'token_deleted') {
+                        window.removeEventListener('message', messageListener);
+                        iframe.remove();
+                        resolve();
+                    }
+                };
+
+                window.addEventListener('message', messageListener);
+                document.body.appendChild(iframe);
+            });
+        });
+
+        await Promise.all(iframePromises);
+        window.location.href = 'http://localhost:8080/homepage.html';
+    }
+
     // Carica i dati del profilo
     async function loadProfile() {
         try {
@@ -193,31 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logout
     function setupLogout() {
-        logoutBtn.addEventListener('click', (e) => {
+        logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             localStorage.removeItem('jwtToken');
-
-            // Pulisci il localStorage per altre origini
-            const origins = ['http://localhost:8081'];
-            origins.forEach(origin => {
-                const iframe = document.createElement('iframe');
-                iframe.src = `${origin}/about:blank`;
-                iframe.style.display = 'none';
-
-                iframe.onload = function() {
-                    try {
-                        const iframeWindow = iframe.contentWindow;
-                        iframeWindow.localStorage.removeItem('jwtToken');
-                    } catch (e) {
-                        console.error(`Impossibile pulire storage per ${origin}`, e);
-                    }
-                    document.body.removeChild(iframe);
-                };
-
-                document.body.appendChild(iframe);
-            });
-
-            window.location.href = 'http://localhost:8080/login.html';
+            await deleteTokenAcrossPorts([8080]);
         });
     }
 

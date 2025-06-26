@@ -15,11 +15,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
                     .join('')
             );
-            return JSON.parse(jsonPayload);
+            const payload = JSON.parse(jsonPayload);
+            return payload.sub || payload.username || 'Utente';
         } catch (e) {
-            return null;
+            console.error('Errore nel parsing del token:', e);
+            return 'Utente';
         }
     }
+
+    async function deleteTokenAcrossPorts(ports) {
+        const iframePromises = ports.map(port => {
+            return new Promise((resolve) => {
+                const iframe = document.createElement('iframe');
+                iframe.src = `http://localhost:${port}/del-token.html`;
+                iframe.style.display = 'none';
+
+                const messageListener = (event) => {
+                    if (event.source === iframe.contentWindow && event.data === 'token_deleted') {
+                        window.removeEventListener('message', messageListener);
+                        iframe.remove();
+                        resolve();
+                    }
+                };
+
+                window.addEventListener('message', messageListener);
+                document.body.appendChild(iframe);
+            });
+        });
+
+        await Promise.all(iframePromises);
+        window.location.href = 'http://localhost:8080/login.html';
+    }
+
+    const username = parseJwt(token);
 
     // Controlla se l'utente è loggato (token valido e non scaduto)
     let user = null;
@@ -43,35 +71,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Cambia pulsanti navbar
         navButtons.innerHTML = `
+            <span class="username-display" id="usernameDisplay">👤 ${username}</span>
             <button id="logoutBtn" class="btn">Logout</button>
         `;
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
             localStorage.removeItem('jwtToken');
-
-            // Pulisci il localStorage per altre origini
-            const origins = [
-                'http://localhost:8081'
-            ];
-
-            origins.forEach(origin => {
-                const iframe = document.createElement('iframe');
-                iframe.src = `${origin}/about:blank`;  // Non serve un file fisico
-                iframe.style.display = 'none';
-
-                iframe.onload = function () {
-                    try {
-                        const iframeWindow = iframe.contentWindow;
-                        iframeWindow.localStorage.removeItem('jwtToken');
-                    } catch (e) {
-                        console.log(`Could not clear storage for ${origin}`, e);
-                    }
-                    document.body.removeChild(iframe);
-                };
-
-                document.body.appendChild(iframe);
-            });
-
+            await deleteTokenAcrossPorts([8081]);
+            alert(
+                `Logout effettuato con successo!\nSe hai bisogno di accedere nuovamente, clicca su "Login" sulla barra di navigazione.`);
             window.location.reload();
         });
     } else {

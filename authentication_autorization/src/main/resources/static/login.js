@@ -36,6 +36,13 @@ togglePasswordBtn.addEventListener('click', () => {
 
 // Aspetta che il DOM sia caricato completamente
 document.addEventListener('DOMContentLoaded', () => {
+    // Controllo del token
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+        window.location.href = 'http://localhost:8080/homepage.html';
+        return;
+    }
+
     const loginForm = document.querySelector('form');  // Seleziona il form
     const submitBtn = loginForm.querySelector('input[type="submit"]'); // Bottone submit
 

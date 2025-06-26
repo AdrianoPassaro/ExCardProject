@@ -143,6 +143,12 @@ body {
     color: white;
 }
 
+.username-display {
+    margin-right: 10px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
 /* MAIN CONTENT */
 .main-content {
     margin-top: 80px;
