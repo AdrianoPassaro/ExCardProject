@@ -1,135 +1,168 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Primero verifica si el token viene por URL (primer acceso desde login en 8080)
-    //const urlParams = new URLSearchParams(window.location.search);
-    //const urlToken = urlParams.get('token');
-
-    //if (urlToken) {
-        // Guarda el token en localStorage DEL PUERTO 8081
-        //localStorage.setItem('jwtToken', urlToken);
-        // Limpia la URL para que no quede visible
-        //window.history.replaceState({}, document.title, window.location.pathname);
-    //}
-
-    // 2. Ahora verifica el token en localStorage
+    // Controllo del token
     const token = localStorage.getItem('jwtToken');
-    console.log('Token obtenido:', token); // Debug
-
     if (!token) {
-        // Redirige de vuelta al login EN 8080
         window.location.href = 'http://localhost:8080/login.html';
         return;
     }
 
-    const profileFieldsContainer = document.getElementById('profileFields');
-    const saveButton = document.getElementById('saveChanges');
-    let originalProfile = {};
+    // Elementi del DOM
+    const profileForm = document.getElementById('profileForm');
+    const saveButton = document.querySelector('.save-btn');
+    const editButtons = document.querySelectorAll('.edit-btn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const usernameDisplay = document.getElementById('usernameDisplay');
     let modifiedFields = {};
 
-    // Mapeo de campos a labels
-    const fieldLabels = {
-        nome: 'Nome',
-        cognome: 'Cognome',
-        dataNascita: 'Data di Nascita',
-        indirizzo: 'Indirizzo',
-        cap: 'CAP',
-        citta: 'Città',
-        provincia: 'Provincia',
-        telefono: 'Telefono',
-    };
-
-    // Función para verificar token con el backend
-    const verifyToken = async () => {
+    // Estrae l'username dal token JWT
+    function extractUsernameFromToken(token) {
         try {
-            const response = await fetch('http://localhost:8081/api/user/verify-token', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            return response.ok;
-        } catch (error) {
-            console.error('Error verificando token:', error);
-            return false;
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+            const payload = JSON.parse(jsonPayload);
+            return payload.sub || payload.username || 'Utente';
+        } catch (e) {
+            console.error('Errore nel parsing del token:', e);
+            return 'Utente';
         }
-    };
+    }
 
-    // Cargar perfil del usuario
-    const loadProfile = async () => {
+    // Mostra l'username nell'header
+    function displayUsername() {
+        const username = extractUsernameFromToken(token);
+        usernameDisplay.textContent = `👤 ${username}`;
+    }
+
+    // Carica i dati del profilo
+    async function loadProfile() {
         try {
-            const response = await fetch('http://localhost:8081/api/user/profile', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const res = await fetch('http://localhost:8081/api/user/profile', {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!response.ok) {
-                throw new Error('Errore nel caricamento del profilo');
-            }
+            if (!res.ok) throw new Error('Errore nel caricamento del profilo');
 
-            originalProfile = await response.json();
-            renderProfileFields(originalProfile);
-        } catch (error) {
-            alert('Errore: ' + error.message);
+            const profile = await res.json();
+            populateFields(profile);
+        } catch (e) {
+            alert('Errore: ' + e.message);
             localStorage.removeItem('jwtToken');
             window.location.href = 'http://localhost:8080/login.html';
         }
-    };
+    }
 
-    // Renderizar campos del perfil
-    const renderProfileFields = (profile) => {
-        profileFieldsContainer.innerHTML = '';
-
-        Object.keys(fieldLabels).forEach(field => {
-            if (profile[field] !== undefined) {
-                const fieldDiv = document.createElement('div');
-                fieldDiv.className = 'profile-field';
-
-                const label = document.createElement('label');
-                label.textContent = fieldLabels[field];
-                label.htmlFor = field;
-
-                const input = document.createElement('input');
-                input.id = field;
+    // Popola i campi del form con i dati del profilo
+    function populateFields(profile) {
+        Object.keys(profile).forEach(field => {
+            const input = document.getElementById(field);
+            if (input) {
                 input.value = profile[field] || '';
-                input.disabled = true;
-
-                const editButton = document.createElement('button');
-                editButton.className = 'edit-btn';
-                editButton.innerHTML = '<i class="fas fa-edit"></i>';
-                editButton.onclick = () => enableFieldEditing(field, input);
-
-                fieldDiv.appendChild(label);
-                fieldDiv.appendChild(input);
-                fieldDiv.appendChild(editButton);
-
-                profileFieldsContainer.appendChild(fieldDiv);
+                input.setAttribute('data-original-value', input.value);
             }
         });
-    };
+    }
 
-    // Habilitar edición de campo
-    const enableFieldEditing = (fieldName, inputElement) => {
-        inputElement.disabled = false;
-        inputElement.focus();
+    // Configura i pulsanti di modifica
+    function setupEditButtons() {
+        editButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const field = btn.getAttribute('data-field');
+                const input = document.getElementById(field);
 
-        const originalValue = originalProfile[fieldName];
+                if (input) {
+                    input.disabled = false;
+                    input.focus();
 
-        inputElement.addEventListener('blur', () => {
-            if (inputElement.value !== originalValue) {
-                modifiedFields[fieldName] = inputElement.value;
-                saveButton.disabled = false;
-            } else {
-                delete modifiedFields[fieldName];
-                saveButton.disabled = Object.keys(modifiedFields).length === 0;
-            }
+                    // Gestisce la modifica quando si esce dal campo
+                    const handleBlur = () => {
+                        checkFieldModified(input, field);
+                        input.removeEventListener('blur', handleBlur);
+                    };
+
+                    input.addEventListener('blur', handleBlur);
+                }
+            });
         });
-    };
+    }
 
-    // Guardar cambios
-    saveButton.addEventListener('click', async () => {
-        if (Object.keys(modifiedFields).length === 0) return;
+    // Verifica se un campo è stato modificato
+    function checkFieldModified(input, fieldName) {
+        const originalValue = input.getAttribute('data-original-value');
+        const currentValue = input.value.trim();
+
+        // Validazione specifica per campo
+        if (!validateField(input, fieldName)) {
+            return;
+        }
+
+        if (currentValue !== originalValue) {
+            modifiedFields[fieldName] = currentValue;
+            input.classList.add('modified');
+        } else {
+            delete modifiedFields[fieldName];
+            input.classList.remove('modified');
+        }
+
+        saveButton.disabled = Object.keys(modifiedFields).length === 0;
+    }
+
+    // Validazione specifica per ogni campo
+    function validateField(input, fieldName) {
+        let isValid = true;
+
+        switch (fieldName) {
+            case 'dataNascita':
+                if (!input.value) {
+                    alert("Inserisci una data di nascita valida");
+                    isValid = false;
+                }
+                break;
+            case 'telefono':
+                if (!/^(\+?\d{1,3}[- ]?)?\d{8,12}$/.test(input.value)) {
+                    alert("Inserisci un numero di telefono valido (8-12 cifre)");
+                    isValid = false;
+                }
+                break;
+            case 'cap':
+                if (!/^\d{5}$/.test(input.value)) {
+                    alert("Inserisci un CAP valido (5 cifre)");
+                    isValid = false;
+                }
+                break;
+            case 'provincia':
+                if (!/^[A-Z]{2}$/.test(input.value)) {
+                    alert("Inserisci una provincia valida (2 lettere maiuscole, es. RM)");
+                    isValid = false;
+                }
+                break;
+            default:
+                if (input.required && !input.value.trim()) {
+                    alert("Questo campo è obbligatorio");
+                    isValid = false;
+                }
+        }
+
+        if (!isValid) {
+            input.value = input.getAttribute('data-original-value');
+            input.disabled = true;
+            return false;
+        }
+
+        return true;
+    }
+
+    // Salva le modifiche
+    async function saveChanges(e) {
+        e.preventDefault();
 
         try {
-            const response = await fetch('http://localhost:8081/api/user/profile', {
+            const res = await fetch('http://localhost:8081/api/user/profile', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -138,35 +171,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(modifiedFields)
             });
 
-            if (!response.ok) {
-                throw new Error('Errore nel salvataggio delle modifiche');
-            }
+            if (!res.ok) throw new Error('Errore nel salvataggio');
 
-            const updatedProfile = await response.json();
-            originalProfile = {...originalProfile, ...updatedProfile};
-            modifiedFields = {};
-            saveButton.disabled = true;
+            alert('Modifiche salvate con successo!');
 
-            document.querySelectorAll('#profileFields input').forEach(input => {
+            // Aggiorna i valori originali
+            Object.keys(modifiedFields).forEach(field => {
+                const input = document.getElementById(field);
+                input.setAttribute('data-original-value', input.value);
+                input.classList.remove('modified');
                 input.disabled = true;
             });
 
-            alert('Modifiche salvate con successo!');
-        } catch (error) {
-            alert('Errore: ' + error.message);
-        }
-    });
+            modifiedFields = {};
+            saveButton.disabled = true;
 
-    // Flujo principal
-    const init = async () => {
-        const isTokenValid = await verifyToken();
-        if (!isTokenValid) {
+        } catch (e) {
+            alert('Errore: ' + e.message);
+        }
+    }
+
+    // Logout
+    function setupLogout() {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             localStorage.removeItem('jwtToken');
-            window.location.href = 'http://localhost:8080/login.html';
-            return;
-        }
-        await loadProfile();
-    };
 
-    init();
+            // Pulisci il localStorage per altre origini
+            const origins = ['http://localhost:8081'];
+            origins.forEach(origin => {
+                const iframe = document.createElement('iframe');
+                iframe.src = `${origin}/about:blank`;
+                iframe.style.display = 'none';
+
+                iframe.onload = function() {
+                    try {
+                        const iframeWindow = iframe.contentWindow;
+                        iframeWindow.localStorage.removeItem('jwtToken');
+                    } catch (e) {
+                        console.error(`Impossibile pulire storage per ${origin}`, e);
+                    }
+                    document.body.removeChild(iframe);
+                };
+
+                document.body.appendChild(iframe);
+            });
+
+            window.location.href = 'http://localhost:8080/login.html';
+        });
+    }
+
+    // Inizializzazione
+    saveButton.disabled = true;
+    profileForm.addEventListener('submit', saveChanges);
+    setupEditButtons();
+    setupLogout();
+    displayUsername();
+    loadProfile();
 });
