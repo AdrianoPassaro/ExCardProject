@@ -10,7 +10,7 @@
         console.log(`Token salvato nella porta ${window.location.port}`);
     }
 
-    // Notifica al padre que el token fue guardado
+    // Notifica al padre
     if (window.parent !== window) {
         window.parent.postMessage('token_saved', '*');
     }
