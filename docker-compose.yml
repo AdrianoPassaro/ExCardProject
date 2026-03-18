@@ -17,11 +17,11 @@ services:
       - excard_net
     restart: unless-stopped
 
-  card-loader:
-    image: excard_load_service
-    container_name: load_service
+  cards-catalog:
+    image: excard_cards_catalog_service
+    container_name: catalog_service
     build:
-      context: ./card_loader
+      context: ./cards_catalog
       dockerfile: Dockerfile
     ports:
       - "8082:8082"
@@ -74,10 +74,11 @@ services:
     ports:
       - "27018:27017"
     volumes:
-      - mongodb_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+      - ./datasets:/datasets
     networks:
       - excard_net
-    restart: unless-stopped
+    restart: always
 
 volumes:
   mongodb_data:
