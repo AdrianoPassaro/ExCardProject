@@ -63,14 +63,14 @@ public class AuthRestController {
                 return ResponseEntity.badRequest().body("Email già registrata");
             }
 
-            // Crear usuario
+            // Creazione dell'utente
             User user = new User();
             user.setUsername(request.getUsername());
             user.setEmail(request.getEmail());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(user);
 
-            // Preparar perfil
+            // Creazione del profilo utente
             UserProfileRequest profile = new UserProfileRequest();
             profile.setUsername(request.getUsername());
             profile.setNome(request.getNome());

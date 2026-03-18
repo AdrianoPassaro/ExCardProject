@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             localStorage.removeItem('jwtToken');
-            await deleteTokenAcrossPorts([8081]);
+            await deleteTokenAcrossPorts([8081, 8083]);
             alert(
                 `Logout effettuato con successo!\nSe hai bisogno di accedere nuovamente, clicca su "Login" sulla barra di navigazione.`);
             window.location.reload();

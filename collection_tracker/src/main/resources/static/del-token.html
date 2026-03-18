@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Cancellare Token</title></head>
+<body>
+<script>
+    localStorage.removeItem('jwtToken');
+    window.parent.postMessage('token_deleted', '*');
+</script>
+</body>
+</html>

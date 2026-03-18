@@ -6,6 +6,7 @@ public class Card {
     private String expansion;
     private String imageUrl;
     private String condition; // nearmint, lightly played, etc.
+    private int quantity = 1;
     // in realtà dovrebbe avere cardid, condizione e quantità
 
 
@@ -17,6 +18,7 @@ public class Card {
         this.expansion = expansion;
         this.imageUrl = imageUrl;
         this.condition = condition;
+        this.quantity = 1;
     }
 
     // getter e setter
@@ -34,4 +36,8 @@ public class Card {
 
     public String getCondition() { return condition; }
     public void setCondition(String condition) { this.condition = condition; }
+
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
+
 }

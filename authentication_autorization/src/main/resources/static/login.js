@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if ('token' in data) {
                 const token = data.token;
                 localStorage.setItem('jwtToken', token);
-                await initializeTokenAcrossPorts(token, [8081]);
+                await initializeTokenAcrossPorts(token, [8081, 8083]);  // Inizializza token su altri porti
 
                 window.location.replace('http://localhost:8080/homepage.html');  // Redirect dopo login
             } else {
