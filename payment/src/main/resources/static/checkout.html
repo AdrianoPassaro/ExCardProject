@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout</title>
+
+    <style>
+        /* USA LO STESSO CSS DEL PROFILO (copialo uguale) */
+        body { font-family: Arial; padding-top:70px; background:#e0f0ff;}
+        .container { max-width:800px; margin:auto; padding:20px;}
+        .card { background:white; padding:10px; margin:10px 0; border-radius:6px;}
+        button { padding:10px; background:#1f4e99; color:white; border:none; cursor:pointer;}
+    </style>
+
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="http://localhost:8080/homepage.html" class="logo">ExCard</a>
+    <div class="nav-buttons">
+        <span id="usernameDisplay">👤</span>
+        <a href="#" class="btn" id="logoutBtn">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h2>🛒 Checkout</h2>
+    <div id="cart"></div>
+    <h3 id="total"></h3>
+    <button id="payBtn">💳 Paga</button>
+</div>
+
+<script src="checkout.js"></script>
+</body>
+</html>

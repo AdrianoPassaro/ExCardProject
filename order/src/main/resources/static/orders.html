@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Ordini</title>
+
+    <style>
+        body { font-family: Arial; padding-top:70px; background:#e0f0ff;}
+        .container { max-width:800px; margin:auto; padding:20px;}
+        .card { background:white; padding:10px; margin:10px 0; border-radius:6px;}
+    </style>
+
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="http://localhost:8080/homepage.html" class="logo">ExCard</a>
+    <div class="nav-buttons">
+        <span id="usernameDisplay">👤</span>
+        <a href="#" class="btn" id="logoutBtn">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h2>📦 I tuoi ordini</h2>
+    <div id="orders"></div>
+</div>
+
+<script src="orders.js"></script>
+</body>
+</html>

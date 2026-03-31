@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Wallet</title>
+
+    <style>
+        body { font-family: Arial; padding-top:70px; background:#e0f0ff;}
+        .container { max-width:600px; margin:auto; padding:20px;}
+    </style>
+
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="http://localhost:8080/homepage.html" class="logo">ExCard</a>
+    <div class="nav-buttons">
+        <span id="usernameDisplay">👤</span>
+        <a href="#" class="btn" id="logoutBtn">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h2>💰 Wallet</h2>
+    <h3 id="balance"></h3>
+
+    <input type="number" id="amount" placeholder="Importo">
+    <button id="addBtn">➕ Ricarica</button>
+</div>
+
+<script src="wallet.js"></script>
+</body>
+</html>
