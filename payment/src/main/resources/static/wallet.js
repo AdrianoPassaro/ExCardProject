@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadBalance() {
 
-        const res = await fetch('http://localhost:8084/api/payment/balance', {
+        const res = await fetch('http://localhost:8085/api/payment/balance', {
             headers: { 'username': username }
         });
 
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const amount = document.getElementById('amount').value;
 
-        await fetch('http://localhost:8084/api/payment/add', {
+        await fetch('http://localhost:8085/api/payment/add', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

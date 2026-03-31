@@ -1,7 +1,5 @@
 package com.gruppo12.order.controller;
 
-package com.gruppo12.order.controller;
-
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 

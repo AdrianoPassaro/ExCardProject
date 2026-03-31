@@ -1,4 +1,4 @@
-package com.gruppo12.payment.security;
+package com.gruppo12.order.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
