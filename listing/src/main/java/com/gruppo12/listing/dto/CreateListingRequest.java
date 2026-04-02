@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public class CreateListingRequest {
 
+    @NotBlank
     private String cardId;
 
     @Min(0)

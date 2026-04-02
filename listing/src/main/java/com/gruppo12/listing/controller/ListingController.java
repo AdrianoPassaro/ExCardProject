@@ -3,11 +3,12 @@ package com.gruppo12.listing.controller;
 import com.gruppo12.listing.dto.CreateListingRequest;
 import com.gruppo12.listing.dto.ListingResponse;
 import com.gruppo12.listing.service.ListingService;
-
+import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import com.gruppo12.listing.dto.SearchListingCardResponse;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/listings")
@@ -21,11 +22,11 @@ public class ListingController {
 
     @PostMapping
     public ListingResponse createListing(
-            @RequestHeader("X-USER-ID") String sellerId,
-            @RequestBody CreateListingRequest request) {
+            @AuthenticationPrincipal String sellerUsername,
+            @Valid @RequestBody CreateListingRequest request) {
 
         return new ListingResponse(
-                listingService.createListing(sellerId, request)
+                listingService.createListing(sellerUsername, request)
         );
     }
 
@@ -35,7 +36,20 @@ public class ListingController {
         return listingService.getListings()
                 .stream()
                 .map(ListingResponse::new)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    @GetMapping("/card/{cardId}")
+    public List<ListingResponse> getListingsByCard(@PathVariable String cardId) {
+        return listingService.getActiveListingsByCard(cardId)
+                .stream()
+                .map(ListingResponse::new)
+                .toList();
+    }
+
+    @GetMapping("/search")
+    public List<SearchListingCardResponse> searchCardsWithListings(@RequestParam String q) {
+        return listingService.searchCardsWithActiveListings(q);
     }
 
 }
