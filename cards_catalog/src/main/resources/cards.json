@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Charizard",
+    "setName": "Base Set",
+    "number": "4",
+    "rarity": "Rare Holo",
+    "imageUrl": "https://images.pokemontcg.io/base1/4.png"
+  },
+  {
+    "name": "Blastoise",
+    "setName": "Base Set",
+    "number": "2",
+    "rarity": "Rare Holo",
+    "imageUrl": "https://images.pokemontcg.io/base1/2.png"
+  }
+]

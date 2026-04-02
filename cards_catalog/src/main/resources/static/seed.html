@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Seed Catalogo Carte</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f0f0f0; }
+    h2 { color: #1f4e99; }
+    button { background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+    button:hover { background: #218838; }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+    #log { margin-top: 20px; background: white; border-radius: 6px; padding: 15px; min-height: 100px; font-size: 14px; }
+    .ok  { color: green; }
+    .err { color: red; }
+  </style>
+</head>
+<body>
+
+<h2>🃏 Seed Catalogo Carte</h2>
+<p>Clicca il bottone per inserire le carte nel database MongoDB.</p>
+
+<button id="seedBtn" onclick="seedDatabase()">▶ Inserisci carte nel DB</button>
+
+<div id="log"></div>
+
+<script>
+  const cards = [
+    { name: "Charizard",  setName: "Base Set", number: "4",  rarity: "Rare Holo", imageUrl: "https://images.pokemontcg.io/base1/4.png"  },
+    { name: "Blastoise",  setName: "Base Set", number: "2",  rarity: "Rare Holo", imageUrl: "https://images.pokemontcg.io/base1/2.png"  },
+    { name: "Venusaur",   setName: "Base Set", number: "15", rarity: "Rare Holo", imageUrl: "https://images.pokemontcg.io/base1/15.png" },
+    { name: "Pikachu",    setName: "Base Set", number: "58", rarity: "Common",    imageUrl: "https://images.pokemontcg.io/base1/58.png" },
+    { name: "Mewtwo",     setName: "Base Set", number: "10", rarity: "Rare Holo", imageUrl: "https://images.pokemontcg.io/base1/10.png" },
+    { name: "Gyarados",   setName: "Base Set", number: "6",  rarity: "Rare Holo", imageUrl: "https://images.pokemontcg.io/base1/6.png"  },
+    { name: "Alakazam",   setName: "Base Set", number: "1",  rarity: "Rare Holo", imageUrl: "https://images.pokemontcg.io/base1/1.png"  },
+    { name: "Raichu",     setName: "Base Set", number: "14", rarity: "Rare Holo", imageUrl: "https://images.pokemontcg.io/base1/14.png" },
+    { name: "Machamp",    setName: "Base Set", number: "8",  rarity: "Rare Holo", imageUrl: "https://images.pokemontcg.io/base1/8.png"  },
+    { name: "Clefairy",   setName: "Base Set", number: "5",  rarity: "Rare Holo", imageUrl: "https://images.pokemontcg.io/base1/5.png"  }
+  ];
+
+  function log(msg, type = "ok") {
+    const div = document.getElementById("log");
+    div.innerHTML += `<p class="${type}">${msg}</p>`;
+  }
+
+  async function seedDatabase() {
+    const btn = document.getElementById("seedBtn");
+    btn.disabled = true;
+    document.getElementById("log").innerHTML = "";
+
+    log("🚀 Inizio inserimento carte...");
+
+    let ok = 0, fail = 0;
+
+    for (const card of cards) {
+      try {
+        const res = await fetch("/cards", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(card)
+        });
+
+        if (res.ok) {
+          log(`✅ Inserita: ${card.name}`);
+          ok++;
+        } else {
+          const txt = await res.text();
+          log(`⚠️ ${card.name}: ${res.status} - ${txt}`, "err");
+          fail++;
+        }
+      } catch (e) {
+        log(`❌ Errore su ${card.name}: ${e.message}`, "err");
+        fail++;
+      }
+    }
+
+    log(`<br><strong>Fine: ${ok} inserite, ${fail} errori.</strong>`);
+    btn.disabled = false;
+  }
+</script>
+
+</body>
+</html>
