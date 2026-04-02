@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>La tua collezione</title>
+
+    <style>
+        :root {
+            --primary: #1f4e99;
+            --accent: #b3d1ff;
+            --bg: #e0f0ff;
+            --border-radius: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+            background-color: var(--bg);
+            padding-top: 70px;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--accent);
+            box-shadow: 0 2px 8px rgba(0, 60, 130, 0.1);
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .nav-buttons span {
+            font-weight: bold;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border: 2px solid var(--primary);
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #003d80;
+        }
+
+        /* Collection container */
+        .collection-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .collection-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-size: 1.6rem;
+        }
+
+        .add-btn {
+            display: block;
+            margin: 0 auto 25px auto;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .add-btn:hover {
+            background: #218838;
+        }
+
+        /* Card Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+        }
+
+        .card img {
+            width: 100%;
+            display: block;
+        }
+
+        .card-info {
+            padding: 6px;
+            font-size: 13px;
+            background: white;
+            text-align: center;
+        }
+
+        .quantity-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .quantity-controls button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .quantity-controls button:hover {
+            background: #003d80;
+        }
+
+        .quantity-controls span {
+            font-weight: bold;
+            min-width: 20px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="http://localhost:8080/homepage.html" class="logo">ExCard</a>
+
+    <div class="nav-buttons">
+        <span id="usernameDisplay">👤 Utente</span>
+        <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+</nav>
+
+<div class="collection-container">
+    <h2 class="collection-title">La tua collezione</h2>
+
+    <button class="add-btn" id="addCardBtn">Aggiungi carta</button>
+
+    <div class="card-grid" id="cardGrid"></div>
+</div>
+
+<script src="collection.js"></script>
+
+</body>
+</html>

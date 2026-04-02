@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             localStorage.removeItem('jwtToken');
-            await deleteTokenAcrossPorts([8080]);
+            await deleteTokenAcrossPorts([8080, 8082, 8083]);
         });
     }
 
