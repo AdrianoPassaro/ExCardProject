@@ -9,13 +9,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const usernameDisplay = document.getElementById('usernameDisplay');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    function extractUsernameFromToken(token) {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.sub;
+    function extractUsername(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join(''));
+            return JSON.parse(jsonPayload).sub || 'Utente';
+        } catch {
+            return 'Utente';
+        }
     }
 
-    const username = extractUsernameFromToken(token);
-    usernameDisplay.innerText = "👤 " + username;
+    const username = extractUsername(token);
+    usernameDisplay.textContent = `👤 ${username}`;
+    usernameDisplay.style.color = "#1f4e99";
 
     async function loadBalance() {
 
