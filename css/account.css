@@ -1,0 +1,135 @@
+/* forms.css - Layout Universale */
+
+.form-card {
+    max-width: 850px;
+    margin: 2rem auto;
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
+
+.form-title {
+    text-align: center;
+    color: var(--primary);
+    margin-bottom: 2rem;
+}
+
+/* Fieldset e Legend (Semantica pura) */
+.form-section {
+    border: none;
+    margin-bottom: 2rem;
+}
+
+.section-legend {
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 8px;
+    margin-bottom: 1.5rem;
+}
+
+/* Griglia */
+.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.span-full { grid-column: span 2; }
+
+/* Input e Wrapper */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding-right: 45px; /* Lascia lo spazio fisso per l'occhio o la matita a destra */
+}
+
+input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1.5px solid #dde5ef;
+    border-radius: var(--border-radius);
+    transition: all 0.3s;
+}
+
+/* Icona matita */
+.edit-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex; /* Aggiungi questo */
+    align-items: center; /* Aggiungi questo */
+    justify-content: center; /* Aggiungi questo */
+    padding: 0;
+    font-size: 1rem;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.edit-icon:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.2);
+}
+
+/* Feedback visivo quando un campo viene attivato per la modifica */
+input:not(:disabled) {
+    border-color: var(--primary);
+    background-color: #fff;
+}
+
+/* Stile speciale per i campi che hanno subito modifiche (aggiunto via JS) */
+input.is-modified {
+    border-left: 5px solid var(--warning) !important;
+}
+
+/* Bottone Azione (Salva/Registrati) */
+.action-btn {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 2rem auto 0;
+    padding: 14px;
+    background-color: var(--success);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.action-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.7;
+}
+
+/* Responsive: su mobile la griglia torna a una colonna sola */
+@media (max-width: 600px) {
+    .grid-layout {
+        grid-template-columns: 1fr;
+    }
+    .span-full {
+        grid-column: span 1;
+    }
+}
+

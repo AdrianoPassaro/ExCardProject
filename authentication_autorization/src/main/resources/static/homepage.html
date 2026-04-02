@@ -4,51 +4,58 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ExCard: Homepage</title>
-    <link rel="stylesheet" href="stile.css" />
+    <link rel="stylesheet" href="../../../../../css/stile.css" />
 </head>
 <body>
 
-<!-- HEADER FISSO -->
-<header class="navbar">
+<nav class="navbar">
     <a href="homepage.html" class="logo">ExCard</a>
 
-    <form class="search-bar" action="/search" method="get">
-        <input type="text" name="q" placeholder="Cerca un prodotto..."/>
+    <form class="search-container" action="/search" method="GET">
+        <input type="text" placeholder="Cerca carte, espansioni..." name="q">
         <button type="submit">🔍</button>
     </form>
 
     <div class="nav-buttons">
-        <a href="login.html" class="btn">Login</a>
-        <a href="register.html" class="btn">Registrati</a>
-    </div>
-</header>
-
-<!-- CONTENUTO DI PAGINA -->
-<main class="main-content">
-    <div id="guest-content">
-        <h1>Benvenuto su ExCard</h1>
-        <p class="slogan">Il marketplace definitivo per collezionisti di carte</p>
-        <p class="sub-message">Fai il login per accedere a tutte le funzionalità</p>
-    </div>
-
-    <div id="user-content" class="hidden">
-        <h1>Benvenuto su ExCard</h1>
-        <div class="action-grid">
-            <a href="http://localhost:8081/account.html" class="action-card">
-                <div class="action-title">Profilo</div>
-            </a>
-            <div class="action-card">
-                <div class="action-title">Vendi</div>
-            </div>
-            <div class="action-card">
-                <div class="action-title">Scambia</div>
-            </div>
-            <div class="action-card">
-                <div class="action-title">La tua collezione</div>
-            </div>
+        <div id="guest-nav">
+            <a href="login.html" class="btn">Accedi</a>
+            <a href="register.html" class="btn">Registrati</a>
+        </div>
+        <div id="user-nav" class="hidden">
+            <span id="welcome-msg">Ciao, <strong id="user-name">Utente</strong></span>
+            <a href="account.html" class="btn">Profilo</a>
+            <button id="logoutBtn" class="btn btn-outline">Logout</button>
         </div>
     </div>
+</nav>
+
+<main class="main-content">
+    <section id="guest-hero" class="hero-card">
+        <h1>Benvenuto su ExCard</h1>
+        <p>Il marketplace definitivo per i collezionisti di carte TCG.</p>
+        <div class="hero-actions">
+            <a href="register.html" class="action-btn">Inizia ora</a>
+        </div>
+    </section>
+
+    <section id="user-dashboard" class="hidden">
+        <h2 class="section-title">Cosa vuoi fare oggi?</h2>
+        <div class="action-grid">
+            <a href="account.html" class="dashboard-card">
+                <span class="icon">👤</span>
+                <h3>Gestisci Profilo</h3>
+            </a>
+            <div class="dashboard-card">
+                <span class="icon">🃏</span>
+                <h3>Le mie Carte</h3>
+            </div>
+            <div class="dashboard-card">
+                <span class="icon">🛒</span>
+                <h3>Marketplace</h3>
+            </div>
+        </div>
+    </section>
 </main>
-<script src="homepage.js"></script>
+<script src="../../../../../javascript/homepage.js"></script>
 </body>
 </html>

@@ -1,137 +1,98 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ExCard: Registrazione Utente</title>
-    <link rel="stylesheet" href="stile.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExCard - Registrazione</title>
+    <link rel="stylesheet" href="../../../../../css/stile.css">
+    <link rel="stylesheet" href="../../../../../css/account.css">
 </head>
 <body>
-<form class="form-container" action="/register" method="post" autocomplete="off">
-    <h2>Registrazione</h2>
-    <div class="form-grid">
-
-        <!-- Dati Anagrafici -->
-        <div class="section-title">Dati Anagrafici</div>
-
-        <div class="form-group">
-            <label for="nome">Nome</label>
-            <input type="text" id="nome" name="nome" required />
-        </div>
-
-        <div class="form-group">
-            <label for="cognome">Cognome</label>
-            <input type="text" id="cognome" name="cognome" required />
-        </div>
-
-        <div class="form-group">
-            <label for="dataNascita">Data di nascita</label>
-            <input type="date" id="dataNascita" name="dataNascita" required />
-        </div>
-
-        <!-- Indirizzo -->
-        <div class="section-title">Indirizzo</div>
-
-        <div class="form-group">
-            <label for="indirizzo">Indirizzo</label>
-            <input type="text" id="indirizzo" name="indirizzo" required />
-        </div>
-
-        <div class="form-group">
-            <label for="cap">CAP</label>
-            <input
-                    type="text"
-                    id="cap"
-                    name="cap"
-                    required
-                    pattern="\d{5}"
-                    title="Inserisci un CAP valido"
-            />
-        </div>
-
-        <div class="form-group">
-            <label for="citta">Città</label>
-            <input type="text" id="citta" name="citta" required />
-        </div>
-
-        <div class="form-group">
-            <label for="provincia">Provincia</label>
-            <input
-                    type="text"
-                    id="provincia"
-                    name="provincia"
-                    required
-                    maxlength="2"
-                    placeholder="Es. RM"
-            />
-        </div>
-
-        <!-- Contatti -->
-        <div class="section-title">Contatti</div>
-
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required />
-        </div>
-
-        <div class="form-group">
-            <label for="telefono">Telefono</label>
-            <input
-                    type="tel"
-                    id="telefono"
-                    name="telefono"
-                    required
-                    pattern="[0-9]{10}"
-                    title="Inserisci 10 cifre"
-            />
-        </div>
-
-        <!-- Credenziali -->
-        <div class="section-title">Credenziali</div>
-
-        <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required />
-        </div>
-
-        <div class="form-group password-group">
-            <label for="password">Password</label>
-            <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    required
-                    minlength="8"
-                    autocomplete="off"
-                    placeholder="Minimo 8 caratteri"
-            />
-            <button type="button" id="togglePassword" aria-label="Mostra/Nascondi password">
-                <!-- Occhio SVG -->
-                <svg
-                        id="eyeIcon"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        viewBox="0 0 24 24"
-                >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle id="eyePupil" cx="12" cy="12" r="3" />
-                </svg>
-            </button>
-        </div>
-
-        <!-- Pulsante -->
-        <input type="submit" value="Registrati" />
+<nav class="navbar">
+    <a href="homepage.html" class="logo">ExCard</a>
+    <div class="nav-buttons">
+        <a href="login.html" class="btn">Accedi</a>
     </div>
-    <p class="register-link">
-        Hai già un account? <a href="login.html">Accedi</a>
-    </p>
-</form>
-<script src="script.js"></script>
+</nav>
 
+<main class="main-content">
+    <div class="form-card">
+        <h2 class="form-title">Crea il tuo Account</h2>
 
+        <form action="/register" method="POST" autocomplete="on">
+
+            <fieldset class="form-section">
+                <legend class="section-legend">Dati Personali</legend>
+                <div class="grid-layout">
+                    <div class="field-group">
+                        <label for="nome">Nome</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="cognome">Cognome</label>
+                        <input type="text" id="cognome" name="cognome" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="dataNascita">Data di Nascita</label>
+                        <input type="date" id="dataNascita" name="dataNascita" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="telefono">Telefono</label>
+                        <input type="tel" id="telefono" name="telefono" placeholder="333 123 4567" required>
+                    </div>
+                    <div class="field-group span-full">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required autocomplete="email">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend class="section-legend">Indirizzo di Spedizione</legend>
+                <div class="grid-layout">
+                    <div class="field-group span-full">
+                        <label for="via">Via / Piazza e Numero</label>
+                        <input type="text" id="via" name="via" placeholder="Es: Via Roma 12" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="citta">Città</label>
+                        <input type="text" id="citta" name="citta" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="cap">CAP</label>
+                        <input type="text" id="cap" name="cap" pattern="[0-9]{5}" inputmode="numeric" required>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend class="section-legend">Sicurezza</legend>
+                <div class="grid-layout">
+                    <div class="field-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required autocomplete="username">
+                    </div>
+                    <div class="field-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="password" name="password" minlength="8" required autocomplete="new-password">
+                            <button type="button" id="togglePassword" class="edit-icon" aria-label="Mostra password">
+                                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle id="eyePupil" cx="12" cy="12" r="3" />
+                                </svg>
+                            </button>
+                        </div>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="action-btn">Registrati ora</button>
+
+            <p class="text-center" style="margin-top: 1.5rem; font-size: 0.9rem;">
+                Hai già un account? <a href="login.html" style="color: var(--primary); font-weight: 600;">Accedi qui</a>
+            </p>
+        </form>
+    </div>
+</main>
 </body>
 </html>

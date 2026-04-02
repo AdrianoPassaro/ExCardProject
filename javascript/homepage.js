@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         await Promise.all(iframePromises);
-        window.location.href = 'http://localhost:8080/login.html';
+        window.location.href = '../authentication_autorization/src/main/resources/static/login.html';
     }
 
     const username = parseJwt(token);
