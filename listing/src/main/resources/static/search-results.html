@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risultati ricerca - ExCard</title>
+  <link rel="stylesheet" href="search-results.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a href="homepage.html" class="logo">ExCard</a>
+
+  <form class="search-bar" action="search-results.html" method="get">
+    <input type="text" id="searchInput" name="q" placeholder="Cerca una carta..." />
+    <button type="submit">🔍</button>
+  </form>
+
+  <div class="nav-buttons">
+    <a href="login.html" class="btn">Login</a>
+    <a href="register.html" class="btn">Registrati</a>
+  </div>
+</header>
+
+<main class="main-content">
+  <h1 id="resultsTitle">Risultati ricerca</h1>
+  <div id="resultsContainer" class="results-grid"></div>
+</main>
+
+<script src="search-results.js"></script>
+</body>
+</html>

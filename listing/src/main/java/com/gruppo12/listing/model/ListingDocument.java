@@ -12,7 +12,7 @@ public class ListingDocument {
     private String id;
 
     private String cardId;
-    private String sellerId;
+    private String sellerUsername;
 
     private double price;
     private String condition;
@@ -23,13 +23,13 @@ public class ListingDocument {
     private Instant createdAt;
 
     public ListingDocument(String cardId,
-                           String sellerId,
+                           String sellerUsername,
                            String condition,
                            double price,
                            int quantity) {
 
         this.cardId = cardId;
-        this.sellerId = sellerId;
+        this.sellerUsername = sellerUsername;
         this.condition = condition;
         this.price = price;
         this.quantity = quantity;
@@ -41,7 +41,7 @@ public class ListingDocument {
 
     public String getCardId() { return cardId; }
 
-    public String getSellerId() { return sellerId; }
+    public String getSellerUsername() { return sellerUsername; }
 
     public double getPrice() { return price; }
 
