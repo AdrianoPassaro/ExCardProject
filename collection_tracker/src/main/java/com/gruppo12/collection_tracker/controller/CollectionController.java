@@ -30,11 +30,14 @@ public class CollectionController {
     }
 
     @PatchMapping("/card")
-    public ResponseEntity<?> updateCard(@RequestHeader("username") String username,
-                                        @RequestBody Map<String, Object> body) {
+    public ResponseEntity<CollectionResponse> updateCard(@RequestHeader("username") String username,
+                                                         @RequestBody Map<String, Object> body) {
         String cardId = (String) body.get("cardId");
         String condition = (String) body.get("condition");
         int delta = (int) body.get("delta");
-        return ResponseEntity.ok(service.updateCardQuantity(username, cardId, condition, delta));
+
+        service.updateCardQuantity(username, cardId, condition, delta); // aggiorna la quantità
+        // richiamo getFullCollection per ottenere dati completi
+        return ResponseEntity.ok(service.getFullCollection(username));
     }
 }
