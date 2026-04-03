@@ -3,120 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Collezione Carte</title>
-
-    <style>
-        :root {
-            --primary: #1f4e99;
-            --accent: #b3d1ff;
-            --bg: #e0f0ff;
-            --border-radius: 6px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-            background-color: var(--bg);
-            padding-top: 70px;
-        }
-
-        /* NAVBAR (presa dal wallet) */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.8rem 1rem;
-            border-bottom: 1px solid var(--accent);
-            box-shadow: 0 2px 8px rgba(0, 60, 130, 0.1);
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .nav-buttons span {
-            font-weight: bold;
-        }
-
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.85rem;
-            border: 2px solid var(--primary);
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background-color: #003d80;
-        }
-
-        /* CONTENUTO */
-        #cardGrid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            padding: 15px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 8px;
-            width: 180px;
-            padding: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        .card img {
-            width: 100%;
-            border-radius: 4px;
-        }
-
-        .card-info {
-            margin-top: 5px;
-            font-size: 14px;
-        }
-
-        .quantity-controls {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="collection.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
 <nav class="navbar">
-    <a href="http://localhost:8080/homepage.html" class="logo">ExCard</a>
+    <a href="http://localhost:8080/homepage.html" class="logo">
+        <img src="logo.png" alt="ExCard Logo" class="logo-img">
+    </a>
     <div class="nav-buttons">
-        <span id="usernameDisplay">👤 Utente</span>
-        <button class="btn" id="addCardBtn">➕ Aggiungi</button>
-        <button class="btn" id="logoutBtn">Logout</button>
+        <a href="http://localhost:8081/account.html" class="btn btn-user" id="usernameDisplay">👤 Utente</a>
+        <button class="btn btn-logout" id="logoutBtn">Logout</button>
     </div>
 </nav>
+
+<div class="page-header">
+    <div class="page-header-inner">
+        <h1 class="page-title">La mia collezione</h1>
+        <button class="btn btn-add" id="addCardBtn">➕ Aggiungi carta</button>
+    </div>
+</div>
 
 <div id="cardGrid"></div>
 

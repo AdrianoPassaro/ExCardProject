@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
             if (!res.ok) throw new Error("Errore fetch collection");
             const data = await res.json();
-
             collection = data.cards || [];
             renderCollection();
         } catch (err) {
@@ -141,55 +140,102 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ---------- MODAL AGGIUNGI CARTA ----------
 
     function openAddCardModal() {
-        // Crea modal
         const modal = document.createElement("div");
-        modal.style.position = "fixed";
-        modal.style.top = 0;
-        modal.style.left = 0;
-        modal.style.right = 0;
-        modal.style.bottom = 0;
-        modal.style.backgroundColor = "rgba(0,0,0,0.6)";
-        modal.style.display = "flex";
-        modal.style.justifyContent = "center";
-        modal.style.alignItems = "center";
-        modal.style.zIndex = 2000;
+        modal.classList.add("modal-overlay");
 
-        const content = document.createElement("div");
-        content.style.backgroundColor = "white";
-        content.style.padding = "20px";
-        content.style.borderRadius = "8px";
-        content.style.maxHeight = "80%";
-        content.style.overflowY = "auto";
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 class="modal-title">✨ Aggiungi una carta</h3>
 
-        let html = `<h3>Seleziona una carta</h3>`;
-        html += `<select id="selectCard">`;
-        catalog.forEach(c => {
-            html += `<option value="${c.id}">${c.name} | ${c.rarity} | ${c.setName}</option>`;
-        });
-        html += `</select><br><br>`;
-        html += `Condizione: <select id="selectCondition">
-                    <option value="Near Mint">Near Mint</option>
-                    <option value="Lightly Played">Lightly Played</option>
-                    <option value="Moderately Played">Moderately Played</option>
-                    <option value="Heavily Played">Heavily Played</option>
-                 </select><br><br>`;
-        html += `Quantità: <input type="number" id="inputQuantity" value="1" min="1" style="width:60px;"><br><br>`;
-        html += `<button id="confirmAdd">Aggiungi</button> `;
-        html += `<button id="cancelAdd">Annulla</button>`;
+                <div class="modal-field">
+                    <label for="searchCard">🔍 Cerca carta</label>
+                    <input type="text" id="searchCard" placeholder="Scrivi il nome della carta..." autocomplete="off">
+                    <div id="cardCount" class="card-count"></div>
+                </div>
 
-        content.innerHTML = html;
-        modal.appendChild(content);
+                <div class="modal-field">
+                    <label for="selectCard">Carta</label>
+                    <select id="selectCard" size="6"></select>
+                </div>
+
+                <div class="modal-field">
+                    <label for="selectCondition">Condizione</label>
+                    <select id="selectCondition">
+                        <option value="Near Mint">Near Mint</option>
+                        <option value="Lightly Played">Lightly Played</option>
+                        <option value="Moderately Played">Moderately Played</option>
+                        <option value="Heavily Played">Heavily Played</option>
+                    </select>
+                </div>
+
+                <div class="modal-field">
+                    <label for="inputQuantity">Quantità</label>
+                    <input type="number" id="inputQuantity" value="1" min="1">
+                </div>
+
+                <div class="modal-actions">
+                    <button class="modal-btn-confirm" id="confirmAdd">➕ Aggiungi</button>
+                    <button class="modal-btn-cancel" id="cancelAdd">Annulla</button>
+                </div>
+            </div>
+        `;
+
         document.body.appendChild(modal);
 
-        // Eventi
+        const searchInput = modal.querySelector("#searchCard");
+        const selectCard  = modal.querySelector("#selectCard");
+        const cardCount   = modal.querySelector("#cardCount");
+
+        function populateSelect(filter) {
+            const query = filter.toLowerCase().trim();
+            const words = query.split(/\s+/).filter(Boolean);
+
+            const filtered = catalog.filter(c => {
+                const text = `${c.name} ${c.rarity} ${c.setName}`.toLowerCase();
+                return words.every(w => text.includes(w));
+            });
+
+            selectCard.innerHTML = "";
+            filtered.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c.id;
+                opt.textContent = `${c.name} | ${c.rarity} | ${c.setName}`;
+                selectCard.appendChild(opt);
+            });
+
+            // Auto-seleziona il primo risultato
+            if (selectCard.options.length > 0) selectCard.selectedIndex = 0;
+
+            cardCount.textContent = filtered.length === catalog.length
+                ? `${catalog.length} carte disponibili`
+                : `${filtered.length} risultati su ${catalog.length}`;
+        }
+
+        // Popola subito con tutte le carte
+        populateSelect("");
+
+        searchInput.addEventListener("input", () => populateSelect(searchInput.value));
+
         modal.querySelector("#cancelAdd").onclick = () => document.body.removeChild(modal);
         modal.querySelector("#confirmAdd").onclick = () => {
-            const selectedCardId = modal.querySelector("#selectCard").value;
+            if (!selectCard.value) {
+                alert("Nessuna carta selezionata.");
+                return;
+            }
+            const selectedCardId = selectCard.value;
             const condition = modal.querySelector("#selectCondition").value;
             const quantity = parseInt(modal.querySelector("#inputQuantity").value);
             addCard(selectedCardId, condition, quantity);
             document.body.removeChild(modal);
         };
+
+        // Chiudi cliccando fuori
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) document.body.removeChild(modal);
+        });
+
+        // Focus automatico sulla ricerca
+        setTimeout(() => searchInput.focus(), 50);
     }
 
     addBtn.addEventListener("click", openAddCardModal);
