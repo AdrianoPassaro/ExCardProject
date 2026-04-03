@@ -66,7 +66,7 @@ public class CollectionService {
 
             cr.setName(cardData.getName());
             cr.setRarity(cardData.getRarity());
-            cr.setExpansion(cardData.getExpansion());
+            cr.setSetName(cardData.getSetName());
             cr.setImageUrl(cardData.getImageUrl());
 
             result.add(cr);

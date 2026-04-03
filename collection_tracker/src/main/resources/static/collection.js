@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
             if (!res.ok) throw new Error("Errore fetch collection");
             const data = await res.json();
+
             collection = data.cards || [];
             renderCollection();
         } catch (err) {
@@ -116,7 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <div class="card-info">
                 <strong>${card.name}</strong><br>
                 ${card.rarity}<br>
-                ${card.expansion}<br>
+                ${card.setName}<br>
                 ${card.condition}<br>
                 <div class="quantity-controls">
                     <button class="minus-btn">-</button>

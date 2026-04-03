@@ -5,7 +5,7 @@ public class CardResponse {
     private String cardId;
     private String name;
     private String rarity;
-    private String expansion;
+    private String setName;
     private String imageUrl;
     private String condition;
     private int quantity;
@@ -22,8 +22,8 @@ public class CardResponse {
     public String getRarity() { return rarity; }
     public void setRarity(String rarity) { this.rarity = rarity; }
 
-    public String getExpansion() { return expansion; }
-    public void setExpansion(String expansion) { this.expansion = expansion; }
+    public String getSetName() { return setName; }
+    public void setSetName(String setName) { this.setName = setName; }
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
