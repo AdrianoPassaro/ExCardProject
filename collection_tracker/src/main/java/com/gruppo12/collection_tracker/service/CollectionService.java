@@ -20,7 +20,7 @@ public class CollectionService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private final String CARD_SERVICE_URL = "http://localhost:8082/cards/";
+    private final String CARD_SERVICE_URL = "http://cards-catalog:8082/cards/";
 
     public Collection getOrCreateCollection(String username) {
         Collection collection = repository.findByUsername(username);
@@ -39,27 +39,35 @@ public class CollectionService {
         List<CardResponse> result = new ArrayList<>();
 
         for (Card c : collection.getCards()) {
-            if(c.getCardId() == null) continue;
 
-            Map data = null;
+            if (c.getCardId() == null) continue;
+
+            CardResponse cardData;
+
             try {
-                data = restTemplate.getForObject(CARD_SERVICE_URL + c.getCardId(), Map.class);
-            } catch(Exception e) {
+                System.out.println("Chiamo card-service con ID: " + c.getCardId());
+
+                cardData = restTemplate.getForObject(
+                        CARD_SERVICE_URL + c.getCardId(),
+                        CardResponse.class
+                );
+
+            } catch (Exception e) {
                 System.out.println("Errore chiamata card-service: " + c.getCardId());
                 continue;
             }
 
-            if(data == null) continue;
+            if (cardData == null) continue;
 
             CardResponse cr = new CardResponse();
             cr.setCardId(c.getCardId());
             cr.setCondition(c.getCondition());
             cr.setQuantity(c.getQuantity());
 
-            cr.setName((String) data.get("name"));
-            cr.setRarity((String) data.get("rarity"));
-            cr.setExpansion((String) data.get("setName")); // era setName nel catalog
-            cr.setImageUrl((String) data.get("imageUrl"));
+            cr.setName(cardData.getName());
+            cr.setRarity(cardData.getRarity());
+            cr.setExpansion(cardData.getExpansion());
+            cr.setImageUrl(cardData.getImageUrl());
 
             result.add(cr);
         }
@@ -68,7 +76,9 @@ public class CollectionService {
     }
 
     public Collection addCard(String username, Card newCard) {
-        if(newCard.getCardId() == null) return getOrCreateCollection(username);
+
+        if (newCard.getCardId() == null)
+            return getOrCreateCollection(username);
 
         Collection collection = getOrCreateCollection(username);
 
@@ -89,6 +99,7 @@ public class CollectionService {
     }
 
     public Collection updateCardQuantity(String username, String cardId, String condition, int delta) {
+
         Collection collection = getOrCreateCollection(username);
 
         Card card = collection.getCards().stream()
@@ -100,9 +111,11 @@ public class CollectionService {
 
         if (card != null) {
             card.setQuantity(card.getQuantity() + delta);
+
             if (card.getQuantity() <= 0) {
                 collection.getCards().remove(card);
             }
+
             return repository.save(collection);
         }
 
