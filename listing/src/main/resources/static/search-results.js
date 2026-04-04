@@ -38,7 +38,7 @@ function renderResults(query, cards) {
                 <div class="card-result-title">${card.name}</div>
                 <div class="card-result-meta"><strong>Set:</strong> ${card.setName || "-"}</div>
                 <div class="card-result-meta"><strong>Numero:</strong> ${card.number || "-"}</div>
-                <div class="card-result-price">Prezzo medio: € ${card.averagePrice != null ? "€ " + Numeber(card.averagePrice).toFixed(2) : "N/A"}</div>
+                <div class="card-result-price">Prezzo medio: ${card.averagePrice != null ? "€ " + Number(card.averagePrice).toFixed(2) : "N/A"}</div>
             </div>
         `;
 
