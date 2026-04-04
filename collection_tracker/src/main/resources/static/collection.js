@@ -380,7 +380,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ─── CART BADGE ───
     async function loadCartBadge() {
         try {
-            const res = await fetch("/api/cart", {
+            const res = await fetch("http://localhost:8087/api/cart", {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "username": username
