@@ -2,6 +2,7 @@ package com.gruppo12.listing.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,11 +26,21 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/listings").permitAll()
-                        .requestMatchers("/listings/card/**").permitAll()
-                        .requestMatchers("/listings/search").permitAll()
-                        .requestMatchers("/listings/**").authenticated()
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                "/search-results.html",
+                                "/card-page.html",
+                                "/init-token.html",
+                                "/*.js",
+                                "/*.css",
+                                "/*.html",
+                                "/static/**"
+                        ).permitAll()
+
+                        .requestMatchers(HttpMethod.GET,"/listings").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/listings/card/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/listings/search").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/listings").authenticated()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

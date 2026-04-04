@@ -6,8 +6,6 @@ import java.util.Optional;
 
 public interface UserProfileRepository extends MongoRepository<UserProfile, String> {
     UserProfile findByUsername(String username);
-
-    UserProfile findByUserId(String userId);
 }
 
 

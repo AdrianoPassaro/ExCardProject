@@ -99,7 +99,7 @@ function setupSellButton() {
     const sellFormSection = document.getElementById("sellFormSection");
 
     sellButton.addEventListener("click", () => {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("jwtToken");
 
         if (!token) {
             alert("Devi effettuare il login per creare un annuncio.");
