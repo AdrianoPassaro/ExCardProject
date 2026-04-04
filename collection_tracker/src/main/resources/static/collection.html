@@ -2,190 +2,114 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>La tua collezione</title>
-
-    <style>
-        :root {
-            --primary: #1f4e99;
-            --accent: #b3d1ff;
-            --bg: #e0f0ff;
-            --border-radius: 6px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-            background-color: var(--bg);
-            padding-top: 70px;
-        }
-
-        /* Navbar */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.8rem 1rem;
-            border-bottom: 1px solid var(--accent);
-            box-shadow: 0 2px 8px rgba(0, 60, 130, 0.1);
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .nav-buttons span {
-            font-weight: bold;
-        }
-
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.85rem;
-            border: 2px solid var(--primary);
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background-color: #003d80;
-        }
-
-        /* Collection container */
-        .collection-container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-
-        .collection-title {
-            text-align: center;
-            margin-bottom: 20px;
-            color: var(--primary);
-            font-size: 1.6rem;
-        }
-
-        .add-btn {
-            display: block;
-            margin: 0 auto 25px auto;
-            padding: 10px 20px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 15px;
-        }
-
-        .add-btn:hover {
-            background: #218838;
-        }
-
-        /* Card Grid */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: scale(1.03);
-        }
-
-        .card img {
-            width: 100%;
-            display: block;
-        }
-
-        .card-info {
-            padding: 6px;
-            font-size: 13px;
-            background: white;
-            text-align: center;
-        }
-
-        .quantity-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            margin-top: 5px;
-        }
-
-        .quantity-controls button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            width: 25px;
-            height: 25px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .quantity-controls button:hover {
-            background: #003d80;
-        }
-
-        .quantity-controls span {
-            font-weight: bold;
-            min-width: 20px;
-            display: inline-block;
-        }
-    </style>
+    <title>Collezione Carte</title>
+    <link rel="stylesheet" href="collection.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
+<!-- NAVBAR -->
 <nav class="navbar">
-    <a href="http://localhost:8080/homepage.html" class="logo">ExCard</a>
-
+    <a href="http://localhost:8080/homepage.html" class="logo">
+        <img src="logo.png" alt="ExCard Logo" class="logo-img">
+    </a>
     <div class="nav-buttons">
-        <span id="usernameDisplay">👤 Utente</span>
-        <button class="btn" id="logoutBtn">Logout</button>
+        <a href="http://localhost:8081/account.html" class="btn btn-user" id="usernameDisplay">👤 Utente</a>
+        <a href="http://localhost:8087/cart.html" class="cart-icon-btn" title="Carrello">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+        </a>
+        <button class="btn btn-logout" id="logoutBtn">Logout</button>
     </div>
 </nav>
 
-<div class="collection-container">
-    <h2 class="collection-title">La tua collezione</h2>
+<!-- HERO HEADER -->
+<div class="page-header">
+    <div class="page-header-inner">
+        <div class="page-header-text">
+            <h1 class="page-title">La mia Collezione</h1>
+            <p class="page-subtitle" id="collectionStats">— carte nel tuo archivio</p>
+        </div>
+        <button class="btn btn-add" id="addCardBtn">
+            <span class="btn-icon">＋</span>
+            Aggiungi carta
+        </button>
+    </div>
+</div>
 
-    <button class="add-btn" id="addCardBtn">Aggiungi carta</button>
+<!-- FILTERS BAR -->
+<div class="filters-bar" id="filtersBar">
+    <div class="filters-inner">
 
-    <div class="card-grid" id="cardGrid"></div>
+        <div class="filter-search-wrap">
+            <span class="filter-search-icon">⌕</span>
+            <input type="text" id="filterSearch" class="filter-search" placeholder="Cerca nella collezione…">
+        </div>
+
+        <div class="filters-selects">
+            <div class="filter-group">
+                <label class="filter-label">Rarità</label>
+                <select id="filterRarity" class="filter-select">
+                    <option value="">Tutte</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Set</label>
+                <select id="filterSet" class="filter-select">
+                    <option value="">Tutti</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Condizione</label>
+                <select id="filterCondition" class="filter-select">
+                    <option value="">Tutte</option>
+                    <option value="Near Mint">Near Mint</option>
+                    <option value="Lightly Played">Lightly Played</option>
+                    <option value="Moderately Played">Moderately Played</option>
+                    <option value="Heavily Played">Heavily Played</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Ordina per</label>
+                <select id="filterSort" class="filter-select">
+                    <option value="name-asc">Nome A–Z</option>
+                    <option value="name-desc">Nome Z–A</option>
+                    <option value="qty-desc">Quantità ↓</option>
+                    <option value="qty-asc">Quantità ↑</option>
+                    <option value="rarity">Rarità</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="filter-reset" id="resetFilters" title="Resetta filtri">✕ Reset</button>
+    </div>
+
+    <!-- ACTIVE FILTER CHIPS -->
+    <div class="active-filters" id="activeFilters"></div>
+</div>
+
+<!-- RESULTS COUNT -->
+<div class="results-bar" id="resultsBar"></div>
+
+<!-- CARD GRID -->
+<div id="cardGrid"></div>
+
+<!-- EMPTY STATE -->
+<div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">🃏</div>
+    <p class="empty-title">Nessuna carta trovata</p>
+    <p class="empty-sub">Prova a modificare i filtri di ricerca</p>
 </div>
 
 <script src="collection.js"></script>
-
 </body>
 </html>

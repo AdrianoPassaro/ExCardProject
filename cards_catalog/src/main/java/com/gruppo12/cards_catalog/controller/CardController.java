@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/cards")
+@CrossOrigin(origins = "*")
 public class CardController {
 
     private final CardService service;

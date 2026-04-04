@@ -17,23 +17,6 @@ services:
       - excard_net
     restart: unless-stopped
 
-  management-service:
-    image: excard-management-service
-    container_name: management-service
-    build:
-      context: ./gestione_utente
-      dockerfile: Dockerfile
-    ports:
-      - "8081:8081"
-    depends_on:
-      - mongo
-    environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/management_db
-      JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
-    networks:
-      - excard_net
-    restart: unless-stopped
-
   cards-catalog:
     image: excard_cards_catalog_service
     container_name: catalog_service
@@ -46,6 +29,23 @@ services:
       - mongo
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/loader_db
+      JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
+    networks:
+      - excard_net
+    restart: unless-stopped
+
+  management-service:
+    image: excard-management-service
+    container_name: management-service
+    build:
+      context: ./gestione_utente
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/management_db
       JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
     networks:
       - excard_net
@@ -67,23 +67,6 @@ services:
       networks:
         - excard_net
       restart: unless-stopped
-
-  listing:
-    image: excard-listing-service
-    container_name: listing-service
-    build:
-      context: ./listing
-      dockerfile: Dockerfile
-    ports:
-      - "8084:8084"
-    depends_on:
-      - mongo
-    environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/listing_db
-      JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
-    networks:
-      - excard_net
-    restart: unless-stopped
 
   payment-service:
     image: excard-payment-service

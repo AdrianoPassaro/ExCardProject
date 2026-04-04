@@ -1,9 +1,8 @@
 package com.gruppo12.collection_tracker.controller;
 
+import com.gruppo12.collection_tracker.dto.CollectionResponse;
 import com.gruppo12.collection_tracker.model.Card;
-import com.gruppo12.collection_tracker.model.Collection;
 import com.gruppo12.collection_tracker.service.CollectionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,38 +12,32 @@ import java.util.Map;
 @RequestMapping("/api/collection")
 public class CollectionController {
 
-    @Autowired
-    private CollectionService collectionService;
+    private final CollectionService service;
 
-    // Ottiene la collezione dell'utente autenticato
-    @GetMapping
-    public ResponseEntity<Collection> getCollection(@RequestHeader("username") String username) {
-        Collection col = collectionService.getOrCreateCollection(username);
-        return ResponseEntity.ok(col);
+    public CollectionController(CollectionService service) {
+        this.service = service;
     }
 
-    // Aggiorna quantità carta (+/-)
-    @PatchMapping("/card")
-    public ResponseEntity<Collection> updateCardQuantity(
-            @RequestHeader("username") String username,
-            @RequestBody Map<String, Object> body) {
+    @GetMapping
+    public ResponseEntity<CollectionResponse> getCollection(@RequestHeader("username") String username) {
+        return ResponseEntity.ok(service.getFullCollection(username));
+    }
 
-        String name = (String) body.get("name");
-        String rarity = (String) body.get("rarity");
+    @PostMapping("/add")
+    public ResponseEntity<?> addCard(@RequestHeader("username") String username,
+                                     @RequestBody Card card) {
+        return ResponseEntity.ok(service.addCard(username, card));
+    }
+
+    @PatchMapping("/card")
+    public ResponseEntity<CollectionResponse> updateCard(@RequestHeader("username") String username,
+                                                         @RequestBody Map<String, Object> body) {
+        String cardId = (String) body.get("cardId");
         String condition = (String) body.get("condition");
         int delta = (int) body.get("delta");
 
-        Collection updated = collectionService.updateCardQuantity(username, name, rarity, condition, delta);
-        return ResponseEntity.ok(updated);
-    }
-
-    // Aggiunge carta (se esiste aggiorna quantità)
-    @PostMapping("/add")
-    public ResponseEntity<Collection> addCard(
-            @RequestHeader("username") String username,
-            @RequestBody Card newCard) {
-
-        Collection updated = collectionService.addCard(username, newCard);
-        return ResponseEntity.ok(updated);
+        service.updateCardQuantity(username, cardId, condition, delta); // aggiorna la quantità
+        // richiamo getFullCollection per ottenere dati completi
+        return ResponseEntity.ok(service.getFullCollection(username));
     }
 }

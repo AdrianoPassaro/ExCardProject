@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.gruppo12.cart.model.*;
 import com.gruppo12.cart.repository.CartRepository;
@@ -30,7 +29,7 @@ public class CartService {
 
         Cart cart = getCart(username);
 
-        // 🔥 evita duplicati
+        // Evita duplicati sullo stesso listingId
         boolean exists = cart.getItems().stream()
                 .anyMatch(i -> i.getListingId().equals(req.getListingId()));
 
@@ -38,10 +37,10 @@ public class CartService {
             CartItem item = new CartItem();
             item.setListingId(req.getListingId());
             item.setCardId(req.getCardId());
-            item.setName(req.getName());
-            item.setImageUrl(req.getImageUrl());
-            item.setSellerUsername(req.getSellerUsername());
+            item.setSellerId(req.getSellerId());
+            item.setCondition(req.getCondition());
             item.setPrice(req.getPrice());
+            item.setQuantity(req.getQuantity());
 
             cart.getItems().add(item);
         }

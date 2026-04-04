@@ -1,9 +1,23 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    const grid = document.getElementById("cardGrid");
-    const addBtn = document.getElementById("addCardBtn");
+    const grid          = document.getElementById("cardGrid");
+    const addBtn        = document.getElementById("addCardBtn");
     const usernameDisplay = document.getElementById("usernameDisplay");
-    const logoutBtn = document.getElementById("logoutBtn");
+    const logoutBtn     = document.getElementById("logoutBtn");
+    const collectionStats = document.getElementById("collectionStats");
+    const resultsBar    = document.getElementById("resultsBar");
+    const emptyState    = document.getElementById("emptyState");
+    const filtersBar    = document.getElementById("filtersBar");
 
+    // Filter elements
+    const filterSearch    = document.getElementById("filterSearch");
+    const filterRarity    = document.getElementById("filterRarity");
+    const filterSet       = document.getElementById("filterSet");
+    const filterCondition = document.getElementById("filterCondition");
+    const filterSort      = document.getElementById("filterSort");
+    const resetFilters    = document.getElementById("resetFilters");
+    const activeFiltersEl = document.getElementById("activeFilters");
+
+    // ─── AUTH ───
     const token = localStorage.getItem("jwtToken");
     if (!token) {
         window.location.href = "http://localhost:8080/login.html";
@@ -18,122 +32,373 @@ document.addEventListener("DOMContentLoaded", async () => {
                 '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
             ).join(''));
             return JSON.parse(jsonPayload).sub || 'Utente';
-        } catch {
-            return 'Utente';
-        }
+        } catch { return 'Utente'; }
     }
 
     const username = extractUsername(token);
     usernameDisplay.textContent = `👤 ${username}`;
-    usernameDisplay.style.color = "#1f4e99";
-
-    const cardTemplate = {
-        name: "Pikachu",
-        rarity: "Ultra Rare",
-        expansion: "Ascended Heroes",
-        condition: "Near Mint",
-        imageUrl: "https://storage.googleapis.com/images.pricecharting.com/o7oe255flanpc7fa/1600.jpg",
-        quantity: 1
-    };
 
     let collection = [];
+    let catalog    = [];
 
+    // ─── STICKY FILTER BAR ───
+    const navbarHeight = 72;
+    window.addEventListener("scroll", () => {
+        const top = filtersBar.getBoundingClientRect().top;
+        filtersBar.classList.toggle("stuck", top <= navbarHeight);
+    });
+
+    // ─── BACKEND ───
     async function loadCollection() {
-        const res = await fetch("/api/collection", {
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "username": username
-            }
-        });
-        if (res.ok) {
+        try {
+            const res = await fetch("/api/collection", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "username": username
+                }
+            });
+            if (!res.ok) throw new Error("Errore fetch collection");
             const data = await res.json();
             collection = data.cards || [];
-            renderCollection();
+            populateFilterDropdowns();
+            applyFilters();
+            updateStats();
+        } catch (err) {
+            console.error("Errore loadCollection:", err);
         }
     }
 
-    async function updateQuantity(card, delta) {
-        const res = await fetch("/api/collection/card", {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-                "username": username
-            },
-            body: JSON.stringify({
-                name: card.name,
-                rarity: card.rarity,
-                condition: card.condition,
-                delta: delta
-            })
-        });
-        if (res.ok) {
-            const data = await res.json();
-            collection = data.cards;
-            renderCollection();
+    async function loadCatalog() {
+        try {
+            const res = await fetch("http://localhost:8082/cards");
+            if (!res.ok) throw new Error("Errore fetch catalog");
+            catalog = await res.json();
+        } catch (err) {
+            console.error("Errore fetch catalog:", err);
         }
     }
 
-    async function addCard(card) {
-        const exists = collection.find(c =>
-            c.name === card.name &&
-            c.rarity === card.rarity &&
-            c.condition === card.condition
-        );
-
-        if (exists) {
-            await updateQuantity(card, 1);
-        } else {
-            await fetch("/api/collection/add", {
+    async function addCard(cardId, condition, quantity) {
+        try {
+            const res = await fetch("/api/collection/add", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
                     "username": username
                 },
-                body: JSON.stringify(card)
+                body: JSON.stringify({ cardId, condition, quantity })
             });
+            if (!res.ok) throw new Error("Errore aggiunta carta");
             await loadCollection();
+        } catch (err) {
+            console.error("Errore addCard:", err);
+            alert("Errore durante l'aggiunta della carta");
         }
     }
 
+    async function updateQuantity(card, delta) {
+        try {
+            const res = await fetch("/api/collection/card", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                    "username": username
+                },
+                body: JSON.stringify({
+                    cardId: card.cardId,
+                    condition: card.condition,
+                    delta
+                })
+            });
+            if (!res.ok) throw new Error("Errore updateQuantity");
+            const data = await res.json();
+            collection = data.cards;
+            populateFilterDropdowns();
+            applyFilters();
+            updateStats();
+        } catch (err) {
+            console.error("Errore updateQuantity:", err);
+        }
+    }
+
+    // ─── STATS ───
+    function updateStats() {
+        const visible = collection.filter(c => c.quantity > 0);
+        const total   = visible.reduce((s, c) => s + c.quantity, 0);
+        const unique  = visible.length;
+        collectionStats.textContent = `${unique} carte uniche · ${total} totali nel tuo archivio`;
+    }
+
+    // ─── POPULATE DYNAMIC DROPDOWNS ───
+    function populateFilterDropdowns() {
+        const rarities = [...new Set(collection.map(c => c.rarity).filter(Boolean))].sort();
+        const sets     = [...new Set(collection.map(c => c.setName).filter(Boolean))].sort();
+
+        const prevRarity = filterRarity.value;
+        const prevSet    = filterSet.value;
+
+        filterRarity.innerHTML = `<option value="">Tutte</option>`;
+        rarities.forEach(r => {
+            const opt = document.createElement("option");
+            opt.value = r;
+            opt.textContent = r;
+            if (r === prevRarity) opt.selected = true;
+            filterRarity.appendChild(opt);
+        });
+
+        filterSet.innerHTML = `<option value="">Tutti</option>`;
+        sets.forEach(s => {
+            const opt = document.createElement("option");
+            opt.value = s;
+            opt.textContent = s;
+            if (s === prevSet) opt.selected = true;
+            filterSet.appendChild(opt);
+        });
+    }
+
+    // ─── CONDITION BADGE ───
+    function conditionClass(cond) {
+        if (!cond) return '';
+        const c = cond.toLowerCase().replace(/\s+/g, '-');
+        if (c.includes('near'))     return 'cond-nm';
+        if (c.includes('lightly'))  return 'cond-lp';
+        if (c.includes('moderate')) return 'cond-mp';
+        if (c.includes('heavily'))  return 'cond-hp';
+        return '';
+    }
+
+    // ─── CARD ELEMENT ───
     function createCardElement(card) {
         const div = document.createElement("div");
         div.classList.add("card");
         div.innerHTML = `
-            <img src="${card.imageUrl}" alt="${card.name}">
+            <span class="condition-badge ${conditionClass(card.condition)}">${card.condition || ''}</span>
+            <img src="${card.imageUrl || ''}" alt="${card.name || ''}">
             <div class="card-info">
-                <strong>${card.name}</strong><br>
-                ${card.rarity}<br>
-                ${card.expansion}<br>
-                ${card.condition}<br>
+                <span class="card-name" title="${card.name || ''}">${card.name || ''}</span>
+                <span class="card-rarity">${card.rarity || ''}</span>
+                <div class="card-meta">${card.setName || ''}</div>
                 <div class="quantity-controls">
-                    <button class="minus-btn">-</button>
+                    <button class="minus-btn" aria-label="Riduci quantità">−</button>
                     <span class="quantity">${card.quantity}</span>
-                    <button class="plus-btn">+</button>
+                    <button class="plus-btn" aria-label="Aumenta quantità">+</button>
+                </div>
+            </div>
+        `;
+        div.querySelector(".plus-btn").addEventListener("click", () => updateQuantity(card, 1));
+        div.querySelector(".minus-btn").addEventListener("click", () => updateQuantity(card, -1));
+        return div;
+    }
+
+    // ─── SORT ───
+    const rarityOrder = ['Common','Uncommon','Rare','Ultra Rare','Secret Rare','Hyper Rare'];
+
+    function sortCards(cards) {
+        const mode = filterSort.value;
+        return [...cards].sort((a, b) => {
+            if (mode === 'name-asc')  return (a.name || '').localeCompare(b.name || '');
+            if (mode === 'name-desc') return (b.name || '').localeCompare(a.name || '');
+            if (mode === 'qty-desc')  return b.quantity - a.quantity;
+            if (mode === 'qty-asc')   return a.quantity - b.quantity;
+            if (mode === 'rarity') {
+                const ai = rarityOrder.indexOf(a.rarity);
+                const bi = rarityOrder.indexOf(b.rarity);
+                return (bi === -1 ? -1 : bi) - (ai === -1 ? -1 : ai);
+            }
+            return 0;
+        });
+    }
+
+    // ─── APPLY FILTERS ───
+    function applyFilters() {
+        const search    = filterSearch.value.toLowerCase().trim();
+        const rarity    = filterRarity.value;
+        const set       = filterSet.value;
+        const condition = filterCondition.value;
+
+        let filtered = collection.filter(card => {
+            if (card.quantity <= 0) return false;
+            if (rarity    && card.rarity    !== rarity)    return false;
+            if (set       && card.setName   !== set)       return false;
+            if (condition && card.condition !== condition) return false;
+            if (search) {
+                const text = `${card.name} ${card.rarity} ${card.setName} ${card.condition}`.toLowerCase();
+                if (!search.split(/\s+/).every(w => text.includes(w))) return false;
+            }
+            return true;
+        });
+
+        filtered = sortCards(filtered);
+
+        // Render
+        grid.innerHTML = "";
+        filtered.forEach((card, i) => {
+            const el = createCardElement(card);
+            el.style.animationDelay = `${Math.min(i * 30, 300)}ms`;
+            grid.appendChild(el);
+        });
+
+        const total = collection.filter(c => c.quantity > 0).length;
+        resultsBar.textContent = filtered.length < total
+            ? `${filtered.length} di ${total} carte`
+            : `${total} carte`;
+
+        emptyState.style.display = filtered.length === 0 ? 'flex' : 'none';
+
+        updateActiveChips();
+    }
+
+    // ─── ACTIVE CHIPS ───
+    function updateActiveChips() {
+        activeFiltersEl.innerHTML = '';
+
+        const chips = [];
+        if (filterSearch.value)    chips.push({ label: `"${filterSearch.value}"`, clear: () => { filterSearch.value = ''; applyFilters(); } });
+        if (filterRarity.value)    chips.push({ label: `Rarità: ${filterRarity.value}`, clear: () => { filterRarity.value = ''; applyFilters(); } });
+        if (filterSet.value)       chips.push({ label: `Set: ${filterSet.value}`, clear: () => { filterSet.value = ''; applyFilters(); } });
+        if (filterCondition.value) chips.push({ label: `Cond: ${filterCondition.value}`, clear: () => { filterCondition.value = ''; applyFilters(); } });
+
+        chips.forEach(chip => {
+            const el = document.createElement("div");
+            el.classList.add("filter-chip");
+            el.innerHTML = `<span>${chip.label}</span><span class="chip-remove">✕</span>`;
+            el.querySelector(".chip-remove").addEventListener("click", chip.clear);
+            activeFiltersEl.appendChild(el);
+        });
+    }
+
+    // ─── FILTER EVENTS ───
+    filterSearch.addEventListener("input", applyFilters);
+    filterRarity.addEventListener("change", applyFilters);
+    filterSet.addEventListener("change", applyFilters);
+    filterCondition.addEventListener("change", applyFilters);
+    filterSort.addEventListener("change", applyFilters);
+
+    resetFilters.addEventListener("click", () => {
+        filterSearch.value    = '';
+        filterRarity.value    = '';
+        filterSet.value       = '';
+        filterCondition.value = '';
+        filterSort.value      = 'name-asc';
+        applyFilters();
+    });
+
+    // ─── MODAL ADD CARD ───
+    function openAddCardModal() {
+        const modal = document.createElement("div");
+        modal.classList.add("modal-overlay");
+
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 class="modal-title">Aggiungi una carta</h3>
+
+                <div class="modal-field">
+                    <label for="searchCard">Cerca carta</label>
+                    <input type="text" id="searchCard" placeholder="Nome, rarità, set…" autocomplete="off">
+                    <div id="cardCount" class="card-count"></div>
+                </div>
+
+                <div class="modal-field">
+                    <label for="selectCard">Carta</label>
+                    <select id="selectCard" size="6"></select>
+                </div>
+
+                <div class="modal-field">
+                    <label for="selectCondition">Condizione</label>
+                    <select id="selectCondition">
+                        <option value="Near Mint">Near Mint</option>
+                        <option value="Lightly Played">Lightly Played</option>
+                        <option value="Moderately Played">Moderately Played</option>
+                        <option value="Heavily Played">Heavily Played</option>
+                    </select>
+                </div>
+
+                <div class="modal-field">
+                    <label for="inputQuantity">Quantità</label>
+                    <input type="number" id="inputQuantity" value="1" min="1">
+                </div>
+
+                <div class="modal-actions">
+                    <button class="modal-btn-confirm" id="confirmAdd">➕ Aggiungi</button>
+                    <button class="modal-btn-cancel" id="cancelAdd">Annulla</button>
                 </div>
             </div>
         `;
 
-        div.querySelector(".plus-btn").addEventListener("click", () => updateQuantity(card, 1));
-        div.querySelector(".minus-btn").addEventListener("click", () => updateQuantity(card, -1));
+        document.body.appendChild(modal);
 
-        return div;
+        const searchInput = modal.querySelector("#searchCard");
+        const selectCard  = modal.querySelector("#selectCard");
+        const cardCount   = modal.querySelector("#cardCount");
+
+        function populateSelect(filter) {
+            const words = filter.toLowerCase().trim().split(/\s+/).filter(Boolean);
+            const filtered = catalog.filter(c => {
+                const text = `${c.name} ${c.rarity} ${c.setName}`.toLowerCase();
+                return words.every(w => text.includes(w));
+            });
+            selectCard.innerHTML = "";
+            filtered.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c.id;
+                opt.textContent = `${c.name} | ${c.rarity} | ${c.setName}`;
+                selectCard.appendChild(opt);
+            });
+            if (selectCard.options.length > 0) selectCard.selectedIndex = 0;
+            cardCount.textContent = filtered.length === catalog.length
+                ? `${catalog.length} carte disponibili`
+                : `${filtered.length} risultati su ${catalog.length}`;
+        }
+
+        populateSelect("");
+        searchInput.addEventListener("input", () => populateSelect(searchInput.value));
+
+        modal.querySelector("#cancelAdd").onclick = () => document.body.removeChild(modal);
+        modal.querySelector("#confirmAdd").onclick = () => {
+            if (!selectCard.value) { alert("Nessuna carta selezionata."); return; }
+            addCard(selectCard.value, modal.querySelector("#selectCondition").value, parseInt(modal.querySelector("#inputQuantity").value));
+            document.body.removeChild(modal);
+        };
+
+        modal.addEventListener("click", (e) => { if (e.target === modal) document.body.removeChild(modal); });
+        setTimeout(() => searchInput.focus(), 50);
     }
 
-    function renderCollection() {
-        grid.innerHTML = "";
-        collection.forEach(card => {
-            if (card.quantity > 0) grid.appendChild(createCardElement(card));
-        });
-    }
+    addBtn.addEventListener("click", openAddCardModal);
 
-    addBtn.addEventListener("click", () => addCard(cardTemplate));
-
+    // ─── LOGOUT ───
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("jwtToken");
         window.location.href = "http://localhost:8080/login.html";
     });
 
+    // ─── INIT ───
+    await loadCatalog();
     await loadCollection();
+    // ─── CART BADGE ───
+    async function loadCartBadge() {
+        try {
+            const res = await fetch("/api/cart", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "username": username
+                }
+            });
+            if (!res.ok) return;
+            const cart = await res.json();
+            const count = (cart.items || []).length;
+            const badge = document.getElementById("cartBadge");
+            if (!badge) return;
+            if (count > 0) {
+                badge.textContent = count;
+                badge.removeAttribute("style"); // rimuove il display:none inline
+            }
+        } catch (err) {
+            console.warn("Cart badge non caricato:", err);
+        }
+    }
+
+    loadCartBadge();
 });
