@@ -5,11 +5,10 @@ public class CartItem {
     private String listingId;
     private String cardId;
 
-    private String name;
-    private String imageUrl;
-
-    private String sellerUsername;
+    private String sellerId;
+    private String condition;
     private double price;
+    private int quantity;
 
     public CartItem() {}
 
@@ -19,15 +18,15 @@ public class CartItem {
     public String getCardId() { return cardId; }
     public void setCardId(String cardId) { this.cardId = cardId; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getSellerId() { return sellerId; }
+    public void setSellerId(String sellerId) { this.sellerId = sellerId; }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-
-    public String getSellerUsername() { return sellerUsername; }
-    public void setSellerUsername(String sellerUsername) { this.sellerUsername = sellerUsername; }
+    public String getCondition() { return condition; }
+    public void setCondition(String condition) { this.condition = condition; }
 
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
+
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
 }

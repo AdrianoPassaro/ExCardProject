@@ -377,4 +377,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ─── INIT ───
     await loadCatalog();
     await loadCollection();
+    // ─── CART BADGE ───
+    async function loadCartBadge() {
+        try {
+            const res = await fetch("/api/cart", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "username": username
+                }
+            });
+            if (!res.ok) return;
+            const cart = await res.json();
+            const count = (cart.items || []).length;
+            const badge = document.getElementById("cartBadge");
+            if (!badge) return;
+            if (count > 0) {
+                badge.textContent = count;
+                badge.removeAttribute("style"); // rimuove il display:none inline
+            }
+        } catch (err) {
+            console.warn("Cart badge non caricato:", err);
+        }
+    }
+
+    loadCartBadge();
 });
