@@ -11,32 +11,24 @@ public class Wallet {
 
     private String username;
     private double balance;
+    private int points;   // punti fedeltà: 1 punto = €0.01, si guadagnano 3pt/€
 
-    public Wallet() {
-    }
+    public Wallet() {}
 
     public Wallet(String username, double balance) {
         this.username = username;
-        this.balance = balance;
+        this.balance  = balance;
+        this.points   = 0;
     }
 
-    public String getId() {
-        return id;
-    }
+    public String getId()                  { return id; }
 
-    public String getUsername() {
-        return username;
-    }
+    public String getUsername()            { return username; }
+    public void   setUsername(String u)    { this.username = u; }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public double getBalance()             { return balance; }
+    public void   setBalance(double b)     { this.balance = b; }
 
-    public double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
+    public int  getPoints()                { return points; }
+    public void setPoints(int p)           { this.points = p; }
 }

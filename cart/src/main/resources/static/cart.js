@@ -174,7 +174,7 @@ document.getElementById("clearCartBtn").addEventListener("click", async () => {
 
 // ─── CHECKOUT (stub) ───
 document.getElementById("checkoutBtn").addEventListener("click", () => {
-    alert("Pagamento non ancora disponibile — microservizio in arrivo!");
+    window.location.href = "http://localhost:8085/checkout.html";
 });
 
 // ─── LOGOUT ───
