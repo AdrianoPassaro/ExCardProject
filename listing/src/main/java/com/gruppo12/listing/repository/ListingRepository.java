@@ -17,4 +17,6 @@ public interface ListingRepository extends MongoRepository<ListingDocument, Stri
 
     List<ListingDocument> findByCardIdAndStatus(String cardId, ListingStatus status);
 
+    List<ListingDocument> findBySellerUsernameAndStatus(String sellerUsername, ListingStatus status);
+
 }

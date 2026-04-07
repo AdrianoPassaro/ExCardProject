@@ -23,7 +23,7 @@ function renderResults(query, cards) {
     container.innerHTML = "";
 
     if (!cards || cards.length === 0) {
-        container.innerHTML = `<p>Nessuna carta trovata con annunci attivi.</p>`;
+        container.innerHTML = `<p>Nessuna carta corrisponde alla ricerca.</p>`;
         return;
     }
 
@@ -32,13 +32,18 @@ function renderResults(query, cards) {
         cardElement.className = "card-result";
         cardElement.href = `card-page.html?cardId=${card.cardId}`;
 
+        const averagePriceText =
+            card.averagePrice != null
+                ? `€ ${Number(card.averagePrice).toFixed(2)}`
+                : "Nessun annuncio attivo";
+
         cardElement.innerHTML = `
             <img src="${card.imageUrl || ""}" alt="${card.name}">
             <div class="card-result-body">
                 <div class="card-result-title">${card.name}</div>
                 <div class="card-result-meta"><strong>Set:</strong> ${card.setName || "-"}</div>
                 <div class="card-result-meta"><strong>Numero:</strong> ${card.number || "-"}</div>
-                <div class="card-result-price">Prezzo medio: ${card.averagePrice != null ? "€ " + Number(card.averagePrice).toFixed(2) : "N/A"}</div>
+                <div class="card-result-price"><strong>Prezzo medio:</strong> ${averagePriceText}</div>
             </div>
         `;
 
@@ -51,6 +56,8 @@ async function initSearchPage() {
 
     if (!query.trim()) {
         document.getElementById("resultsTitle").textContent = "Inserisci un termine di ricerca";
+        document.getElementById("resultsContainer").innerHTML =
+            `<p>Inserisci il nome di una carta per avviare la ricerca.</p>`;
         return;
     }
 

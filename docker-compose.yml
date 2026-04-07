@@ -35,8 +35,8 @@ services:
     restart: unless-stopped
 
   cards-catalog:
-    image: excard_cards_catalog_service
-    container_name: catalog_service
+    image: excard-cards-catalog-service
+    container_name: catalog-service
     build:
       context: ./cards_catalog
       dockerfile: Dockerfile
@@ -45,7 +45,7 @@ services:
     depends_on:
       - mongo
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/loader_db
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/card_catalog_db
       JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
     networks:
       - excard_net

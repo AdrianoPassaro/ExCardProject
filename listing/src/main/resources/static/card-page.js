@@ -1,4 +1,5 @@
 let currentListings = [];
+let sortAscending = true;
 
 function getCardIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -6,7 +7,7 @@ function getCardIdFromUrl() {
 }
 
 async function loadCard(cardId) {
-    const response = await fetch(`/cards/${cardId}`);
+    const response = await fetch(`http://localhost:8082/cards/${cardId}`);
 
     if (!response.ok) {
         throw new Error("Carta non trovata");
@@ -26,12 +27,37 @@ async function loadListings(cardId) {
 }
 
 function renderCard(card) {
-    document.getElementById("cardName").textContent = card.name;
+    document.getElementById("cardName").textContent = card.name || "-";
     document.getElementById("cardSet").textContent = card.setName || "-";
     document.getElementById("cardNumber").textContent = card.number || "-";
     document.getElementById("cardRarity").textContent = card.rarity || "-";
-    document.getElementById("cardImage").src = card.imageUrl || "";
-    document.getElementById("cardImage").alt = card.name;
+
+    document.getElementById("summarySet").textContent = card.setName || "-";
+    document.getElementById("summaryNumber").textContent = card.number || "-";
+    document.getElementById("summaryRarity").textContent = card.rarity || "-";
+
+    const img = document.getElementById("cardImage");
+    img.src = card.imageUrl || "";
+    img.alt = card.name || "Carta";
+}
+
+function updateListingStats(listings) {
+    const count = listings.length;
+    document.getElementById("summaryListings").textContent = count;
+    document.getElementById("resultsBar").textContent = `${count} annunci`;
+
+    if (!listings.length) {
+        document.getElementById("summaryLowestPrice").textContent = "-";
+        document.getElementById("summaryAveragePrice").textContent = "-";
+        return;
+    }
+
+    const prices = listings.map(l => Number(l.price)).filter(p => !isNaN(p));
+    const lowest = Math.min(...prices);
+    const average = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+
+    document.getElementById("summaryLowestPrice").textContent = `€ ${lowest.toFixed(2)}`;
+    document.getElementById("summaryAveragePrice").textContent = `€ ${average.toFixed(2)}`;
 }
 
 function getConditionBadgeClass(condition) {
@@ -49,7 +75,7 @@ function getConditionBadgeClass(condition) {
         case "Poor":
             return "condition-poor";
         default:
-            return "condition-good";
+            return "condition-default";
     }
 }
 
@@ -57,41 +83,81 @@ function renderListings(listings) {
     const container = document.getElementById("listingContainer");
     container.innerHTML = "";
 
+    updateListingStats(listings);
+
     if (!listings || listings.length === 0) {
-        container.innerHTML = `<div class="empty-message">Nessun annuncio disponibile per questa carta.</div>`;
+        container.innerHTML = `
+            <div class="empty-message">
+                <div class="empty-icon">🃏</div>
+                <div class="empty-title">Nessun annuncio disponibile</div>
+                <div class="empty-subtitle">Al momento nessun utente sta vendendo questa carta.</div>
+            </div>
+        `;
         return;
     }
 
-    listings.forEach(listing => {
+    listings.forEach((listing, index) => {
         const row = document.createElement("div");
         row.className = "listing-row";
+        row.style.animationDelay = `${Math.min(index * 40, 240)}ms`;
 
         const badgeClass = getConditionBadgeClass(listing.condition);
 
         row.innerHTML = `
-            <div>${listing.sellerUsername}</div>
-            <div><span class="condition-badge ${badgeClass}">${listing.condition}</span></div>
-            <div>${listing.quantity}</div>
-            <div class="price">€ ${Number(listing.price).toFixed(2)}</div>
-            <div><button class="buy-button" data-listing-id="${listing.id}">Compra</button></div>
+            <div class="seller-cell">
+                <a class="seller-link"
+                    href="http://localhost:8081/seller-profile.html?username=${encodeURIComponent(listing.sellerUsername)}">
+                    ${listing.sellerUsername}
+                </a>
+            </div>
+
+            <div>
+                <span class="condition-badge ${badgeClass}">${listing.condition}</span>
+            </div>
+
+            <div class="qty-cell">${listing.quantity}</div>
+
+            <div class="price-cell">€ ${Number(listing.price).toFixed(2)}</div>
+
+            <div class="actions-cell">
+                <button class="icon-cart-button buy-button" data-listing-id="${listing.id}" title="Aggiungi al carrello" aria-label="Aggiungi al carrello">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                </button>
+
+                <button class="trade-button" data-listing-id="${listing.id}" data-seller="${listing.sellerUsername}">
+                    Scambia
+                </button>
+            </div>
         `;
 
         container.appendChild(row);
     });
 
     setupBuyButtons();
+    setupTradeButtons();
 }
 
-function sortListingsByPriceAscending() {
-    currentListings.sort((a, b) => a.price - b.price);
+function sortListingsByPrice() {
+    currentListings.sort((a, b) => {
+        return sortAscending ? a.price - b.price : b.price - a.price;
+    });
+
     renderListings(currentListings);
+
+    const sortButton = document.getElementById("sortPriceButton");
+    sortButton.textContent = sortAscending ? "Ordina per prezzo ↓" : "Ordina per prezzo ↑";
+    sortAscending = !sortAscending;
 }
 
 function setupSortButton() {
     const sortButton = document.getElementById("sortPriceButton");
-    sortButton.addEventListener("click", () => {
-        sortListingsByPriceAscending();
-    });
+    sortButton.addEventListener("click", sortListingsByPrice);
 }
 
 function setupSellButton() {
@@ -103,7 +169,7 @@ function setupSellButton() {
 
         if (!token) {
             alert("Devi effettuare il login per creare un annuncio.");
-            window.location.href = "/login.html";
+            window.location.href = "http://localhost:8080/login.html";
             return;
         }
 
@@ -118,11 +184,11 @@ function setupSellForm(cardId) {
     sellForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("jwtToken");
 
         if (!token) {
             alert("Devi effettuare il login.");
-            window.location.href = "/login.html";
+            window.location.href = "http://localhost:8080/login.html";
             return;
         }
 
@@ -138,10 +204,10 @@ function setupSellForm(cardId) {
                     "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    cardId: cardId,
-                    condition: condition,
-                    quantity: quantity,
-                    price: price
+                    cardId,
+                    condition,
+                    quantity,
+                    price
                 })
             });
 
@@ -151,17 +217,18 @@ function setupSellForm(cardId) {
             }
 
             sellMessage.textContent = "Annuncio creato con successo.";
-            sellMessage.style.color = "green";
+            sellMessage.className = "sell-message success";
 
             sellForm.reset();
 
             currentListings = await loadListings(cardId);
-            sortListingsByPriceAscending();
+            currentListings.sort((a, b) => a.price - b.price);
+            renderListings(currentListings);
 
         } catch (error) {
             console.error(error);
             sellMessage.textContent = "Errore: " + error.message;
-            sellMessage.style.color = "red";
+            sellMessage.className = "sell-message error";
         }
     });
 }
@@ -170,18 +237,39 @@ function setupBuyButtons() {
     const buttons = document.querySelectorAll(".buy-button");
 
     buttons.forEach(button => {
-        button.addEventListener("click", () => {
-            const token = localStorage.getItem("token");
+        button.addEventListener("click", async () => {
+            const token = localStorage.getItem("jwtToken");
 
             if (!token) {
                 alert("Devi effettuare il login per comprare.");
-                window.location.href = "/login.html";
+                window.location.href = "http://localhost:8080/login.html";
                 return;
             }
 
             const listingId = button.getAttribute("data-listing-id");
 
-            alert(`Funzione acquisto da implementare. Listing selezionato: ${listingId}`);
+            alert(`Funzione acquisto/carrello da collegare. Listing selezionato: ${listingId}`);
+        });
+    });
+}
+
+function setupTradeButtons() {
+    const buttons = document.querySelectorAll(".trade-button");
+
+    buttons.forEach(button => {
+        button.addEventListener("click", () => {
+            const token = localStorage.getItem("jwtToken");
+
+            if (!token) {
+                alert("Devi effettuare il login per proporre uno scambio.");
+                window.location.href = "http://localhost:8080/login.html";
+                return;
+            }
+
+            const listingId = button.getAttribute("data-listing-id");
+            const seller = button.getAttribute("data-seller");
+
+            window.location.href = `http://localhost:8088/trade.html?listingId=${encodeURIComponent(listingId)}&seller=${encodeURIComponent(seller)}`;
         });
     });
 }
@@ -200,10 +288,10 @@ async function initPage() {
             loadListings(cardId)
         ]);
 
-        currentListings = listings;
+        currentListings = listings.sort((a, b) => a.price - b.price);
 
         renderCard(card);
-        sortListingsByPriceAscending();
+        renderListings(currentListings);
         setupSortButton();
         setupSellButton();
         setupSellForm(cardId);

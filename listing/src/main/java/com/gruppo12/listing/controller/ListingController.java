@@ -48,8 +48,15 @@ public class ListingController {
     }
 
     @GetMapping("/search")
-    public List<SearchListingCardResponse> searchCardsWithListings(@RequestParam String q) {
-        return listingService.searchCardsWithActiveListings(q);
+    public List<SearchListingCardResponse> searchCards(@RequestParam String q) {
+        return listingService.searchCards(q);
     }
 
+    @GetMapping("/seller/{sellerUsername}")
+    public List<ListingResponse> getListingsBySeller(@PathVariable String sellerUsername) {
+        return listingService.getActiveListingsBySeller(sellerUsername)
+                .stream()
+                .map(ListingResponse::new)
+                .toList();
+    }
 }
