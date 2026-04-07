@@ -44,7 +44,6 @@
 
     <!-- LEFT: ORDER SUMMARY -->
     <div class="checkout-left">
-        <h2 class="section-title">Riepilogo ordine</h2>
         <div id="sellerGroups">
             <!-- populated by JS -->
         </div>
@@ -71,6 +70,15 @@
             <div class="summary-row">
                 <span>Spedizioni (<span id="shipCountEl">0</span>× € 3.00)</span>
                 <span id="shippingEl">€ 0.00</span>
+            </div>
+
+            <div class="summary-row points-earned">
+                <span>Punti che guadagnerai</span>
+                <span id="earnedPointsEl">0 pt</span>
+            </div>
+
+            <div class="points-earned-sub">
+                (+3 pt per ogni € speso)
             </div>
 
             <!-- LOYALTY POINTS -->
@@ -101,10 +109,65 @@
             </div>
         </div>
 
+        <!-- SHIPPING ADDRESS -->
+        <div class="address-box" id="addressBox">
+            <div class="address-header">
+                <div class="address-header-left">
+                    <span class="address-icon">📦</span>
+                    <h3 class="address-title">Indirizzo di spedizione</h3>
+                </div>
+                <button class="btn-edit-address" id="editAddressBtn">Modifica</button>
+            </div>
+
+            <!-- VIEW MODE -->
+            <div id="addressView">
+                <div class="address-loading" id="addressLoading">Caricamento…</div>
+                <div class="address-display" id="addressDisplay" style="display:none">
+                    <div class="address-name" id="addrName"></div>
+                    <div class="address-line" id="addrLine1"></div>
+                    <div class="address-line" id="addrLine2"></div>
+                </div>
+                <div class="address-missing" id="addressMissing" style="display:none">
+                    ⚠ Indirizzo non impostato. Clicca <strong>Modifica</strong> per aggiungerlo.
+                </div>
+            </div>
+
+            <!-- EDIT MODE -->
+            <div id="addressEdit" style="display:none">
+                <div class="addr-grid">
+                    <div class="addr-field">
+                        <label class="addr-label">Nome</label>
+                        <input type="text" id="addrInputNome" class="addr-input" placeholder="Mario">
+                    </div>
+                    <div class="addr-field">
+                        <label class="addr-label">Cognome</label>
+                        <input type="text" id="addrInputCognome" class="addr-input" placeholder="Rossi">
+                    </div>
+                    <div class="addr-field addr-field-full">
+                        <label class="addr-label">Indirizzo</label>
+                        <input type="text" id="addrInputIndirizzo" class="addr-input" placeholder="Via Roma 1">
+                    </div>
+                    <div class="addr-field">
+                        <label class="addr-label">CAP</label>
+                        <input type="text" id="addrInputCap" class="addr-input" placeholder="00100">
+                    </div>
+                    <div class="addr-field">
+                        <label class="addr-label">Città</label>
+                        <input type="text" id="addrInputCitta" class="addr-input" placeholder="Roma">
+                    </div>
+                    <div class="addr-field">
+                        <label class="addr-label">Provincia</label>
+                        <input type="text" id="addrInputProvincia" class="addr-input" placeholder="RM">
+                    </div>
+                </div>
+                <div class="addr-error" id="addrError" style="display:none"></div>
+            </div>
+        </div>
+
         <!-- WALLET BALANCE -->
         <div class="wallet-box" id="walletBox">
             <div class="wallet-row">
-                <span class="wallet-label">💳 Saldo wallet</span>
+                <a href="http://localhost:8085/wallet.html" class="wallet-label wallet-label-link">💳 Saldo wallet <span class="wallet-label-arrow">→</span></a>
                 <span class="wallet-amount" id="walletBalance">—</span>
             </div>
             <div class="wallet-error" id="walletError" style="display:none">

@@ -2,6 +2,7 @@
 const API_CART    = "http://localhost:8087/api/cart";
 const API_PAYMENT = "http://localhost:8085/api/payment";
 const API_CATALOG = "http://localhost:8082/cards";
+const API_USER    = "http://localhost:8081/api/user";
 const SHIPPING_COST  = 3.00;
 const POINTS_TO_EURO = 0.01;   // 1 punto = € 0.01
 
@@ -28,6 +29,7 @@ let pointsUsed     = 0;
 let grandTotal     = 0;
 let totalShipping  = 0;
 let subtotalGlobal = 0;
+let userProfile    = null;
 
 // ─── CATALOG ───
 async function loadCatalog() {
@@ -162,6 +164,121 @@ function render() {
     updateTotals();
 }
 
+
+// ─── ADDRESS ───
+async function loadAddress() {
+    try {
+        const res = await fetch(`${API_USER}/profile`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error();
+        userProfile = await res.json();
+        renderAddress();
+    } catch {
+        document.getElementById("addressLoading").style.display = "none";
+        document.getElementById("addressMissing").style.display = "block";
+    }
+}
+
+function renderAddress() {
+    const loading  = document.getElementById("addressLoading");
+    const display  = document.getElementById("addressDisplay");
+    const missing  = document.getElementById("addressMissing");
+
+    loading.style.display = "none";
+
+    const p = userProfile;
+    const hasAddress = p && p.indirizzo && p.citta;
+
+    if (!hasAddress) {
+        missing.style.display = "block";
+        display.style.display = "none";
+        return;
+    }
+
+    missing.style.display = "none";
+    display.style.display = "flex";
+
+    const nome = [p.nome, p.cognome].filter(Boolean).join(" ") || "—";
+    document.getElementById("addrName").textContent  = nome;
+    document.getElementById("addrLine1").textContent = p.indirizzo || "";
+    document.getElementById("addrLine2").textContent =
+        [p.cap, p.citta, p.provincia].filter(Boolean).join(" ");
+}
+
+// ─── ADDRESS EDIT TOGGLE ───
+document.getElementById("editAddressBtn").addEventListener("click", async () => {
+    const btn      = document.getElementById("editAddressBtn");
+    const viewEl   = document.getElementById("addressView");
+    const editEl   = document.getElementById("addressEdit");
+    const errEl    = document.getElementById("addrError");
+    const isEditing = editEl.style.display !== "none";
+
+    if (!isEditing) {
+        // Switch to edit mode: populate fields
+        const p = userProfile || {};
+        document.getElementById("addrInputNome").value      = p.nome      || "";
+        document.getElementById("addrInputCognome").value   = p.cognome   || "";
+        document.getElementById("addrInputIndirizzo").value = p.indirizzo || "";
+        document.getElementById("addrInputCap").value       = p.cap       || "";
+        document.getElementById("addrInputCitta").value     = p.citta     || "";
+        document.getElementById("addrInputProvincia").value = p.provincia || "";
+
+        viewEl.style.display = "none";
+        editEl.style.display = "block";
+        btn.textContent      = "Conferma modifica";
+        btn.classList.add("saving");
+    } else {
+        // Validate
+        errEl.style.display = "none";
+        const indirizzo = document.getElementById("addrInputIndirizzo").value.trim();
+        const citta     = document.getElementById("addrInputCitta").value.trim();
+        if (!indirizzo || !citta) {
+            errEl.textContent   = "Indirizzo e città sono obbligatori.";
+            errEl.style.display = "block";
+            return;
+        }
+
+        // Save via PATCH
+        const updates = {
+            nome:      document.getElementById("addrInputNome").value.trim(),
+            cognome:   document.getElementById("addrInputCognome").value.trim(),
+            indirizzo: indirizzo,
+            cap:       document.getElementById("addrInputCap").value.trim(),
+            citta:     citta,
+            provincia: document.getElementById("addrInputProvincia").value.trim()
+        };
+
+        try {
+            btn.disabled    = true;
+            btn.textContent = "Salvataggio…";
+            const res = await fetch(`${API_USER}/profile`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(updates)
+            });
+            if (!res.ok) throw new Error("Errore salvataggio");
+            userProfile = await res.json();
+
+            viewEl.style.display = "block";
+            editEl.style.display = "none";
+            btn.textContent      = "Modifica";
+            btn.classList.remove("saving");
+            btn.disabled         = false;
+            renderAddress();
+            updateTotals(); // re-check pay button
+        } catch {
+            errEl.textContent   = "Errore durante il salvataggio. Riprova.";
+            errEl.style.display = "block";
+            btn.textContent     = "Conferma modifica";
+            btn.disabled        = false;
+        }
+    }
+});
+
 function updateTotals() {
     const discount = Math.min(pointsUsed * POINTS_TO_EURO, totalShipping);
     grandTotal     = Math.max(0, subtotalGlobal + totalShipping - discount);
@@ -173,14 +290,19 @@ function updateTotals() {
     document.getElementById("pointsDisplay").textContent = `${loyaltyPoints} pt`;
     document.getElementById("walletBalance").textContent = `€ ${walletBalance.toFixed(2)}`;
 
+    const earnedPoints = Math.floor(subtotalGlobal * 3);
+    document.getElementById("earnedPointsEl").textContent = `${earnedPoints} pt`;
+
     const walletErr = document.getElementById("walletError");
     const payBtn    = document.getElementById("payBtn");
+    const p = userProfile;
+    const addressOk = p && p.indirizzo && p.citta;
     if (walletBalance < grandTotal) {
         walletErr.style.display = "block";
         payBtn.disabled = true;
     } else {
         walletErr.style.display = "none";
-        payBtn.disabled = false;
+        payBtn.disabled = !addressOk;
     }
 }
 
@@ -278,6 +400,6 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 
 // ─── INIT ───
 (async () => {
-    await Promise.all([loadCatalog(), loadCart(), loadWallet()]);
+    await Promise.all([loadCatalog(), loadCart(), loadWallet(), loadAddress()]);
     render();
 })();
