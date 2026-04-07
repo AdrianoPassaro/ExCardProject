@@ -390,13 +390,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             const cart = await res.json();
             const count = (cart.items || []).length;
             const badge = document.getElementById("cartBadge");
-            if (!badge) return;
-            if (count > 0) {
-                badge.textContent = count;
-                badge.removeAttribute("style"); // rimuove il display:none inline
-            }
-        } catch (err) {
-            console.warn("Cart badge non caricato:", err);
+            animateBadge(badge, count);
+        }
+        catch (err) {
+            console.error("Errore loadCartBadge:", err);
+        }
+    }
+
+    function animateBadge(badge, count) {
+        if (count > 0) {
+            badge.style.display = "flex";
+            badge.textContent = count;
+
+            // reset animazione
+            badge.style.animation = "none";
+            badge.offsetHeight;
+            badge.style.animation = "badgePop 0.25s cubic-bezier(0.34,1.56,0.64,1)";
+        } else {
+            badge.style.display = "none";
         }
     }
 
