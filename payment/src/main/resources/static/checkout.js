@@ -4,6 +4,7 @@ const API_PAYMENT = "http://localhost:8085/api/payment";
 const API_CATALOG = "http://localhost:8082/cards";
 const API_ORDER   = "http://localhost:8086/api/orders";
 const API_USER    = "http://localhost:8081/api/user";
+const API_COLLECTION = "http://localhost:8083/api/collection"; // Aggiunta porta 8083
 const SHIPPING_COST  = 3.00;
 const POINTS_TO_EURO = 0.01;   // 1 punto = € 0.01
 
@@ -342,7 +343,7 @@ document.getElementById("payBtn").addEventListener("click", async () => {
     payBtn.textContent = "Elaborazione…";
 
     try {
-        // 1. Scala il wallet e accredita punti (tutto gestito dal backend)
+        // 1. Scala il wallet e accredita punti (Pagamento)
         const payRes = await fetch(`${API_PAYMENT}/pay`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -357,7 +358,7 @@ document.getElementById("payBtn").addEventListener("click", async () => {
         const ok = await payRes.json();
         if (!ok) throw new Error("Saldo insufficiente");
 
-        // 2. Se l'utente ha usato punti, scalali dal DB
+        // 2. Se l'utente ha usato punti, scalali
         if (pointsUsed > 0) {
             await fetch(`${API_PAYMENT}/points/use?points=${pointsUsed}`, {
                 method: "POST",
@@ -365,7 +366,28 @@ document.getElementById("payBtn").addEventListener("click", async () => {
             });
         }
 
-        // 3. Crea ordini nel microservizio ordini
+        // 3. AGGIUNGI LE CARTE ALLA COLLEZIONE (Nuovo step!)
+        // Cicliamo gli articoli nel carrello e chiamiamo il servizio collection sulla porta 8083
+        const collectionPromises = cartItems.map(item => {
+            return fetch(`${API_COLLECTION}/add`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                    "username": username // Richiesto dal tuo CollectionController
+                },
+                body: JSON.stringify({
+                    cardId: item.cardId,
+                    condition: item.condition,
+                    quantity: item.quantity || 1
+                })
+            });
+        });
+
+        // Aspettiamo che tutte le carte siano state processate nella collezione
+        await Promise.all(collectionPromises);
+
+        // 4. Crea ordini nel microservizio ordini
         const orderItems = cartItems.map(item => {
             const cat = catalogMap[item.cardId] || {};
             return {
@@ -389,19 +411,19 @@ document.getElementById("payBtn").addEventListener("click", async () => {
             })
         });
 
-        // 4. Svuota carrello
+        // 5. Svuota carrello
         await fetch(`${API_CART}/clear`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}`, "username": username }
         });
 
-        // 5. Leggi punti aggiornati e mostra conferma
+        // 6. Leggi punti aggiornati e conferma
         const wRes  = await fetch(`${API_PAYMENT}/wallet`, { headers: { "username": username } });
         const wData = await wRes.json();
         const newPts = wData.points || 0;
         const earned = Math.floor(subtotalGlobal * 3);
 
-        alert(`Pagamento completato!\n\nHai guadagnato ${earned} punti fedeltà.\nPunti totali ora: ${newPts} pt`);
+        alert(`Pagamento completato!\nLe carte sono state aggiunte alla tua collezione.\nHai guadagnato ${earned} punti fedeltà.`);
         window.location.href = "http://localhost:8086/orders.html";
 
     } catch (err) {
