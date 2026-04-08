@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Controllo del token
     const token = localStorage.getItem('jwtToken');
     if (token) {
-        window.location.href = 'http://localhost:8080/homepage.html';
+        window.location.href = '../authentication_autorization/src/main/resources/static/homepage.html';
         return;
     }
 

@@ -11,8 +11,12 @@ public interface ListingRepository extends MongoRepository<ListingDocument, Stri
 
     List<ListingDocument> findByCardId(String cardId);
 
-    List<ListingDocument> findBySellerId(String sellerId);
+    List<ListingDocument> findBySellerUsername(String sellerUsername);
 
     List<ListingDocument> findByStatus(ListingStatus status);
+
+    List<ListingDocument> findByCardIdAndStatus(String cardId, ListingStatus status);
+
+    List<ListingDocument> findBySellerUsernameAndStatus(String sellerUsername, ListingStatus status);
 
 }

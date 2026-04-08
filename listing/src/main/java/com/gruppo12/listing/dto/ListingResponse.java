@@ -9,7 +9,7 @@ public class ListingResponse {
 
     private String id;
     private String cardId;
-    private String sellerId;
+    private String sellerUsername;
 
     private double price;
     private String condition;
@@ -21,7 +21,7 @@ public class ListingResponse {
     public ListingResponse(ListingDocument listing) {
         this.id = listing.getId();
         this.cardId = listing.getCardId();
-        this.sellerId = listing.getSellerId();
+        this.sellerUsername = listing.getSellerUsername();
         this.price = listing.getPrice();
         this.condition = listing.getCondition();
         this.quantity = listing.getQuantity();
@@ -33,7 +33,7 @@ public class ListingResponse {
 
     public String getCardId() { return cardId; }
 
-    public String getSellerId() { return sellerId; }
+    public String getSellerUsername() { return sellerUsername; }
 
     public double getPrice() { return price; }
 

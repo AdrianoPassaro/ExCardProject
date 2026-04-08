@@ -40,7 +40,7 @@ public class CardService {
                 .orElseThrow(() -> new CardNotFoundException(id));
     }
 
-    public List<CardDocument> searchCards(String name) {
+    public List<CardDocument> searchCardsByName(String name) {
         return repository.findByNameContainingIgnoreCase(name);
     }
 }

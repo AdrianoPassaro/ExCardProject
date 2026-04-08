@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dettaglio Carta - ExCard</title>
+    <link rel="stylesheet" href="card-page.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="http://localhost:8080/homepage.html" class="logo">
+        <img src="logo.png" alt="ExCard Logo" class="logo-img">
+    </a>
+
+    <div class="nav-buttons">
+        <a href="http://localhost:8080/login.html" class="btn btn-secondary">Login</a>
+        <a href="http://localhost:8080/register.html" class="btn btn-secondary">Registrati</a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div class="page-header-inner">
+        <div class="page-header-text">
+            <h1 class="page-title" id="cardName">Caricamento...</h1>
+            <p class="page-subtitle">
+                <span id="cardSet">-</span>
+                <span class="separator">•</span>
+                Nº <span id="cardNumber">-</span>
+                <span class="separator">•</span>
+                <span id="cardRarity">-</span>
+            </p>
+        </div>
+
+        <button id="sellButton" class="btn btn-primary">Vendi questa carta</button>
+    </div>
+</div>
+
+<main class="page-container">
+    <section class="card-hero">
+        <div class="card-image-panel">
+            <img id="cardImage" src="" alt="Immagine carta">
+        </div>
+
+        <div class="card-summary-panel">
+            <div class="summary-box">
+                <div class="summary-label">Set</div>
+                <div class="summary-value" id="summarySet">-</div>
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-label">Numero</div>
+                <div class="summary-value" id="summaryNumber">-</div>
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-label">Rarità</div>
+                <div class="summary-value" id="summaryRarity">-</div>
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-label">Annunci attivi</div>
+                <div class="summary-value" id="summaryListings">0</div>
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-label">Prezzo più basso</div>
+                <div class="summary-value" id="summaryLowestPrice">-</div>
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-label">Prezzo medio</div>
+                <div class="summary-value" id="summaryAveragePrice">-</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="sellFormSection" class="panel sell-panel hidden">
+        <div class="panel-header">
+            <h2>Crea un annuncio di vendita</h2>
+        </div>
+
+        <form id="sellForm" class="sell-form">
+            <div class="form-grid">
+                <div class="form-row">
+                    <label for="condition">Condizione</label>
+                    <select id="condition" required>
+                        <option value="">Seleziona</option>
+                        <option value="Mint">Mint</option>
+                        <option value="Near Mint">Near Mint</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Played">Played</option>
+                        <option value="Poor">Poor</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <label for="quantity">Quantità</label>
+                    <input type="number" id="quantity" min="1" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="price">Prezzo (€)</label>
+                    <input type="number" id="price" min="0" step="0.01" required>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-confirm">Conferma annuncio</button>
+            </div>
+        </form>
+
+        <p id="sellMessage" class="sell-message"></p>
+    </section>
+
+    <section class="panel listings-panel">
+        <div class="panel-header listings-header">
+            <div>
+                <h2>Annunci di vendita</h2>
+                <p class="panel-subtitle">Tutti gli annunci disponibili per questa carta</p>
+            </div>
+
+            <button id="sortPriceButton" class="btn btn-secondary">Ordina per prezzo ↑</button>
+        </div>
+
+        <div class="results-bar" id="resultsBar">0 annunci</div>
+
+        <div class="listing-table">
+            <div class="listing-header-row">
+                <div>Venditore</div>
+                <div>Condizione</div>
+                <div>Quantità</div>
+                <div>Prezzo</div>
+                <div>Azioni</div>
+            </div>
+
+            <div id="listingContainer"></div>
+        </div>
+    </section>
+</main>
+
+<script src="card-page.js"></script>
+</body>
+</html>

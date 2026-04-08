@@ -1,0 +1,152 @@
+/* stile.css - Il DNA del sito */
+:root {
+    /* Tavolozza Colori */
+    --primary: #1f4e99;
+    --primary-dark: #003d80;
+    --accent: #b3d1ff;
+    --bg: #e0f0ff;
+    --white: #ffffff;
+    --text: #333333;
+
+    /* Stati Feedback */
+    --success: #28a745;
+    --warning: #ffc107;
+    --error: #dc3545;
+
+    /* Costanti Layout */
+    --border-radius: 10px;
+    --shadow: 0 4px 15px rgba(0, 60, 130, 0.15);
+    --nav-height: 65px;
+}
+
+/* Reset professionale */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    /* Spazio per la navbar fissa che aggiungiamo sotto */
+    padding-top: calc(var(--nav-height) + 20px);
+}
+
+/* NAVBAR UNIVERSALE */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--nav-height);
+    background-color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--primary);
+    text-decoration: none;
+    letter-spacing: -1px;
+}
+
+/* BOTTONI NAVBAR */
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+/* CONTENITORE PRINCIPALE (per centrare i form) */
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Permette lo scroll se il form è lungo */
+    width: 100%;
+    padding: 20px;
+}
+
+/* Ricerca nella Navbar */
+.search-container {
+    flex: 0 1 400px;
+    display: flex;
+    background: #f1f4f8;
+    border-radius: 20px;
+    padding: 5px 15px;
+    margin: 0 20px;
+}
+
+.search-container input {
+    border: none;
+    background: none;
+    width: 100%;
+    padding: 8px;
+    outline: none;
+}
+
+/* Dashboard Cards */
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 30px;
+}
+
+.dashboard-card {
+    background: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.dashboard-card .icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* UTILITY CLASSES */
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}

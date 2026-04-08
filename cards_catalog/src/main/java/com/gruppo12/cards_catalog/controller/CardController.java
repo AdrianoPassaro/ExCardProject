@@ -40,7 +40,10 @@ public class CardController {
     }
 
     @GetMapping("/search")
-    public List<CardDocument> searchCards(@RequestParam String name) {
-        return service.searchCards(name);
+    public List<CardResponse> searchCards(@RequestParam String q) {
+        return service.searchCardsByName(q)
+                .stream()
+                .map(CardResponse::new)
+                .toList();
     }
 }
