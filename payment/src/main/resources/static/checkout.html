@@ -118,8 +118,6 @@
                 </div>
                 <button class="btn-edit-address" id="editAddressBtn">Modifica</button>
             </div>
-
-            <!-- VIEW MODE -->
             <div id="addressView">
                 <div class="address-loading" id="addressLoading">Caricamento…</div>
                 <div class="address-display" id="addressDisplay" style="display:none">
@@ -131,8 +129,6 @@
                     ⚠ Indirizzo non impostato. Clicca <strong>Modifica</strong> per aggiungerlo.
                 </div>
             </div>
-
-            <!-- EDIT MODE -->
             <div id="addressEdit" style="display:none">
                 <div class="addr-grid">
                     <div class="addr-field">
@@ -167,7 +163,9 @@
         <!-- WALLET BALANCE -->
         <div class="wallet-box" id="walletBox">
             <div class="wallet-row">
-                <a href="http://localhost:8085/wallet.html" class="wallet-label wallet-label-link">💳 Saldo wallet <span class="wallet-label-arrow">→</span></a>
+                <a href="http://localhost:8085/wallet.html" class="wallet-label wallet-label-link">
+                    💳 Saldo wallet <span class="wallet-label-arrow">→</span>
+                </a>
                 <span class="wallet-amount" id="walletBalance">—</span>
             </div>
             <div class="wallet-error" id="walletError" style="display:none">

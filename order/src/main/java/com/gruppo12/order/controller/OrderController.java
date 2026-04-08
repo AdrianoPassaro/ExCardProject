@@ -1,13 +1,13 @@
 package com.gruppo12.order.controller;
 
-import org.springframework.web.bind.annotation.*;
+import com.gruppo12.order.dto.CheckoutRequest;
+import com.gruppo12.order.dto.CheckoutResponse;
+import com.gruppo12.order.model.Order;
+import com.gruppo12.order.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import com.gruppo12.order.model.Order;
-import com.gruppo12.order.model.OrderItem;
-import com.gruppo12.order.service.OrderService;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -17,16 +17,25 @@ public class OrderController {
     @Autowired
     private OrderService service;
 
-    @GetMapping
-    public List<Order> getOrders(@RequestHeader String username) {
-        return service.getOrders(username);
+    // GET acquisti dell'utente loggato
+    @GetMapping("/purchases")
+    public List<Order> getPurchases(@RequestHeader String username) {
+        return service.getBuyerOrders(username);
     }
 
+    // GET vendite dell'utente loggato
+    @GetMapping("/sales")
+    public List<Order> getSales(@RequestHeader String username) {
+        return service.getSellerOrders(username);
+    }
+
+    // POST crea ordini dopo il pagamento (chiamato da checkout.js)
     @PostMapping("/checkout")
-    public Object checkout(@RequestHeader String username) {
-        return service.checkout(username);
+    public CheckoutResponse checkout(@RequestBody CheckoutRequest req) {
+        return service.createOrders(req);
     }
 
+    // PUT conferma ricezione → passa a COMPLETATO e accredita il venditore
     @PutMapping("/{id}/confirm")
     public Order confirm(@PathVariable String id) {
         return service.confirm(id);

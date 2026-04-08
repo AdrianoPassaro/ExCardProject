@@ -2,6 +2,7 @@
 const API_CART    = "http://localhost:8087/api/cart";
 const API_PAYMENT = "http://localhost:8085/api/payment";
 const API_CATALOG = "http://localhost:8082/cards";
+const API_ORDER   = "http://localhost:8086/api/orders";
 const API_USER    = "http://localhost:8081/api/user";
 const SHIPPING_COST  = 3.00;
 const POINTS_TO_EURO = 0.01;   // 1 punto = € 0.01
@@ -181,10 +182,9 @@ async function loadAddress() {
 }
 
 function renderAddress() {
-    const loading  = document.getElementById("addressLoading");
-    const display  = document.getElementById("addressDisplay");
-    const missing  = document.getElementById("addressMissing");
-
+    const loading = document.getElementById("addressLoading");
+    const display = document.getElementById("addressDisplay");
+    const missing = document.getElementById("addressMissing");
     loading.style.display = "none";
 
     const p = userProfile;
@@ -195,15 +195,22 @@ function renderAddress() {
         display.style.display = "none";
         return;
     }
-
     missing.style.display = "none";
     display.style.display = "flex";
 
     const nome = [p.nome, p.cognome].filter(Boolean).join(" ") || "—";
     document.getElementById("addrName").textContent  = nome;
     document.getElementById("addrLine1").textContent = p.indirizzo || "";
-    document.getElementById("addrLine2").textContent =
-        [p.cap, p.citta, p.provincia].filter(Boolean).join(" ");
+    document.getElementById("addrLine2").textContent = [p.cap, p.citta, p.provincia].filter(Boolean).join(" ");
+}
+
+function buildAddressString(p) {
+    if (!p) return "";
+    return [
+        [p.nome, p.cognome].filter(Boolean).join(" "),
+        p.indirizzo,
+        [p.cap, p.citta, p.provincia].filter(Boolean).join(" ")
+    ].filter(Boolean).join(" · ");
 }
 
 // ─── ADDRESS EDIT TOGGLE ───
@@ -215,7 +222,6 @@ document.getElementById("editAddressBtn").addEventListener("click", async () => 
     const isEditing = editEl.style.display !== "none";
 
     if (!isEditing) {
-        // Switch to edit mode: populate fields
         const p = userProfile || {};
         document.getElementById("addrInputNome").value      = p.nome      || "";
         document.getElementById("addrInputCognome").value   = p.cognome   || "";
@@ -223,13 +229,11 @@ document.getElementById("editAddressBtn").addEventListener("click", async () => 
         document.getElementById("addrInputCap").value       = p.cap       || "";
         document.getElementById("addrInputCitta").value     = p.citta     || "";
         document.getElementById("addrInputProvincia").value = p.provincia || "";
-
         viewEl.style.display = "none";
         editEl.style.display = "block";
-        btn.textContent      = "Conferma modifica";
+        btn.textContent = "Conferma modifica";
         btn.classList.add("saving");
     } else {
-        // Validate
         errEl.style.display = "none";
         const indirizzo = document.getElementById("addrInputIndirizzo").value.trim();
         const citta     = document.getElementById("addrInputCitta").value.trim();
@@ -238,8 +242,6 @@ document.getElementById("editAddressBtn").addEventListener("click", async () => 
             errEl.style.display = "block";
             return;
         }
-
-        // Save via PATCH
         const updates = {
             nome:      document.getElementById("addrInputNome").value.trim(),
             cognome:   document.getElementById("addrInputCognome").value.trim(),
@@ -248,33 +250,28 @@ document.getElementById("editAddressBtn").addEventListener("click", async () => 
             citta:     citta,
             provincia: document.getElementById("addrInputProvincia").value.trim()
         };
-
         try {
-            btn.disabled    = true;
+            btn.disabled = true;
             btn.textContent = "Salvataggio…";
             const res = await fetch(`${API_USER}/profile`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                 body: JSON.stringify(updates)
             });
-            if (!res.ok) throw new Error("Errore salvataggio");
+            if (!res.ok) throw new Error();
             userProfile = await res.json();
-
             viewEl.style.display = "block";
             editEl.style.display = "none";
-            btn.textContent      = "Modifica";
+            btn.textContent = "Modifica";
             btn.classList.remove("saving");
-            btn.disabled         = false;
+            btn.disabled = false;
             renderAddress();
-            updateTotals(); // re-check pay button
+            updateTotals();
         } catch {
             errEl.textContent   = "Errore durante il salvataggio. Riprova.";
             errEl.style.display = "block";
-            btn.textContent     = "Conferma modifica";
-            btn.disabled        = false;
+            btn.textContent = "Conferma modifica";
+            btn.disabled = false;
         }
     }
 });
@@ -295,8 +292,7 @@ function updateTotals() {
 
     const walletErr = document.getElementById("walletError");
     const payBtn    = document.getElementById("payBtn");
-    const p = userProfile;
-    const addressOk = p && p.indirizzo && p.citta;
+    const addressOk = userProfile && userProfile.indirizzo && userProfile.citta;
     if (walletBalance < grandTotal) {
         walletErr.style.display = "block";
         payBtn.disabled = true;
@@ -369,20 +365,44 @@ document.getElementById("payBtn").addEventListener("click", async () => {
             });
         }
 
-        // 3. Svuota carrello
+        // 3. Crea ordini nel microservizio ordini
+        const orderItems = cartItems.map(item => {
+            const cat = catalogMap[item.cardId] || {};
+            return {
+                listingId: item.listingId,
+                cardId:    item.cardId,
+                cardName:  cat.name || "Carta sconosciuta",
+                sellerId:  item.sellerId,
+                condition: item.condition,
+                quantity:  item.quantity || 1,
+                price:     item.price
+            };
+        });
+
+        await fetch(`${API_ORDER}/checkout`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                buyerUsername: username,
+                buyerAddress:  buildAddressString(userProfile),
+                items:         orderItems
+            })
+        });
+
+        // 4. Svuota carrello
         await fetch(`${API_CART}/clear`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}`, "username": username }
         });
 
-        // 4. Leggi punti aggiornati e mostra conferma
+        // 5. Leggi punti aggiornati e mostra conferma
         const wRes  = await fetch(`${API_PAYMENT}/wallet`, { headers: { "username": username } });
         const wData = await wRes.json();
-        const newPts   = wData.points || 0;
-        const earned   = Math.floor(subtotalGlobal * 3);
+        const newPts = wData.points || 0;
+        const earned = Math.floor(subtotalGlobal * 3);
 
-        alert(`Pagamento completato!\n\nHai guadagnato ${earned} punti fedeltà.\nPunti totali ora: ${newPts} pt\n\n(La gestione ordini sarà disponibile a breve)`);
-        window.location.href = "http://localhost:8087/cart.html";
+        alert(`Pagamento completato!\n\nHai guadagnato ${earned} punti fedeltà.\nPunti totali ora: ${newPts} pt`);
+        window.location.href = "http://localhost:8086/orders.html";
 
     } catch (err) {
         console.error("Errore pagamento:", err);

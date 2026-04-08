@@ -6,8 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface OrderRepository extends MongoRepository<Order, String> {
-
-    List<Order> findByBuyerUsername(String buyerUsername);
-
-    List<Order> findBySellerUsername(String sellerUsername);
+    List<Order> findByBuyerUsernameOrderByCreatedAtDesc(String buyerUsername);
+    List<Order> findBySellerUsernameOrderByCreatedAtDesc(String sellerUsername);
 }
