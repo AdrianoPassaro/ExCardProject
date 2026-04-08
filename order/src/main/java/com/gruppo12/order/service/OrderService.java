@@ -17,7 +17,7 @@ public class OrderService {
     private static final double SHIPPING = 3.0;
 
     // URL del payment service — usato solo per accreditare il venditore al confirm
-    private final String PAYMENT_ADD_URL = "http://localhost:8085/api/payment/add";
+    private final String PAYMENT_ADD_URL = "http://payment-service:8085/api/payment/add";
 
     @Autowired
     private OrderRepository repo;
@@ -98,8 +98,8 @@ public class OrderService {
         order.setStatus(OrderStatus.COMPLETATO);
         Order saved = repo.save(order);
 
-        // Accredita il venditore: gli mandiamo il finalPrice (articoli + spedizione)
-        creditSeller(order.getSellerUsername(), order.getFinalPrice());
+        // Accredita il venditore: gli mandiamo il totalprice (senza spedizione)
+        creditSeller(order.getSellerUsername(), order.getTotalPrice());
 
         return saved;
     }
