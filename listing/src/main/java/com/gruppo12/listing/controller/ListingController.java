@@ -52,6 +52,11 @@ public class ListingController {
         return listingService.searchCards(q);
     }
 
+    @GetMapping("/{id}")
+    public ListingResponse getListing(@PathVariable String id) {
+        return new ListingResponse(listingService.getListing(id));
+    }
+
     @GetMapping("/seller/{sellerUsername}")
     public List<ListingResponse> getListingsBySeller(@PathVariable String sellerUsername) {
         return listingService.getActiveListingsBySeller(sellerUsername)

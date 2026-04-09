@@ -12,6 +12,12 @@ public class CardResponse {
 
     public CardResponse() {}
 
+    public CardResponse(String cardId, String condition, int quantity) {
+        this.cardId = cardId;
+        this.condition = condition;
+        this.quantity = quantity;
+    }
+
     // getter e setter
     public String getCardId() { return cardId; }
     public void setCardId(String cardId) { this.cardId = cardId; }

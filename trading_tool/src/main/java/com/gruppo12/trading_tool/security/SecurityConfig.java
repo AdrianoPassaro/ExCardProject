@@ -1,4 +1,4 @@
-package com.gruppo12.listing.security;
+package com.gruppo12.trading_tool.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +19,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
@@ -27,21 +26,12 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/search-results.html",
-                                "/card-page.html",
-                                "/init-token.html",
-                                "/*.js",
-                                "/*.css",
-                                "/*.html",
-                                "/static/**"
+                                "/trade.html",
+                                "/trade.js",
+                                "/trade.css"
                         ).permitAll()
-
-                        .requestMatchers(HttpMethod.GET,"/listings").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/listings/card/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/listings/search").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/listings/{id}").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/listings/seller/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/listings").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/trades/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/trades/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

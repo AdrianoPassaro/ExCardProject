@@ -136,6 +136,23 @@ services:
       - excard_net
     restart: unless-stopped
 
+  trade-service:
+    image: excard-trade-service
+    container_name: trade-service
+    build:
+      context: ./trading_tool
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8088"
+    depends_on:
+      - mongo
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/trade_db
+      JWT_SECRET: 6A/rmc3XXBcR0KBadmew81PuaeFA0hUple8BtfCQL3w=
+    networks:
+      - excard_net
+    restart: unless-stopped
+
   mongo:
     image: mongo:6.0
     container_name: mongo
