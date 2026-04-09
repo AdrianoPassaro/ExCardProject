@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -37,6 +38,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/account.html", "/static/**").permitAll()
                         .requestMatchers("/api/user/**").authenticated()
+                        .requestMatchers("/seller-profile.html", "/seller-profile.js", "/seller-profile.css", "/static/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/public/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception

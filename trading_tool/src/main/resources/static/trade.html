@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Proponi uno scambio</title>
+    <link rel="stylesheet" href="trade.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="http://localhost:8080/homepage.html" class="logo">
+        <img src="logo.png" alt="ExCard Logo" class="logo-img">
+    </a>
+    <div class="nav-buttons">
+        <a href="http://localhost:8081/account.html" class="btn btn-user" id="usernameDisplay">👤 Utente</a>
+        <a href="http://localhost:8087/cart.html" class="cart-icon-btn" title="Carrello">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+        </a>
+        <button class="btn btn-logout" id="logoutBtn">Logout</button>
+    </div>
+</nav>
+
+<!-- HERO HEADER -->
+<div class="page-header">
+    <div class="page-header-inner">
+        <div class="page-header-text">
+            <h1 class="page-title">Proponi uno scambio</h1>
+            <p class="page-subtitle" id="tradeSubtitle">Seleziona le carte da offrire in cambio</p>
+        </div>
+        <button class="btn btn-add" id="sendTradeBtn">
+            <span class="btn-icon">⇄</span>
+            Invia proposta
+        </button>
+    </div>
+</div>
+
+<!-- TARGET LISTING PANEL -->
+<section class="target-panel">
+    <div class="target-panel-inner">
+        <div class="target-panel-text">
+            <h2 class="target-panel-title">Carta richiesta</h2>
+            <p class="target-panel-subtitle">Lo scambio parte da questo annuncio di vendita</p>
+        </div>
+    </div>
+
+    <div id="targetListingBox" class="target-listing-box"></div>
+
+    <div class="trade-message-row">
+        <label class="trade-message-label" for="proposerMessage">Messaggio per il venditore</label>
+        <textarea id="proposerMessage" class="trade-message-input" rows="4" placeholder="Scrivi un messaggio per accompagnare la tua proposta…"></textarea>
+        <p id="tradeMessage" class="trade-message-status"></p>
+    </div>
+</section>
+
+<!-- FILTERS BAR -->
+<div class="filters-bar" id="filtersBar">
+    <div class="filters-inner">
+
+        <div class="filter-search-wrap">
+            <span class="filter-search-icon">⌕</span>
+            <input type="text" id="filterSearch" class="filter-search" placeholder="Cerca nella tua collezione…">
+        </div>
+
+        <div class="filters-selects">
+            <div class="filter-group">
+                <label class="filter-label">Rarità</label>
+                <select id="filterRarity" class="filter-select">
+                    <option value="">Tutte</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Set</label>
+                <select id="filterSet" class="filter-select">
+                    <option value="">Tutti</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Condizione</label>
+                <select id="filterCondition" class="filter-select">
+                    <option value="">Tutte</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Ordina per</label>
+                <select id="filterSort" class="filter-select">
+                    <option value="name-asc">Nome A–Z</option>
+                    <option value="name-desc">Nome Z–A</option>
+                    <option value="qty-desc">Quantità ↓</option>
+                    <option value="qty-asc">Quantità ↑</option>
+                    <option value="rarity">Rarità</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="filter-reset" id="resetFilters" title="Resetta filtri">✕ Reset</button>
+    </div>
+
+    <!-- ACTIVE FILTER CHIPS -->
+    <div class="active-filters" id="activeFilters"></div>
+</div>
+
+<!-- SELECTED CARDS SUMMARY -->
+<div class="selection-summary" id="selectionSummary">
+    <div class="selection-summary-inner">
+        <span class="selection-label">Carte selezionate per lo scambio:</span>
+        <div class="selection-chips" id="selectionChips"></div>
+    </div>
+</div>
+
+<!-- RESULTS COUNT -->
+<div class="results-bar" id="resultsBar"></div>
+
+<!-- CARD GRID -->
+<div id="cardGrid"></div>
+
+<!-- EMPTY STATE -->
+<div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">🃏</div>
+    <p class="empty-title">Nessuna carta trovata</p>
+    <p class="empty-sub">Prova a modificare i filtri di ricerca</p>
+</div>
+
+<script src="trade.js"></script>
+</body>
+</html>

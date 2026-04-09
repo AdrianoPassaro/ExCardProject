@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 
@@ -38,6 +39,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/account.html", "/static/**").permitAll()
                         .requestMatchers("/api/collection/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/collection/public/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/collection/user/*/check-trade-availability").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/collection/trades/complete").permitAll()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception

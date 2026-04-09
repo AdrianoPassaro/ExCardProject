@@ -1,5 +1,6 @@
 package com.gruppo12.gestione_utente.controller;
 
+import com.gruppo12.gestione_utente.dto.SellerProfileResponse;
 import com.gruppo12.gestione_utente.model.UserProfile;
 import com.gruppo12.gestione_utente.repository.UserProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,25 @@ public class UserProfileController {
     @GetMapping("/verify-token")
     public ResponseEntity<Void> verifyToken(@AuthenticationPrincipal String username) {
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/public/{username}")
+    public ResponseEntity<SellerProfileResponse> getPublicProfile(@PathVariable String username) {
+        UserProfile profile = profileRepository.findByUsername(username);
+
+        if (profile == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        SellerProfileResponse response = new SellerProfileResponse(
+                profile.getUsername(),
+                profile.getNome(),
+                profile.getCognome(),
+                0.0,   // placeholder finché non implementi recensioni
+                0      // placeholder finché non colleghi gli ordini
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/profile")
