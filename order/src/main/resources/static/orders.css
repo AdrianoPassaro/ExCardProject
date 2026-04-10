@@ -343,3 +343,57 @@ body {
     min-height: 1.2em;
     font-style: italic;
 }
+/* ── ORDER RATING ROW ── */
+.order-rating-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1.3rem;
+    border-top: 1px solid rgba(59,130,246,0.08);
+    background: rgba(0,0,0,0.08);
+}
+
+.btn-secondary-sm {
+    padding: 0.28rem 0.85rem;
+    font-size: 0.75rem;
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 6px;
+    color: #fde047;
+    font-family: var(--font-body);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-secondary-sm:hover { background: rgba(251,191,36,0.2); border-color: rgba(251,191,36,0.55); }
+
+.btn-edit-rating {
+    padding: 0.22rem 0.65rem;
+    font-size: 0.7rem;
+    background: transparent;
+    border: 1px solid rgba(122,163,212,0.25);
+    border-radius: 5px;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 4px;
+}
+.btn-edit-rating:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+
+.rating-given-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 500;
+}
+.stars-given { display: inline-flex; gap: 1px; }
+.star-display { font-size: 1rem; }
+.star-on  { color: #fbbf24; }
+.star-off { color: rgba(122,163,212,0.25); }
+
+.no-rating-yet {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-style: italic;
+}

@@ -24,6 +24,8 @@ let purchases   = [];
 let sales       = [];
 let pendingConfirmId  = null;   // orderId in attesa di conferma modal
 let pendingSellerUsername = null; // sellerUsername per la recensione
+let pendingOrderId_forRating = null; // used for lazy/edit rating
+const orderRatings = {};  // orderId → stars given (0 = not rated)
 
 // ─── CATALOG ───
 async function loadCatalog() {
@@ -94,6 +96,9 @@ function buildPurchaseCard(order, idx) {
         ? `<button class="btn-confirm-receipt" data-id="${order.id}">Conferma ricezione</button>`
         : '';
 
+    const starsGiven  = orderRatings[order.id] || 0;
+    const ratingBlock = order.status === "COMPLETATO" ? buildRatingBlock(order.id, starsGiven) : "";
+
     card.innerHTML = `
         <div class="order-header">
             <div class="order-header-left">
@@ -114,6 +119,7 @@ function buildPurchaseCard(order, idx) {
                 = <strong>€ ${order.finalPrice.toFixed(2)}</strong>
             </span>
         </div>
+        ${ratingBlock}
     `;
 
     // Render items
@@ -148,7 +154,40 @@ function buildPurchaseCard(order, idx) {
         });
     }
 
+    // Lazy rating button listener
+    if (order.status === "COMPLETATO") {
+        const ratingBtn = card.querySelector(".btn-open-rating");
+        if (ratingBtn) {
+            ratingBtn.addEventListener("click", () => {
+                pendingOrderId_forRating  = order.id;
+                pendingSellerUsername     = order.sellerUsername;
+                selectedRating            = orderRatings[order.id] || 0;
+                updateStarUI(0);
+                document.getElementById("ratingSubmitBtn").disabled = selectedRating === 0;
+                document.getElementById("ratingModal").style.display = "flex";
+            });
+        }
+    }
+
     return card;
+}
+
+// ─── HELPER: rating block HTML ───
+function buildRatingBlock(orderId, starsGiven) {
+    if (!starsGiven) {
+        return `<div class="order-rating-row">
+            <button class="btn-open-rating btn-secondary-sm" data-order-id="${orderId}">⭐ Aggiungi recensione</button>
+        </div>`;
+    }
+    let stars = "";
+    for (let i = 1; i <= 5; i++) {
+        stars += `<span class="star-display ${i <= starsGiven ? "star-on" : "star-off"}">★</span>`;
+    }
+    return `<div class="order-rating-row">
+        <span class="rating-given-label">La tua recensione:</span>
+        <span class="stars-given">${stars}</span>
+        <button class="btn-open-rating btn-edit-rating" data-order-id="${orderId}">Modifica</button>
+    </div>`;
 }
 
 // ─── BUILD ORDER CARD (SALE) ───
@@ -157,6 +196,19 @@ function buildSaleCard(order, idx) {
     const card = document.createElement("div");
     card.classList.add("order-card");
     card.style.animationDelay = `${idx * 60}ms`;
+
+    // For sales: show the rating given by the buyer (stored in orderRatings)
+    const saleRating = orderRatings[order.id] || 0;
+    let saleRatingHtml;
+    if (order.status !== "COMPLETATO") {
+        saleRatingHtml = `<div class="order-rating-row"><span class="no-rating-yet">Nessuna recensione</span></div>`;
+    } else if (!saleRating) {
+        saleRatingHtml = `<div class="order-rating-row"><span class="no-rating-yet">Nessuna recensione</span></div>`;
+    } else {
+        let stars = "";
+        for (let i = 1; i <= 5; i++) stars += `<span class="star-display ${i <= saleRating ? "star-on" : "star-off"}">★</span>`;
+        saleRatingHtml = `<div class="order-rating-row"><span class="rating-given-label">Recensione ricevuta:</span><span class="stars-given">${stars}</span></div>`;
+    }
 
     card.innerHTML = `
         <div class="order-header">
@@ -177,6 +229,7 @@ function buildSaleCard(order, idx) {
                 = <strong>€ ${order.finalPrice.toFixed(2)}</strong>
             </span>
         </div>
+        ${saleRatingHtml}
     `;
 
     const itemsContainer = card.querySelector(`#items-s-${order.id}`);
@@ -328,27 +381,43 @@ document.querySelectorAll(".rating-star").forEach(star => {
 
 document.getElementById("ratingSubmitBtn").addEventListener("click", async () => {
     if (!selectedRating || !pendingSellerUsername) return;
+    const btn = document.getElementById("ratingSubmitBtn");
+    btn.disabled = true; btn.textContent = "Invio…";
     try {
         await fetch(`${API_USER}/rate/${pendingSellerUsername}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
             body: JSON.stringify({ stars: selectedRating })
         });
+        // Save locally so re-render shows the correct stars
+        if (pendingOrderId_forRating) {
+            orderRatings[pendingOrderId_forRating] = selectedRating;
+        } else if (pendingConfirmId) {
+            orderRatings[pendingConfirmId] = selectedRating;
+        }
     } catch (err) {
         console.warn("Errore invio recensione:", err);
     } finally {
         document.getElementById("ratingModal").style.display = "none";
-        pendingConfirmId      = null;
-        pendingSellerUsername = null;
-        selectedRating        = 0;
+        // Refresh to update displayed stars
+        await loadPurchases();
+        await loadSales();
+        renderPurchases();
+        renderSales();
+        pendingConfirmId          = null;
+        pendingSellerUsername     = null;
+        pendingOrderId_forRating  = null;
+        selectedRating            = 0;
+        btn.disabled = false; btn.textContent = "Invia recensione";
     }
 });
 
 document.getElementById("ratingSkipBtn").addEventListener("click", () => {
     document.getElementById("ratingModal").style.display = "none";
-    pendingConfirmId      = null;
-    pendingSellerUsername = null;
-    selectedRating        = 0;
+    pendingConfirmId         = null;
+    pendingSellerUsername    = null;
+    pendingOrderId_forRating = null;
+    selectedRating           = 0;
 });
 
 // Close rating modal on backdrop click

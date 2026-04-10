@@ -5,21 +5,24 @@ const API_CART    = 'http://localhost:8087/api/cart';
 const API_PAYMENT = 'http://localhost:8085/api/payment';
 const API_USER    = 'http://localhost:8081/api/user';
 
-// ─── STATE ───
-let currentListings = [];
-let sortAscending   = true;
-let loggedUsername  = null;
-const token         = localStorage.getItem('jwtToken');
+// ─── CONDITION ORDER (Mint best → Poor worst) ───
+const CONDITION_ORDER = { 'Mint': 0, 'Near Mint': 1, 'Excellent': 2, 'Good': 3, 'Played': 4, 'Poor': 5 };
 
-// Ratings cache: sellerUsername → { averageRating, ratingCount }
-const ratingsCache  = {};
+// ─── STATE ───
+let allListings   = [];   // raw from API (always full list)
+let sortMode      = 'price-asc';  // 'price-asc' | 'price-desc' | 'cond-asc' | 'cond-desc'
+let filterCond    = '';
+let filterRating  = 0;
+const ratingsCache = {};  // sellerUsername → { averageRating, ratingCount }
+let loggedUsername = null;
+const token        = localStorage.getItem('jwtToken');
 
 // ─── AUTH ───
 function extractUsername(t) {
     try {
-        const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-        if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
-        return payload.sub || payload.username || null;
+        const p = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+        if (p.exp && p.exp < Math.floor(Date.now()/1000)) return null;
+        return p.sub || p.username || null;
     } catch { return null; }
 }
 
@@ -27,7 +30,7 @@ function getCardIdFromUrl() {
     return new URLSearchParams(window.location.search).get('cardId');
 }
 
-// ─── NAVBAR SETUP ───
+// ─── NAVBAR ───
 function setupNavbar() {
     if (!token) return;
     loggedUsername = extractUsername(token);
@@ -38,23 +41,23 @@ function setupNavbar() {
     document.getElementById('usernameDisplay').textContent = loggedUsername;
     document.getElementById('sellButton').style.display = 'inline-flex';
 
-    loadWalletBadge();
+    loadWallet();
     loadCartBadge();
     setupDropdown();
 
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
+    document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('jwtToken');
         window.location.href = 'http://localhost:8080/homepage.html';
     });
 }
 
-async function loadWalletBadge() {
+async function loadWallet() {
     try {
         const res = await fetch(`${API_PAYMENT}/balance`, { headers: { 'username': loggedUsername } });
         if (!res.ok) return;
         const bal = parseFloat(await res.text()) || 0;
         document.getElementById('walletAmount').textContent = `€ ${bal.toFixed(2)}`;
-    } catch { /* silent */ }
+    } catch {}
 }
 
 async function loadCartBadge() {
@@ -63,17 +66,17 @@ async function loadCartBadge() {
             headers: { 'Authorization': `Bearer ${token}`, 'username': loggedUsername }
         });
         if (!res.ok) return;
-        const cart  = await res.json();
-        const count = (cart.items || []).length;
-        const badge = document.getElementById('cartBadge');
-        if (count > 0) { badge.textContent = count; badge.removeAttribute('style'); }
-    } catch { /* silent */ }
+        const cart = await res.json();
+        const n    = (cart.items || []).length;
+        const b    = document.getElementById('cartBadge');
+        if (n > 0) { b.textContent = n; b.removeAttribute('style'); }
+    } catch {}
 }
 
 function setupDropdown() {
     const trigger  = document.getElementById('userMenuTrigger');
     const dropdown = document.getElementById('userDropdown');
-    trigger.addEventListener('click', (e) => {
+    trigger.addEventListener('click', e => {
         e.stopPropagation();
         const open = dropdown.classList.toggle('open');
         trigger.classList.toggle('open', open);
@@ -85,141 +88,154 @@ function setupDropdown() {
     dropdown.addEventListener('click', e => e.stopPropagation());
 }
 
-// ─── LOAD DATA ───
+// ─── LOAD CARD ───
 async function loadCard(cardId) {
     const res = await fetch(`${API_CATALOG}/${cardId}`);
     if (!res.ok) throw new Error('Carta non trovata');
     return res.json();
 }
 
+// ─── LOAD LISTINGS ───
 async function loadListings(cardId) {
     const res = await fetch(`${API_LISTING}/card/${cardId}`);
     if (!res.ok) throw new Error('Errore nel caricamento degli annunci');
     return res.json();
 }
 
-async function loadSellerRating(sellerUsername) {
-    if (ratingsCache[sellerUsername]) return ratingsCache[sellerUsername];
+// ─── LOAD SELLER RATING ───
+async function loadSellerRating(seller) {
+    if (ratingsCache[seller] !== undefined) return ratingsCache[seller];
     try {
-        const res = await fetch(`${API_USER}/public/${sellerUsername}`);
-        if (!res.ok) return null;
-        const data = await res.json();
-        const r = { averageRating: data.averageRating || 0, ratingCount: data.ratingCount || 0 };
-        ratingsCache[sellerUsername] = r;
-        return r;
-    } catch { return null; }
+        const res = await fetch(`${API_USER}/public/${seller}`);
+        if (!res.ok) { ratingsCache[seller] = null; return null; }
+        const d = await res.json();
+        ratingsCache[seller] = { avg: d.averageRating || 0, count: d.ratingCount || 0 };
+        return ratingsCache[seller];
+    } catch { ratingsCache[seller] = null; return null; }
 }
 
 // ─── RENDER CARD ───
 function renderCard(card) {
-    document.getElementById('cardName').textContent     = card.name     || '—';
-    document.getElementById('cardSet').textContent      = card.setName  || '—';
-    document.getElementById('cardNumber').textContent   = card.number   || '—';
-    document.getElementById('cardRarity').textContent   = card.rarity   || '—';
-    document.getElementById('summarySet').textContent   = card.setName  || '—';
-    document.getElementById('summaryNumber').textContent = card.number  || '—';
-    document.getElementById('summaryRarity').textContent = card.rarity  || '—';
     document.title = `${card.name || 'Carta'} — ExCard`;
-
+    document.getElementById('cardName').textContent     = card.name    || '-';
+    document.getElementById('cardSet').textContent      = card.setName || '-';
+    document.getElementById('cardNumber').textContent   = card.number  || '-';
+    document.getElementById('cardRarity').textContent   = card.rarity  || '-';
+    document.getElementById('summarySet').textContent   = card.setName || '-';
+    document.getElementById('summaryNumber').textContent = card.number || '-';
+    document.getElementById('summaryRarity').textContent = card.rarity || '-';
     const img = document.getElementById('cardImage');
-    img.src = card.imageUrl || '';
-    img.alt = card.name     || 'Carta';
+    img.src = card.imageUrl || ''; img.alt = card.name || 'Carta';
 }
 
-// ─── PRICE STATS (quantity-weighted average) ───
-function updateListingStats(listings) {
-    const count = listings.length;
-    document.getElementById('summaryListings').textContent = count;
-    document.getElementById('resultsBar').textContent = `${count} annuncion${count !== 1 ? 'i' : 'o'} attiv${count !== 1 ? 'i' : 'o'}`;
-
-    if (!count) {
-        document.getElementById('summaryLowestPrice').textContent  = '—';
-        document.getElementById('summaryAveragePrice').textContent = '—';
+// ─── STATS (quantity-weighted average) ───
+function updateStats(listings) {
+    const n = listings.length;
+    document.getElementById('summaryListings').textContent = n;
+    document.getElementById('resultsBar').textContent      = `${n} annuncio${n !== 1 ? 'i' : ''} attivo${n !== 1 ? 'i' : ''}`;
+    if (!n) {
+        document.getElementById('summaryLowestPrice').textContent  = '-';
+        document.getElementById('summaryAveragePrice').textContent = '-';
         return;
     }
-
-    // Prezzo per singola carta (price / quantity)
     const unitPrices = listings.map(l => l.price / Math.max(l.quantity, 1));
-    const lowest     = Math.min(...unitPrices);
-
-    // Media pesata per quantità: somma(price) / somma(quantity)
-    const totalValue = listings.reduce((s, l) => s + l.price, 0);
-    const totalQty   = listings.reduce((s, l) => s + Math.max(l.quantity, 1), 0);
-    const weightedAvg = totalValue / totalQty;
-
+    const lowest = Math.min(...unitPrices);
+    const totalVal = listings.reduce((s, l) => s + l.price, 0);
+    const totalQty = listings.reduce((s, l) => s + Math.max(l.quantity, 1), 0);
     document.getElementById('summaryLowestPrice').textContent  = `€ ${lowest.toFixed(2)}`;
-    document.getElementById('summaryAveragePrice').textContent = `€ ${weightedAvg.toFixed(2)}`;
+    document.getElementById('summaryAveragePrice').textContent = `€ ${(totalVal / totalQty).toFixed(2)}`;
 }
 
-// ─── STARS HTML ───
+// ─── STARS HTML (read-only display) ───
 function starsHtml(avg, count) {
-    if (count === 0) return `<span class="no-rating">Nessuna recensione</span>`;
-    let stars = '';
+    if (!count) return `<span class="no-rating-label">Nessuna recensione</span>`;
+    let s = '';
     for (let i = 1; i <= 5; i++) {
-        stars += `<span class="star ${i <= Math.round(avg) ? 'star-filled' : 'star-empty'}">★</span>`;
+        s += `<span class="s ${i <= Math.round(avg) ? 's-on' : 's-off'}">★</span>`;
     }
-    return `<span class="stars">${stars}</span><span class="rating-count">(${count})</span>`;
+    return `<span class="seller-stars">${s}<span class="rating-label">(${count})</span></span>`;
 }
 
 // ─── CONDITION CLASS ───
-function condClass(condition) {
-    const map = {
-        'Mint': 'condition-mint', 'Near Mint': 'condition-near-mint',
-        'Excellent': 'condition-excellent', 'Good': 'condition-good',
-        'Played': 'condition-played', 'Poor': 'condition-poor'
-    };
-    return map[condition] || 'condition-default';
+function condClass(c) {
+    const m = { 'Mint':'condition-mint','Near Mint':'condition-near-mint','Excellent':'condition-excellent','Good':'condition-good','Played':'condition-played','Poor':'condition-poor' };
+    return m[c] || 'condition-default';
+}
+
+// ─── APPLY FILTERS + SORT → RENDER ───
+function applyAndRender() {
+    let list = [...allListings];
+
+    // Filter by condition
+    if (filterCond) list = list.filter(l => l.condition === filterCond);
+
+    // Filter by rating
+    if (filterRating > 0) {
+        list = list.filter(l => {
+            const r = ratingsCache[l.sellerUsername];
+            return r && r.count > 0 && r.avg >= filterRating;
+        });
+    }
+
+    // Sort
+    list.sort((a, b) => {
+        if (sortMode === 'price-asc')  return (a.price/Math.max(a.quantity,1)) - (b.price/Math.max(b.quantity,1));
+        if (sortMode === 'price-desc') return (b.price/Math.max(b.quantity,1)) - (a.price/Math.max(a.quantity,1));
+        if (sortMode === 'cond-asc')   return (CONDITION_ORDER[a.condition]||99) - (CONDITION_ORDER[b.condition]||99);
+        if (sortMode === 'cond-desc')  return (CONDITION_ORDER[b.condition]||99) - (CONDITION_ORDER[a.condition]||99);
+        return 0;
+    });
+
+    renderListings(list);
 }
 
 // ─── RENDER LISTINGS ───
-async function renderListings(listings) {
+function renderListings(listings) {
     const container = document.getElementById('listingContainer');
     container.innerHTML = '';
-    updateListingStats(listings);
+    updateStats(listings);
 
-    if (!listings || listings.length === 0) {
+    if (!listings.length) {
         container.innerHTML = `
             <div class="empty-message">
                 <div class="empty-icon">🃏</div>
                 <div class="empty-title">Nessun annuncio disponibile</div>
-                <div class="empty-subtitle">Al momento nessun utente sta vendendo questa carta.</div>
+                <div class="empty-subtitle">Al momento nessun utente sta vendendo questa carta con i filtri selezionati.</div>
             </div>`;
         return;
     }
 
-    // Load ratings for all unique sellers in parallel
-    const sellers = [...new Set(listings.map(l => l.sellerUsername))];
-    await Promise.all(sellers.map(s => loadSellerRating(s)));
-
-    listings.forEach((listing, index) => {
-        const isOwnListing = loggedUsername && listing.sellerUsername === loggedUsername;
-        const rating       = ratingsCache[listing.sellerUsername] || { averageRating: 0, ratingCount: 0 };
-        const unitPrice    = listing.price / Math.max(listing.quantity, 1);
+    listings.forEach((listing, idx) => {
+        const isOwn      = loggedUsername && listing.sellerUsername === loggedUsername;
+        const rating     = ratingsCache[listing.sellerUsername] || { avg: 0, count: 0 };
+        const unitPrice  = listing.price / Math.max(listing.quantity, 1);
+        const totalPrice = listing.price;
 
         const row = document.createElement('div');
-        row.className = `listing-row${isOwnListing ? ' own-listing' : ''}`;
-        row.style.animationDelay = `${Math.min(index * 40, 240)}ms`;
+        row.className = `listing-row${isOwn ? ' own-listing' : ''}`;
+        row.style.animationDelay = `${Math.min(idx * 40, 240)}ms`;
 
-        const cartBtnDisabled = !loggedUsername || isOwnListing;
-        const cartBtnTitle    = isOwnListing
-            ? 'Non puoi aggiungere al carrello una tua carta in vendita'
-            : !loggedUsername
-                ? 'Accedi per acquistare'
-                : 'Aggiungi al carrello';
+        const cartTitle  = isOwn ? 'Non puoi acquistare le tue carte' : (!loggedUsername ? 'Accedi per acquistare' : 'Aggiungi al carrello');
+        const cartDisabledAttr = (!loggedUsername || isOwn) ? 'disabled' : '';
+        const tradeDisabledAttr = (!loggedUsername || isOwn) ? 'disabled' : '';
 
         row.innerHTML = `
             <div class="seller-cell">
                 <a class="seller-link"
                    href="http://localhost:8081/seller-profile.html?username=${encodeURIComponent(listing.sellerUsername)}">
-                    ${listing.sellerUsername}${isOwnListing ? ' <span style="color:var(--muted);font-size:0.7rem">(tu)</span>' : ''}
+                    ${listing.sellerUsername}
                 </a>
-                <div class="seller-rating">${starsHtml(rating.averageRating, rating.ratingCount)}</div>
+                ${isOwn ? '<span class="own-badge">le tue carte</span>' : ''}
+                ${starsHtml(rating.avg, rating.count)}
             </div>
             <div>
                 <span class="condition-badge ${condClass(listing.condition)}">${listing.condition}</span>
             </div>
             <div class="qty-cell">${listing.quantity}</div>
-            <div class="price-cell">€ ${unitPrice.toFixed(2)}</div>
+            <div class="price-cell">
+                <span class="price-unit">€ ${unitPrice.toFixed(2)}</span>
+                ${listing.quantity > 1 ? `<span class="price-total">Totale: € ${totalPrice.toFixed(2)}</span>` : ''}
+            </div>
             <div class="actions-cell">
                 <button class="icon-cart-button buy-button"
                     data-listing-id="${listing.id}"
@@ -228,14 +244,20 @@ async function renderListings(listings) {
                     data-condition="${listing.condition}"
                     data-price="${listing.price}"
                     data-quantity="${listing.quantity}"
-                    title="${cartBtnTitle}"
-                    ${cartBtnDisabled ? 'disabled' : ''}
+                    title="${cartTitle}"
+                    ${cartDisabledAttr}
                     aria-label="Aggiungi al carrello">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                          fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
                     </svg>
+                </button>
+                <button class="trade-button"
+                    data-listing-id="${listing.id}"
+                    data-seller="${listing.sellerUsername}"
+                    ${tradeDisabledAttr}>
+                    Scambia
                 </button>
             </div>
         `;
@@ -244,17 +266,13 @@ async function renderListings(listings) {
     });
 
     setupBuyButtons();
+    setupTradeButtons();
 }
 
 // ─── BUY BUTTONS ───
 function setupBuyButtons() {
     document.querySelectorAll('.buy-button:not(:disabled)').forEach(btn => {
         btn.addEventListener('click', async () => {
-            if (!token) {
-                window.location.href = 'http://localhost:8080/login.html';
-                return;
-            }
-
             btn.disabled = true;
             const listingId = btn.dataset.listingId;
             const cardId    = btn.dataset.cardId;
@@ -265,11 +283,11 @@ function setupBuyButtons() {
 
             try {
                 // 1. Reserve listing
-                const reserveRes = await fetch(`${API_LISTING}/${listingId}/reserve`, { method: 'PATCH' });
-                if (!reserveRes.ok) throw new Error('Impossibile riservare il listing');
+                const rr = await fetch(`${API_LISTING}/${listingId}/reserve`, { method: 'PATCH' });
+                if (!rr.ok) throw new Error('Impossibile riservare il listing');
 
                 // 2. Add to cart
-                const cartRes = await fetch(`${API_CART}/add`, {
+                const cr = await fetch(`${API_CART}/add`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -278,30 +296,24 @@ function setupBuyButtons() {
                     },
                     body: JSON.stringify({ listingId, cardId, sellerId, condition, price, quantity })
                 });
-
-                if (!cartRes.ok) {
-                    // rollback reserve
+                if (!cr.ok) {
                     await fetch(`${API_LISTING}/${listingId}/release`, { method: 'PATCH' }).catch(() => {});
                     throw new Error('Errore aggiunta al carrello');
                 }
 
-                // 3. Update UI
-                btn.classList.add('added');
-                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                // 3. Visual feedback: show check, fade row
+                btn.classList.add('btn-added');
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>`;
                 btn.title = 'Aggiunto al carrello';
-
-                // Hide listing row (reserved — can no longer be bought by others)
                 btn.closest('.listing-row').style.opacity = '0.4';
                 btn.closest('.listing-row').style.pointerEvents = 'none';
 
-                // Update cart badge
-                await loadCartBadge();
+                loadCartBadge();
 
             } catch (err) {
-                console.error(err);
                 alert('Errore: ' + err.message);
                 btn.disabled = false;
             }
@@ -309,33 +321,74 @@ function setupBuyButtons() {
     });
 }
 
-// ─── SELL BUTTON + FORM ───
-function setupSellButton() {
-    const sellBtn     = document.getElementById('sellButton');
-    const sellSection = document.getElementById('sellFormSection');
-    const cancelBtn   = document.getElementById('cancelSellBtn');
+// ─── TRADE BUTTONS ───
+function setupTradeButtons() {
+    document.querySelectorAll('.trade-button:not(:disabled)').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (!token) { window.location.href = 'http://localhost:8080/login.html'; return; }
+            const listingId = btn.dataset.listingId;
+            const seller    = btn.dataset.seller;
+            window.location.href = `http://localhost:8088/trade.html?listingId=${encodeURIComponent(listingId)}&seller=${encodeURIComponent(seller)}`;
+        });
+    });
+}
 
-    sellBtn.addEventListener('click', () => {
-        const isHidden = sellSection.style.display === 'none';
-        sellSection.style.display = isHidden ? 'block' : 'none';
-        sellBtn.textContent = isHidden ? '✕ Annulla' : '+ Vendi questa carta';
+// ─── SORT BUTTONS ───
+function setupSortAndFilter(cardId) {
+    const pBtn = document.getElementById('sortPriceButton');
+    const cBtn = document.getElementById('sortCondButton');
+
+    pBtn.addEventListener('click', () => {
+        if (sortMode === 'price-asc') { sortMode = 'price-desc'; pBtn.textContent = 'Prezzo ↓'; }
+        else                          { sortMode = 'price-asc';  pBtn.textContent = 'Prezzo ↑'; }
+        pBtn.classList.add('sort-active');
+        cBtn.classList.remove('sort-active');
+        applyAndRender();
     });
 
-    cancelBtn.addEventListener('click', () => {
-        sellSection.style.display = 'none';
-        sellBtn.textContent = '+ Vendi questa carta';
+    cBtn.addEventListener('click', () => {
+        if (sortMode === 'cond-asc') { sortMode = 'cond-desc'; cBtn.textContent = 'Condizione ↓'; }
+        else                          { sortMode = 'cond-asc';  cBtn.textContent = 'Condizione ↑'; }
+        cBtn.classList.add('sort-active');
+        pBtn.classList.remove('sort-active');
+        applyAndRender();
+    });
+
+    document.getElementById('filterCondition').addEventListener('change', e => {
+        filterCond = e.target.value;
+        applyAndRender();
+    });
+    document.getElementById('filterRating').addEventListener('change', e => {
+        filterRating = parseInt(e.target.value) || 0;
+        applyAndRender();
+    });
+    document.getElementById('resetFilters').addEventListener('click', () => {
+        filterCond = ''; filterRating = 0; sortMode = 'price-asc';
+        document.getElementById('filterCondition').value = '';
+        document.getElementById('filterRating').value = '0';
+        pBtn.textContent = 'Prezzo ↑'; pBtn.classList.add('sort-active');
+        cBtn.textContent = 'Condizione'; cBtn.classList.remove('sort-active');
+        applyAndRender();
+    });
+}
+
+// ─── SELL BUTTON + FORM ───
+function setupSellButton() {
+    const sellBtn = document.getElementById('sellButton');
+    const section = document.getElementById('sellFormSection');
+    sellBtn.addEventListener('click', () => {
+        section.classList.toggle('hidden');
+        sellBtn.textContent = section.classList.contains('hidden') ? 'Vendi questa carta' : '✕ Annulla';
     });
 }
 
 function setupSellForm(cardId) {
-    document.getElementById('sellForm').addEventListener('submit', async (e) => {
+    document.getElementById('sellForm').addEventListener('submit', async e => {
         e.preventDefault();
         if (!token) { window.location.href = 'http://localhost:8080/login.html'; return; }
-
-        const msgEl    = document.getElementById('sellMessage');
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-
+        const msg = document.getElementById('sellMessage');
+        const sub = e.target.querySelector('button[type="submit"]');
+        sub.disabled = true;
         try {
             const res = await fetch(API_LISTING, {
                 method: 'POST',
@@ -347,38 +400,19 @@ function setupSellForm(cardId) {
                     price:     Number(document.getElementById('price').value)
                 })
             });
-
             if (!res.ok) throw new Error(await res.text() || 'Errore creazione annuncio');
-
-            msgEl.textContent = '✓ Annuncio creato con successo!';
-            msgEl.className   = 'sell-message success';
+            msg.textContent = '✓ Annuncio creato con successo!';
+            msg.className   = 'sell-message success';
             e.target.reset();
-
-            currentListings = await loadListings(cardId);
-            currentListings.sort((a, b) => a.price - b.price);
-            renderListings(currentListings);
-
+            // Reload listings
+            allListings = await loadListings(cardId);
+            const sellers = [...new Set(allListings.map(l => l.sellerUsername))];
+            await Promise.all(sellers.map(loadSellerRating));
+            applyAndRender();
         } catch (err) {
-            msgEl.textContent = '✕ Errore: ' + err.message;
-            msgEl.className   = 'sell-message error';
-        } finally {
-            submitBtn.disabled = false;
-        }
-    });
-}
-
-// ─── SORT ───
-function setupSortButton() {
-    document.getElementById('sortPriceButton').addEventListener('click', () => {
-        currentListings.sort((a, b) => {
-            const pa = a.price / Math.max(a.quantity, 1);
-            const pb = b.price / Math.max(b.quantity, 1);
-            return sortAscending ? pa - pb : pb - pa;
-        });
-        renderListings(currentListings);
-        const btn = document.getElementById('sortPriceButton');
-        btn.textContent = sortAscending ? 'Ordina per prezzo ↓' : 'Ordina per prezzo ↑';
-        sortAscending = !sortAscending;
+            msg.textContent = '✕ Errore: ' + err.message;
+            msg.className   = 'sell-message error';
+        } finally { sub.disabled = false; }
     });
 }
 
@@ -391,14 +425,18 @@ async function initPage() {
 
     try {
         const [card, listings] = await Promise.all([loadCard(cardId), loadListings(cardId)]);
-        currentListings = listings.sort((a, b) =>
-            (a.price / Math.max(a.quantity,1)) - (b.price / Math.max(b.quantity,1))
-        );
+        allListings = listings;
+
+        // Load all seller ratings in parallel
+        const sellers = [...new Set(allListings.map(l => l.sellerUsername))];
+        await Promise.all(sellers.map(loadSellerRating));
+
         renderCard(card);
-        await renderListings(currentListings);
-        setupSortButton();
+        applyAndRender();           // initial render (price asc)
+        setupSortAndFilter(cardId);
         setupSellButton();
         setupSellForm(cardId);
+
     } catch (err) {
         console.error(err);
         document.getElementById('cardName').textContent = 'Errore nel caricamento';
