@@ -320,3 +320,26 @@ body {
     .order-header { flex-direction:column; }
     .order-footer { flex-direction:column; align-items:flex-start; }
 }
+
+/* ── RATING STARS (in modal) ── */
+.rating-stars-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin: 1rem 0 0.5rem 0;
+}
+.rating-star {
+    font-size: 2.2rem;
+    color: rgba(122,163,212,0.3);
+    cursor: pointer;
+    transition: color 0.12s, transform 0.12s;
+    user-select: none;
+}
+.rating-hint {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    min-height: 1.2em;
+    font-style: italic;
+}

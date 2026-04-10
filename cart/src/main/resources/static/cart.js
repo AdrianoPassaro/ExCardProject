@@ -1,6 +1,7 @@
 // ─── CONFIG ───
 const API_CART    = "/api/cart";           // tuo gateway → cart microservice
 const API_CATALOG = "http://localhost:8082/cards"; // catalog microservice
+const API_LISTING = "http://localhost:8084/listings"; // listing microservice
 
 // ─── AUTH ───
 const token = localStorage.getItem("jwtToken");
@@ -149,6 +150,8 @@ async function removeItem(listingId) {
                 "username": username
             }
         });
+        // Release the listing back to ACTIVE so others can see it
+        await fetch(`${API_LISTING}/${listingId}/release`, { method: "PATCH" }).catch(() => {});
         await loadCart();
     } catch (err) {
         console.error("Errore removeItem:", err);
@@ -159,12 +162,19 @@ async function removeItem(listingId) {
 document.getElementById("clearCartBtn").addEventListener("click", async () => {
     if (!confirm("Svuotare il carrello?")) return;
     try {
+        // Release all reserved listings before clearing
+        const cartRes = await fetch(API_CART, {
+            headers: { "Authorization": `Bearer ${token}`, "username": username }
+        });
+        if (cartRes.ok) {
+            const cart = await cartRes.json();
+            await Promise.all((cart.items || []).map(item =>
+                fetch(`${API_LISTING}/${item.listingId}/release`, { method: "PATCH" }).catch(() => {})
+            ));
+        }
         await fetch(`${API_CART}/clear`, {
             method: "DELETE",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "username": username
-            }
+            headers: { "Authorization": `Bearer ${token}`, "username": username }
         });
         await loadCart();
     } catch (err) {
@@ -172,7 +182,7 @@ document.getElementById("clearCartBtn").addEventListener("click", async () => {
     }
 });
 
-// ─── CHECKOUT (stub) ───
+// ─── CHECKOUT ───
 document.getElementById("checkoutBtn").addEventListener("click", () => {
     window.location.href = "http://localhost:8085/checkout.html";
 });
@@ -198,6 +208,7 @@ document.getElementById("debugAdd").addEventListener("click", async () => {
 
     const listingId = document.getElementById("dbListingId").value.trim();
     const cardId    = document.getElementById("dbCardId").value.trim();
+    const name      = document.getElementById("dbName").value.trim();
     const sellerId  = document.getElementById("dbSellerId").value.trim();
     const condition = document.getElementById("dbCondition").value;
     const price     = parseFloat(document.getElementById("dbPrice").value) || 0;
@@ -209,7 +220,7 @@ document.getElementById("debugAdd").addEventListener("click", async () => {
         return;
     }
 
-    const payload = { listingId, cardId, sellerId, condition, price, quantity };
+    const payload = { listingId, cardId, name, sellerId, condition, price, quantity };
 
     try {
         const res = await fetch(`${API_CART}/add`, {

@@ -2,6 +2,6 @@ package com.gruppo12.listing.model;
 
 public enum ListingStatus {
     ACTIVE,
-    SOLD,
-    CANCELLED
+    RESERVED,   // nel carrello di qualcuno — non visibile ad altri
+    SOLD        // venduto (futuro)
 }

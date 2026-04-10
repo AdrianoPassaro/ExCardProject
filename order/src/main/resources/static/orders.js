@@ -2,6 +2,7 @@
 const API_ORDER   = "http://localhost:8086/api/orders";
 const API_CART    = "http://localhost:8087/api/cart";
 const API_CATALOG = "http://localhost:8082/cards";
+const API_USER    = "http://localhost:8081/api/user";
 
 // ─── AUTH ───
 const token = localStorage.getItem("jwtToken");
@@ -21,7 +22,8 @@ document.getElementById("usernameDisplay").textContent = `👤 ${username}`;
 let catalogMap  = {};
 let purchases   = [];
 let sales       = [];
-let pendingConfirmId = null;   // orderId in attesa di conferma modal
+let pendingConfirmId  = null;   // orderId in attesa di conferma modal
+let pendingSellerUsername = null; // sellerUsername per la recensione
 
 // ─── CATALOG ───
 async function loadCatalog() {
@@ -140,7 +142,8 @@ function buildPurchaseCard(order, idx) {
     // Confirm button listener
     if (canConfirm) {
         card.querySelector(".btn-confirm-receipt").addEventListener("click", () => {
-            pendingConfirmId = order.id;
+            pendingConfirmId      = order.id;
+            pendingSellerUsername = order.sellerUsername;
             document.getElementById("confirmModal").style.display = "flex";
         });
     }
@@ -264,14 +267,20 @@ document.getElementById("modalConfirmBtn").addEventListener("click", async () =>
         if (!res.ok) throw new Error("Errore conferma");
 
         document.getElementById("confirmModal").style.display = "none";
-        pendingConfirmId = null;
 
         // Ricarica acquisti aggiornati
         await loadPurchases();
         renderPurchases();
 
+        // Show rating modal
+        selectedRating = 0;
+        updateStarUI(0);
+        document.getElementById("ratingSubmitBtn").disabled = true;
+        document.getElementById("ratingModal").style.display = "flex";
+
     } catch (err) {
         alert("Errore durante la conferma: " + err.message);
+        pendingConfirmId = null;
     } finally {
         confirmBtn.disabled    = false;
         confirmBtn.textContent = "Sì, confermo";
@@ -290,6 +299,64 @@ document.getElementById("confirmModal").addEventListener("click", (e) => {
 document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("jwtToken");
     window.location.href = "http://localhost:8080/login.html";
+});
+
+
+// ─── RATING MODAL ───
+let selectedRating = 0;
+
+function updateStarUI(hoverVal) {
+    document.querySelectorAll(".rating-star").forEach(star => {
+        const val = parseInt(star.dataset.value);
+        star.style.color     = val <= (hoverVal || selectedRating) ? "#fbbf24" : "rgba(122,163,212,0.3)";
+        star.style.transform = val <= (hoverVal || selectedRating) ? "scale(1.15)" : "scale(1)";
+    });
+    const labels = ["", "Pessimo", "Scarso", "Nella media", "Buono", "Eccellente"];
+    document.getElementById("ratingHint").textContent =
+        hoverVal ? labels[hoverVal] : (selectedRating ? labels[selectedRating] : "Passa il mouse sulle stelle per selezionare");
+}
+
+document.querySelectorAll(".rating-star").forEach(star => {
+    star.addEventListener("mouseover", () => updateStarUI(parseInt(star.dataset.value)));
+    star.addEventListener("mouseout",  () => updateStarUI(0));
+    star.addEventListener("click", () => {
+        selectedRating = parseInt(star.dataset.value);
+        updateStarUI(0);
+        document.getElementById("ratingSubmitBtn").disabled = false;
+    });
+});
+
+document.getElementById("ratingSubmitBtn").addEventListener("click", async () => {
+    if (!selectedRating || !pendingSellerUsername) return;
+    try {
+        await fetch(`${API_USER}/rate/${pendingSellerUsername}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ stars: selectedRating })
+        });
+    } catch (err) {
+        console.warn("Errore invio recensione:", err);
+    } finally {
+        document.getElementById("ratingModal").style.display = "none";
+        pendingConfirmId      = null;
+        pendingSellerUsername = null;
+        selectedRating        = 0;
+    }
+});
+
+document.getElementById("ratingSkipBtn").addEventListener("click", () => {
+    document.getElementById("ratingModal").style.display = "none";
+    pendingConfirmId      = null;
+    pendingSellerUsername = null;
+    selectedRating        = 0;
+});
+
+// Close rating modal on backdrop click
+document.getElementById("ratingModal").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("ratingModal")) {
+        document.getElementById("ratingModal").style.display = "none";
+        pendingConfirmId = null; pendingSellerUsername = null;
+    }
 });
 
 // ─── INIT ───

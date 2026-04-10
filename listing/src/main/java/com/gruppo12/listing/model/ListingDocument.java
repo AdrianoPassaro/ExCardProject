@@ -27,30 +27,24 @@ public class ListingDocument {
                            String condition,
                            double price,
                            int quantity) {
-
-        this.cardId = cardId;
-        this.sellerUsername = sellerUsername;
-        this.condition = condition;
-        this.price = price;
-        this.quantity = quantity;
-        this.status = ListingStatus.ACTIVE;
-        this.createdAt = Instant.now();
+        this.cardId          = cardId;
+        this.sellerUsername  = sellerUsername;
+        this.condition       = condition;
+        this.price           = price;
+        this.quantity        = quantity;
+        this.status          = ListingStatus.ACTIVE;
+        this.createdAt       = Instant.now();
     }
 
-    public String getId() { return id; }
+    public String getId()                    { return id; }
+    public String getCardId()                { return cardId; }
+    public String getSellerUsername()        { return sellerUsername; }
+    public double getPrice()                 { return price; }
+    public String getCondition()             { return condition; }
+    public int    getQuantity()              { return quantity; }
+    public ListingStatus getStatus()         { return status; }
+    public Instant getCreatedAt()            { return createdAt; }
 
-    public String getCardId() { return cardId; }
-
-    public String getSellerUsername() { return sellerUsername; }
-
-    public double getPrice() { return price; }
-
-    public String getCondition() { return condition; }
-
-    public int getQuantity() { return quantity; }
-
-    public ListingStatus getStatus() { return status; }
-
-    public Instant getCreatedAt() { return createdAt; }
-
+    // setter needed for status transitions
+    public void setStatus(ListingStatus status) { this.status = status; }
 }

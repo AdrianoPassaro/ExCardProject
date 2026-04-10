@@ -76,7 +76,7 @@
 
 </div>
 
-<!-- CONFIRM MODAL -->
+<!-- STEP 1: CONFIRM RECEIPT -->
 <div class="modal-overlay" id="confirmModal" style="display:none">
     <div class="modal-content">
         <div class="modal-icon">📬</div>
@@ -88,6 +88,27 @@
         <div class="modal-actions">
             <button class="modal-btn-confirm" id="modalConfirmBtn">Sì, confermo</button>
             <button class="modal-btn-cancel" id="modalCancelBtn">Annulla</button>
+        </div>
+    </div>
+</div>
+
+<!-- STEP 2: RATING -->
+<div class="modal-overlay" id="ratingModal" style="display:none">
+    <div class="modal-content">
+        <div class="modal-icon">⭐</div>
+        <h3 class="modal-title">Valuta il venditore</h3>
+        <p class="modal-body">Come valuteresti la tua esperienza?</p>
+        <div class="rating-stars-row" id="ratingStarsRow">
+            <span class="rating-star" data-value="1">★</span>
+            <span class="rating-star" data-value="2">★</span>
+            <span class="rating-star" data-value="3">★</span>
+            <span class="rating-star" data-value="4">★</span>
+            <span class="rating-star" data-value="5">★</span>
+        </div>
+        <p class="rating-hint" id="ratingHint">Passa il mouse sulle stelle per selezionare</p>
+        <div class="modal-actions">
+            <button class="modal-btn-confirm" id="ratingSubmitBtn" disabled>Invia recensione</button>
+            <button class="modal-btn-cancel" id="ratingSkipBtn">Salta</button>
         </div>
     </div>
 </div>

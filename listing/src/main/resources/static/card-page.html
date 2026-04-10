@@ -3,41 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dettaglio Carta - ExCard</title>
+    <title>Dettaglio Carta — ExCard</title>
+    <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="card-page.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<nav class="navbar">
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
     <a href="http://localhost:8080/homepage.html" class="logo">
-        <img src="logo.png" alt="ExCard Logo" class="logo-img">
+        <img src="logo.png" alt="ExCard Logo" class="logo-img"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="logo-text" style="display:none">ExCard</span>
     </a>
 
-    <div class="nav-buttons">
-        <a href="http://localhost:8080/login.html" class="btn btn-secondary">Login</a>
-        <a href="http://localhost:8080/register.html" class="btn btn-secondary">Registrati</a>
+    <form class="search-form" action="http://localhost:8084/search-results.html" method="get">
+        <input type="text" name="q" placeholder="Cerca una carta…" autocomplete="off">
+        <button type="submit" aria-label="Cerca">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        </button>
+    </form>
+
+    <!-- Guest nav -->
+    <div class="nav-right" id="navGuest">
+        <a href="http://localhost:8080/login.html" class="btn btn-outline">Accedi</a>
+        <a href="http://localhost:8080/register.html" class="btn btn-solid">Registrati</a>
+    </div>
+
+    <!-- Logged-in nav -->
+    <div class="nav-right" id="navUser" style="display:none">
+        <a href="http://localhost:8085/wallet.html" class="wallet-pill" id="walletPill" title="Wallet">
+            <span class="wallet-pill-icon">💳</span>
+            <span id="walletAmount">—</span>
+        </a>
+        <a href="http://localhost:8087/cart.html" class="cart-icon-btn" title="Carrello">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+        </a>
+        <div class="user-menu">
+            <button class="user-menu-trigger" id="userMenuTrigger">
+                👤 <span id="usernameDisplay">Utente</span>
+                <span class="user-menu-chevron">▼</span>
+            </button>
+            <div class="user-dropdown" id="userDropdown">
+                <a href="http://localhost:8081/account.html" class="dropdown-item">
+                    <span class="dropdown-item-icon">👤</span> Profilo
+                </a>
+                <a href="http://localhost:8083/collection.html" class="dropdown-item">
+                    <span class="dropdown-item-icon">🃏</span> La mia collezione
+                </a>
+                <a href="http://localhost:8086/orders.html" class="dropdown-item">
+                    <span class="dropdown-item-icon">📦</span> I miei ordini
+                </a>
+                <a href="http://localhost:8085/wallet.html" class="dropdown-item">
+                    <span class="dropdown-item-icon">💳</span> Wallet
+                </a>
+                <hr class="dropdown-divider">
+                <button class="dropdown-item logout" id="logoutBtn">
+                    <span class="dropdown-item-icon">🚪</span> Logout
+                </button>
+            </div>
+        </div>
     </div>
 </nav>
 
+<!-- PAGE HEADER -->
 <div class="page-header">
     <div class="page-header-inner">
         <div class="page-header-text">
-            <h1 class="page-title" id="cardName">Caricamento...</h1>
+            <h1 class="page-title" id="cardName">Caricamento…</h1>
             <p class="page-subtitle">
-                <span id="cardSet">-</span>
-                <span class="separator">•</span>
-                Nº <span id="cardNumber">-</span>
-                <span class="separator">•</span>
-                <span id="cardRarity">-</span>
+                <span id="cardSet">—</span>
+                <span class="separator">·</span>
+                Nº <span id="cardNumber">—</span>
+                <span class="separator">·</span>
+                <span id="cardRarity">—</span>
             </p>
         </div>
-
-        <button id="sellButton" class="btn btn-primary">Vendi questa carta</button>
+        <button id="sellButton" class="btn btn-solid" style="display:none">+ Vendi questa carta</button>
     </div>
 </div>
 
+<!-- MAIN -->
 <main class="page-container">
+
+    <!-- CARD HERO -->
     <section class="card-hero">
         <div class="card-image-panel">
             <img id="cardImage" src="" alt="Immagine carta">
@@ -46,47 +104,42 @@
         <div class="card-summary-panel">
             <div class="summary-box">
                 <div class="summary-label">Set</div>
-                <div class="summary-value" id="summarySet">-</div>
+                <div class="summary-value" id="summarySet">—</div>
             </div>
-
             <div class="summary-box">
                 <div class="summary-label">Numero</div>
-                <div class="summary-value" id="summaryNumber">-</div>
+                <div class="summary-value" id="summaryNumber">—</div>
             </div>
-
             <div class="summary-box">
                 <div class="summary-label">Rarità</div>
-                <div class="summary-value" id="summaryRarity">-</div>
+                <div class="summary-value" id="summaryRarity">—</div>
             </div>
-
             <div class="summary-box">
                 <div class="summary-label">Annunci attivi</div>
                 <div class="summary-value" id="summaryListings">0</div>
             </div>
-
             <div class="summary-box">
                 <div class="summary-label">Prezzo più basso</div>
-                <div class="summary-value" id="summaryLowestPrice">-</div>
+                <div class="summary-value" id="summaryLowestPrice">—</div>
             </div>
-
             <div class="summary-box">
                 <div class="summary-label">Prezzo medio</div>
-                <div class="summary-value" id="summaryAveragePrice">-</div>
+                <div class="summary-value" id="summaryAveragePrice">—</div>
             </div>
         </div>
     </section>
 
-    <section id="sellFormSection" class="panel sell-panel hidden">
+    <!-- SELL FORM -->
+    <section id="sellFormSection" class="panel sell-panel" style="display:none">
         <div class="panel-header">
             <h2>Crea un annuncio di vendita</h2>
         </div>
-
         <form id="sellForm" class="sell-form">
             <div class="form-grid">
                 <div class="form-row">
                     <label for="condition">Condizione</label>
-                    <select id="condition" required>
-                        <option value="">Seleziona</option>
+                    <select id="condition" class="field-input" required>
+                        <option value="">Seleziona condizione</option>
                         <option value="Mint">Mint</option>
                         <option value="Near Mint">Near Mint</option>
                         <option value="Excellent">Excellent</option>
@@ -95,38 +148,33 @@
                         <option value="Poor">Poor</option>
                     </select>
                 </div>
-
                 <div class="form-row">
                     <label for="quantity">Quantità</label>
-                    <input type="number" id="quantity" min="1" required>
+                    <input type="number" id="quantity" class="field-input" min="1" value="1" required>
                 </div>
-
                 <div class="form-row">
-                    <label for="price">Prezzo (€)</label>
-                    <input type="number" id="price" min="0" step="0.01" required>
+                    <label for="price">Prezzo unitario (€)</label>
+                    <input type="number" id="price" class="field-input" min="0" step="0.01" required>
                 </div>
             </div>
-
             <div class="form-actions">
-                <button type="submit" class="btn btn-confirm">Conferma annuncio</button>
+                <button type="submit" class="btn btn-solid">Conferma annuncio</button>
+                <button type="button" class="btn btn-outline" id="cancelSellBtn">Annulla</button>
             </div>
         </form>
-
         <p id="sellMessage" class="sell-message"></p>
     </section>
 
+    <!-- LISTINGS TABLE -->
     <section class="panel listings-panel">
         <div class="panel-header listings-header">
             <div>
                 <h2>Annunci di vendita</h2>
                 <p class="panel-subtitle">Tutti gli annunci disponibili per questa carta</p>
             </div>
-
-            <button id="sortPriceButton" class="btn btn-secondary">Ordina per prezzo ↑</button>
+            <button id="sortPriceButton" class="btn btn-outline">Ordina per prezzo ↑</button>
         </div>
-
         <div class="results-bar" id="resultsBar">0 annunci</div>
-
         <div class="listing-table">
             <div class="listing-header-row">
                 <div>Venditore</div>
@@ -135,10 +183,10 @@
                 <div>Prezzo</div>
                 <div>Azioni</div>
             </div>
-
             <div id="listingContainer"></div>
         </div>
     </section>
+
 </main>
 
 <script src="card-page.js"></script>
