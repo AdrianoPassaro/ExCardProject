@@ -6,16 +6,18 @@ public class SellerProfileResponse {
     private String cognome;
     private Double averageRating;
     private Integer totalSales;
+    private String email;
 
     public SellerProfileResponse() {
     }
 
-    public SellerProfileResponse(String username, String nome, String cognome, Double averageRating, Integer totalSales) {
+    public SellerProfileResponse(String username, String nome, String cognome, Double averageRating, Integer totalSales, String email) {
         this.username = username;
         this.nome = nome;
         this.cognome = cognome;
         this.averageRating = averageRating;
         this.totalSales = totalSales;
+        this.email = email;
     }
 
     public String getUsername() {
@@ -38,6 +40,10 @@ public class SellerProfileResponse {
         return totalSales;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -56,5 +62,9 @@ public class SellerProfileResponse {
 
     public void setTotalSales(Integer totalSales) {
         this.totalSales = totalSales;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

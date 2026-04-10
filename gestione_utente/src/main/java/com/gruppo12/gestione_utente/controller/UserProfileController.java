@@ -3,6 +3,8 @@ package com.gruppo12.gestione_utente.controller;
 import com.gruppo12.gestione_utente.dto.SellerProfileResponse;
 import com.gruppo12.gestione_utente.model.UserProfile;
 import com.gruppo12.gestione_utente.repository.UserProfileRepository;
+import com.gruppo12.gestione_utente.dto.AuthEmailResponse;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,12 +72,30 @@ public class UserProfileController {
             return ResponseEntity.notFound().build();
         }
 
+        String email = null;
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            AuthEmailResponse emailResponse = restTemplate.getForObject(
+                    "http://auth-service:8080/api/auth/public/email/" + username,
+                    AuthEmailResponse.class
+            );
+
+            if (emailResponse != null) {
+                email = emailResponse.getEmail();
+            }
+        } catch (Exception e) {
+            System.out.println("Impossibile recuperare email da authentication_autorization: " + e.getMessage());
+        }
+
         SellerProfileResponse response = new SellerProfileResponse(
                 profile.getUsername(),
                 profile.getNome(),
                 profile.getCognome(),
                 0.0,   // placeholder finché non implementi recensioni
-                0      // placeholder finché non colleghi gli ordini
+                0,      // placeholder finché non colleghi gli ordini
+                email
         );
 
         return ResponseEntity.ok(response);

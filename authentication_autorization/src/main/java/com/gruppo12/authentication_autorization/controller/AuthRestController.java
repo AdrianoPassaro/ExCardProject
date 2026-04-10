@@ -2,6 +2,7 @@ package com.gruppo12.authentication_autorization.controller;
 
 import com.gruppo12.authentication_autorization.dto.UserProfileRequest;
 import com.gruppo12.authentication_autorization.dto.UserRegistrationRequest;
+import com.gruppo12.authentication_autorization.dto.PublicEmailResponse;
 import com.gruppo12.authentication_autorization.model.User;
 import com.gruppo12.authentication_autorization.repository.UserRepository;
 import com.gruppo12.authentication_autorization.security.JwtUtil;
@@ -146,5 +147,16 @@ public class AuthRestController {
         public AuthResponse(String token) { this.token = token; }
         public String getToken() { return token; }
         public void setToken(String token) { this.token = token; }
+    }
+
+    @GetMapping("/api/auth/public/email/{username}")
+    public ResponseEntity<?> getPublicEmailByUsername(@PathVariable String username) {
+        User user = userRepository.findByUsername(username);
+
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(new PublicEmailResponse(user.getUsername(), user.getEmail()));
     }
 }
