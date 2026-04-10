@@ -165,29 +165,44 @@ function condClass(c) {
 
 // ─── APPLY FILTERS + SORT → RENDER ───
 function applyAndRender() {
-    let list = [...allListings];
+    let copy = [...allListings];
 
-    // Filter by condition
-    if (filterCond) list = list.filter(l => l.condition === filterCond);
-
-    // Filter by rating
+    // 1. FILTRI (Condizione e Rating)
+    if (filterCond) {
+        copy = copy.filter(l => l.condition === filterCond);
+    }
     if (filterRating > 0) {
-        list = list.filter(l => {
-            const r = ratingsCache[l.sellerUsername];
-            return r && r.count > 0 && r.avg >= filterRating;
+        copy = copy.filter(l => {
+            const data = ratingsCache[l.sellerUsername];
+            return data && data.averageRating >= filterRating;
         });
     }
 
-    // Sort
-    list.sort((a, b) => {
-        if (sortMode === 'price-asc')  return a.price - b.price;
-        if (sortMode === 'price-desc') return b.price - a.price;
-        if (sortMode === 'cond-asc')   return (CONDITION_ORDER[a.condition]||99) - (CONDITION_ORDER[b.condition]||99);
-        if (sortMode === 'cond-desc')  return (CONDITION_ORDER[b.condition]||99) - (CONDITION_ORDER[a.condition]||99);
+    // 2. ORDINAMENTO (Logica Dinamica)
+    copy.sort((a, b) => {
+        if (sortMode === 'price-asc') {
+            return a.price - b.price;
+        }
+        else if (sortMode === 'price-desc') {
+            return b.price - a.price;
+        }
+        else if (sortMode === 'cond-asc') {
+            // Dalla migliore (Mint = 0) alla peggiore (Poor = 5)
+            const valA = CONDITION_ORDER[a.condition] !== undefined ? CONDITION_ORDER[a.condition] : 99;
+            const valB = CONDITION_ORDER[b.condition] !== undefined ? CONDITION_ORDER[b.condition] : 99;
+            return valA - valB;
+        }
+        else if (sortMode === 'cond-desc') {
+            // Dalla peggiore alla migliore
+            const valA = CONDITION_ORDER[a.condition] !== undefined ? CONDITION_ORDER[a.condition] : 99;
+            const valB = CONDITION_ORDER[b.condition] !== undefined ? CONDITION_ORDER[b.condition] : 99;
+            return valB - valA;
+        }
         return 0;
     });
 
-    renderListings(list);
+    // 3. RENDERIZZA I RISULTATI FILTRATI E ORDINATI
+    renderListings(copy);
 }
 
 // ─── RENDER LISTINGS ───
