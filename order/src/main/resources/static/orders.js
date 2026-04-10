@@ -2,6 +2,7 @@
 const API_ORDER   = "http://localhost:8086/api/orders";
 const API_CART    = "http://localhost:8087/api/cart";
 const API_CATALOG = "http://localhost:8082/cards";
+const API_USER    = "http://localhost:8081/api/user";
 
 // ─── AUTH ───
 const token = localStorage.getItem("jwtToken");
@@ -21,7 +22,10 @@ document.getElementById("usernameDisplay").textContent = `👤 ${username}`;
 let catalogMap  = {};
 let purchases   = [];
 let sales       = [];
-let pendingConfirmId = null;   // orderId in attesa di conferma modal
+let pendingConfirmId  = null;   // orderId in attesa di conferma modal
+let pendingSellerUsername = null; // sellerUsername per la recensione
+let pendingOrderId_forRating = null; // used for lazy/edit rating
+const orderRatings = {};  // orderId → stars given (0 = not rated)
 
 // ─── CATALOG ───
 async function loadCatalog() {
@@ -92,6 +96,9 @@ function buildPurchaseCard(order, idx) {
         ? `<button class="btn-confirm-receipt" data-id="${order.id}">Conferma ricezione</button>`
         : '';
 
+    const starsGiven  = orderRatings[order.id] || 0;
+    const ratingBlock = order.status === "COMPLETATO" ? buildRatingBlock(order.id, starsGiven) : "";
+
     card.innerHTML = `
         <div class="order-header">
             <div class="order-header-left">
@@ -112,6 +119,7 @@ function buildPurchaseCard(order, idx) {
                 = <strong>€ ${order.finalPrice.toFixed(2)}</strong>
             </span>
         </div>
+        ${ratingBlock}
     `;
 
     // Render items
@@ -140,12 +148,46 @@ function buildPurchaseCard(order, idx) {
     // Confirm button listener
     if (canConfirm) {
         card.querySelector(".btn-confirm-receipt").addEventListener("click", () => {
-            pendingConfirmId = order.id;
+            pendingConfirmId      = order.id;
+            pendingSellerUsername = order.sellerUsername;
             document.getElementById("confirmModal").style.display = "flex";
         });
     }
 
+    // Lazy rating button listener
+    if (order.status === "COMPLETATO") {
+        const ratingBtn = card.querySelector(".btn-open-rating");
+        if (ratingBtn) {
+            ratingBtn.addEventListener("click", () => {
+                pendingOrderId_forRating  = order.id;
+                pendingSellerUsername     = order.sellerUsername;
+                selectedRating            = orderRatings[order.id] || 0;
+                updateStarUI(0);
+                document.getElementById("ratingSubmitBtn").disabled = selectedRating === 0;
+                document.getElementById("ratingModal").style.display = "flex";
+            });
+        }
+    }
+
     return card;
+}
+
+// ─── HELPER: rating block HTML ───
+function buildRatingBlock(orderId, starsGiven) {
+    if (!starsGiven) {
+        return `<div class="order-rating-row">
+            <button class="btn-open-rating btn-secondary-sm" data-order-id="${orderId}">⭐ Aggiungi recensione</button>
+        </div>`;
+    }
+    let stars = "";
+    for (let i = 1; i <= 5; i++) {
+        stars += `<span class="star-display ${i <= starsGiven ? "star-on" : "star-off"}">★</span>`;
+    }
+    return `<div class="order-rating-row">
+        <span class="rating-given-label">La tua recensione:</span>
+        <span class="stars-given">${stars}</span>
+        <button class="btn-open-rating btn-edit-rating" data-order-id="${orderId}">Modifica</button>
+    </div>`;
 }
 
 // ─── BUILD ORDER CARD (SALE) ───
@@ -154,6 +196,19 @@ function buildSaleCard(order, idx) {
     const card = document.createElement("div");
     card.classList.add("order-card");
     card.style.animationDelay = `${idx * 60}ms`;
+
+    // For sales: show the rating given by the buyer (stored in orderRatings)
+    const saleRating = orderRatings[order.id] || 0;
+    let saleRatingHtml;
+    if (order.status !== "COMPLETATO") {
+        saleRatingHtml = `<div class="order-rating-row"><span class="no-rating-yet">Nessuna recensione</span></div>`;
+    } else if (!saleRating) {
+        saleRatingHtml = `<div class="order-rating-row"><span class="no-rating-yet">Nessuna recensione</span></div>`;
+    } else {
+        let stars = "";
+        for (let i = 1; i <= 5; i++) stars += `<span class="star-display ${i <= saleRating ? "star-on" : "star-off"}">★</span>`;
+        saleRatingHtml = `<div class="order-rating-row"><span class="rating-given-label">Recensione ricevuta:</span><span class="stars-given">${stars}</span></div>`;
+    }
 
     card.innerHTML = `
         <div class="order-header">
@@ -174,6 +229,7 @@ function buildSaleCard(order, idx) {
                 = <strong>€ ${order.finalPrice.toFixed(2)}</strong>
             </span>
         </div>
+        ${saleRatingHtml}
     `;
 
     const itemsContainer = card.querySelector(`#items-s-${order.id}`);
@@ -264,14 +320,20 @@ document.getElementById("modalConfirmBtn").addEventListener("click", async () =>
         if (!res.ok) throw new Error("Errore conferma");
 
         document.getElementById("confirmModal").style.display = "none";
-        pendingConfirmId = null;
 
         // Ricarica acquisti aggiornati
         await loadPurchases();
         renderPurchases();
 
+        // Show rating modal
+        selectedRating = 0;
+        updateStarUI(0);
+        document.getElementById("ratingSubmitBtn").disabled = true;
+        document.getElementById("ratingModal").style.display = "flex";
+
     } catch (err) {
         alert("Errore durante la conferma: " + err.message);
+        pendingConfirmId = null;
     } finally {
         confirmBtn.disabled    = false;
         confirmBtn.textContent = "Sì, confermo";
@@ -290,6 +352,80 @@ document.getElementById("confirmModal").addEventListener("click", (e) => {
 document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("jwtToken");
     window.location.href = "http://localhost:8080/login.html";
+});
+
+
+// ─── RATING MODAL ───
+let selectedRating = 0;
+
+function updateStarUI(hoverVal) {
+    document.querySelectorAll(".rating-star").forEach(star => {
+        const val = parseInt(star.dataset.value);
+        star.style.color     = val <= (hoverVal || selectedRating) ? "#fbbf24" : "rgba(122,163,212,0.3)";
+        star.style.transform = val <= (hoverVal || selectedRating) ? "scale(1.15)" : "scale(1)";
+    });
+    const labels = ["", "Pessimo", "Scarso", "Nella media", "Buono", "Eccellente"];
+    document.getElementById("ratingHint").textContent =
+        hoverVal ? labels[hoverVal] : (selectedRating ? labels[selectedRating] : "Passa il mouse sulle stelle per selezionare");
+}
+
+document.querySelectorAll(".rating-star").forEach(star => {
+    star.addEventListener("mouseover", () => updateStarUI(parseInt(star.dataset.value)));
+    star.addEventListener("mouseout",  () => updateStarUI(0));
+    star.addEventListener("click", () => {
+        selectedRating = parseInt(star.dataset.value);
+        updateStarUI(0);
+        document.getElementById("ratingSubmitBtn").disabled = false;
+    });
+});
+
+document.getElementById("ratingSubmitBtn").addEventListener("click", async () => {
+    if (!selectedRating || !pendingSellerUsername) return;
+    const btn = document.getElementById("ratingSubmitBtn");
+    btn.disabled = true; btn.textContent = "Invio…";
+    try {
+        await fetch(`${API_USER}/rate/${pendingSellerUsername}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ stars: selectedRating })
+        });
+        // Save locally so re-render shows the correct stars
+        if (pendingOrderId_forRating) {
+            orderRatings[pendingOrderId_forRating] = selectedRating;
+        } else if (pendingConfirmId) {
+            orderRatings[pendingConfirmId] = selectedRating;
+        }
+    } catch (err) {
+        console.warn("Errore invio recensione:", err);
+    } finally {
+        document.getElementById("ratingModal").style.display = "none";
+        // Refresh to update displayed stars
+        await loadPurchases();
+        await loadSales();
+        renderPurchases();
+        renderSales();
+        pendingConfirmId          = null;
+        pendingSellerUsername     = null;
+        pendingOrderId_forRating  = null;
+        selectedRating            = 0;
+        btn.disabled = false; btn.textContent = "Invia recensione";
+    }
+});
+
+document.getElementById("ratingSkipBtn").addEventListener("click", () => {
+    document.getElementById("ratingModal").style.display = "none";
+    pendingConfirmId         = null;
+    pendingSellerUsername    = null;
+    pendingOrderId_forRating = null;
+    selectedRating           = 0;
+});
+
+// Close rating modal on backdrop click
+document.getElementById("ratingModal").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("ratingModal")) {
+        document.getElementById("ratingModal").style.display = "none";
+        pendingConfirmId = null; pendingSellerUsername = null;
+    }
 });
 
 // ─── INIT ───

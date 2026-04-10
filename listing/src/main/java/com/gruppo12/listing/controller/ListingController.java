@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/listings")
+@CrossOrigin("*")
 public class ListingController {
 
     private final ListingService listingService;
@@ -24,27 +25,17 @@ public class ListingController {
     public ListingResponse createListing(
             @AuthenticationPrincipal String sellerUsername,
             @Valid @RequestBody CreateListingRequest request) {
-
-        return new ListingResponse(
-                listingService.createListing(sellerUsername, request)
-        );
+        return new ListingResponse(listingService.createListing(sellerUsername, request));
     }
 
     @GetMapping
     public List<ListingResponse> getListings() {
-
-        return listingService.getListings()
-                .stream()
-                .map(ListingResponse::new)
-                .toList();
+        return listingService.getListings().stream().map(ListingResponse::new).toList();
     }
 
     @GetMapping("/card/{cardId}")
     public List<ListingResponse> getListingsByCard(@PathVariable String cardId) {
-        return listingService.getActiveListingsByCard(cardId)
-                .stream()
-                .map(ListingResponse::new)
-                .toList();
+        return listingService.getActiveListingsByCard(cardId).stream().map(ListingResponse::new).toList();
     }
 
     @GetMapping("/search")
@@ -59,9 +50,24 @@ public class ListingController {
 
     @GetMapping("/seller/{sellerUsername}")
     public List<ListingResponse> getListingsBySeller(@PathVariable String sellerUsername) {
-        return listingService.getActiveListingsBySeller(sellerUsername)
-                .stream()
-                .map(ListingResponse::new)
-                .toList();
+        return listingService.getActiveListingsBySeller(sellerUsername).stream().map(ListingResponse::new).toList();
+    }
+
+    /**
+     * Chiamato da cart service (o frontend) quando una carta viene aggiunta al carrello.
+     * Mette il listing in stato RESERVED così non appare negli annunci attivi.
+     */
+    @PatchMapping("/{id}/reserve")
+    public ListingResponse reserve(@PathVariable String id) {
+        return new ListingResponse(listingService.reserve(id));
+    }
+
+    /**
+     * Chiamato quando la carta viene rimossa dal carrello.
+     * Riporta il listing ad ACTIVE.
+     */
+    @PatchMapping("/{id}/release")
+    public ListingResponse release(@PathVariable String id) {
+        return new ListingResponse(listingService.release(id));
     }
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
+@CrossOrigin("*")
 public class UserProfileController {
 
     @Autowired
@@ -22,75 +23,93 @@ public class UserProfileController {
     @GetMapping("/profile")
     public ResponseEntity<UserProfile> getProfile(@AuthenticationPrincipal String username) {
         UserProfile profile = profileRepository.findByUsername(username);
-        if (profile == null) {
-            return ResponseEntity.notFound().build();
-        }
+        if (profile == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(profile);
     }
 
-    // Aggiorna uno o più campi del profilo utente (parziale)
     @PatchMapping("/profile")
     public ResponseEntity<UserProfile> updateProfileField(
             @AuthenticationPrincipal String username,
             @RequestBody Map<String, String> updates) {
-
         UserProfile profile = profileRepository.findByUsername(username);
-        if (profile == null) {
-            return ResponseEntity.notFound().build();
-        }
+        if (profile == null) return ResponseEntity.notFound().build();
 
         updates.forEach((key, value) -> {
             switch (key) {
-                case "nome": profile.setNome(value); break;
-                case "cognome": profile.setCognome(value); break;
+                case "nome":        profile.setNome(value); break;
+                case "cognome":     profile.setCognome(value); break;
                 case "dataNascita": profile.setDataNascita(value); break;
-                case "indirizzo": profile.setIndirizzo(value); break;
-                case "cap": profile.setCap(value); break;
-                case "citta": profile.setCitta(value); break;
-                case "provincia": profile.setProvincia(value); break;
-                case "telefono": profile.setTelefono(value); break;
+                case "indirizzo":   profile.setIndirizzo(value); break;
+                case "cap":         profile.setCap(value); break;
+                case "citta":       profile.setCitta(value); break;
+                case "provincia":   profile.setProvincia(value); break;
+                case "telefono":    profile.setTelefono(value); break;
             }
         });
-
-        UserProfile updatedProfile = profileRepository.save(profile);
-        return ResponseEntity.ok(updatedProfile);
+        return ResponseEntity.ok(profileRepository.save(profile));
     }
 
-    // Verifica la validità del token JWT
     @GetMapping("/verify-token")
     public ResponseEntity<Void> verifyToken(@AuthenticationPrincipal String username) {
         return ResponseEntity.ok().build();
     }
 
+    // ── PUBLIC PROFILE (usato da card-page.js per mostrare stelle venditore) ──
     @GetMapping("/public/{username}")
     public ResponseEntity<SellerProfileResponse> getPublicProfile(@PathVariable String username) {
         UserProfile profile = profileRepository.findByUsername(username);
+        if (profile == null) return ResponseEntity.notFound().build();
 
-        if (profile == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        SellerProfileResponse response = new SellerProfileResponse(
+        SellerProfileResponse resp = new SellerProfileResponse(
                 profile.getUsername(),
                 profile.getNome(),
                 profile.getCognome(),
-                0.0,   // placeholder finché non implementi recensioni
-                0      // placeholder finché non colleghi gli ordini
+                profile.getAverageRating(),
+                profile.getRatingCount(),
+                0   // totalSales placeholder
         );
+        return ResponseEntity.ok(resp);
+    }
 
-        return ResponseEntity.ok(response);
+    /**
+     * Aggiunge una recensione (1–5 stelle) al venditore.
+     * Chiamato da orders.js dopo che il compratore conferma la ricezione.
+     * Body: { "stars": 4 }
+     * Autenticazione richiesta (solo il compratore può valutare, controllo lato logica business).
+     */
+    @PostMapping("/rate/{sellerUsername}")
+    public ResponseEntity<SellerProfileResponse> rateSeller(
+            @PathVariable String sellerUsername,
+            @RequestBody Map<String, Integer> body,
+            @AuthenticationPrincipal String reviewerUsername) {
+
+        if (sellerUsername.equals(reviewerUsername)) {
+            return ResponseEntity.badRequest().build(); // non puoi valutare te stesso
+        }
+
+        UserProfile seller = profileRepository.findByUsername(sellerUsername);
+        if (seller == null) return ResponseEntity.notFound().build();
+
+        int stars = body.getOrDefault("stars", 0);
+        if (stars < 1 || stars > 5) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        seller.addRating(stars);
+        profileRepository.save(seller);
+
+        SellerProfileResponse resp = new SellerProfileResponse(
+                seller.getUsername(), seller.getNome(), seller.getCognome(),
+                seller.getAverageRating(), seller.getRatingCount(), 0);
+        return ResponseEntity.ok(resp);
     }
 
     @PostMapping("/profile")
     public ResponseEntity<String> createProfile(@RequestBody UserProfileRequest profileRequest) {
         try {
-            // Verifica se esiste già un profilo per questo username
-            UserProfile existingProfile = profileRepository.findByUsername(profileRequest.getUsername());
-            if (existingProfile != null) {
-                return ResponseEntity.badRequest().body("Profilo già esistente per questo username");
-            }
+            UserProfile existing = profileRepository.findByUsername(profileRequest.getUsername());
+            if (existing != null) return ResponseEntity.badRequest().body("Profilo già esistente");
 
-            // Crea un nuovo profilo
             UserProfile newProfile = new UserProfile();
             newProfile.setUsername(profileRequest.getUsername());
             newProfile.setNome(profileRequest.getNome());
@@ -102,17 +121,11 @@ public class UserProfileController {
             newProfile.setProvincia(profileRequest.getProvincia());
             newProfile.setTelefono(profileRequest.getTelefono());
 
-            // Salva il profilo nel database
-            UserProfile savedProfile = profileRepository.save(newProfile);
-
-            System.out.println("Profilo creato con successo per utente: " + profileRequest.getUsername());
+            profileRepository.save(newProfile);
             return ResponseEntity.ok("Profilo creato con successo");
-
         } catch (Exception e) {
-            System.err.println("Errore nella creazione del profilo per utente " + profileRequest.getUsername() + ": " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Errore interno durante la creazione del profilo");
+                    .body("Errore interno: " + e.getMessage());
         }
     }
 }
