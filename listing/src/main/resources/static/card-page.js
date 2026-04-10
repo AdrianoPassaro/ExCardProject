@@ -225,7 +225,7 @@ function renderListings(listings) {
                    href="http://localhost:8081/seller-profile.html?username=${encodeURIComponent(listing.sellerUsername)}">
                     ${listing.sellerUsername}
                 </a>
-                ${isOwn ? '<span class="own-badge">le tue carte</span>' : ''}
+                ${isOwn ? '<span class="own-badge"></span>' : ''}
                 ${starsHtml(rating.avg, rating.count)}
             </div>
             <div>
