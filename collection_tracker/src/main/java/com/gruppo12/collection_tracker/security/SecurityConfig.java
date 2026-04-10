@@ -38,8 +38,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/account.html", "/static/**").permitAll()
-                        .requestMatchers("/api/collection/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/collection/public/**").permitAll()
+                        .requestMatchers("/api/collection/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/collection/user/*/check-trade-availability").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/collection/trades/complete").permitAll()
                         .anyRequest().permitAll()
@@ -58,8 +58,8 @@ public class SecurityConfig {
 
     private CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080","http://localhost:8081", "http://localhost:8082", "http://localhost:8083", "http://localhost:8084", "http://localhost:8085", "http://localhost:8086", "http://localhost:8087"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080","http://localhost:8081", "http://localhost:8082", "http://localhost:8083", "http://localhost:8084", "http://localhost:8085", "http://localhost:8086", "http://localhost:8087", "http://localhost:8088"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "username"));
         configuration.setAllowCredentials(true);
 

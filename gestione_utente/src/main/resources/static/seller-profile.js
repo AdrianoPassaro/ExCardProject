@@ -452,7 +452,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         collection = await enrichCollection(rawCollection);
 
         populateCollectionFilterDropdowns();
+
+        filterSearch.value = '';
+        filterCondition.value = '';
+        filterSortOffers.value = 'price-asc';
+        filterRarity.value = '';
+        filterSet.value = '';
+        filterCollectionCondition.value = '';
+        filterSortCollection.value = 'name-asc';
+
         switchTab("offers");
+
+        applyFilters();
     } catch (err) {
         console.error("Errore init seller profile:", err);
         alert("Errore nel caricamento del profilo venditore");

@@ -36,10 +36,18 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/account.html", "/static/**").permitAll()
-                        .requestMatchers("/api/user/**").authenticated()
-                        .requestMatchers("/seller-profile.html", "/seller-profile.js", "/seller-profile.css", "/static/**").permitAll()
+                        .requestMatchers(
+                                "/account.html",
+                                "/seller-profile.html",
+                                "/seller-profile.js",
+                                "/seller-profile.css",
+                                "/static/**"
+                        ).permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/api/user/public/**").permitAll()
+
+                        .requestMatchers("/api/user/**").authenticated()
+
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
