@@ -47,4 +47,7 @@ public class ListingDocument {
 
     // setter needed for status transitions
     public void setStatus(ListingStatus status) { this.status = status; }
+
+    // setter needed for quantity updates during partial purchases
+    public void setQuantity(int quantity) { this.quantity = quantity; }
 }

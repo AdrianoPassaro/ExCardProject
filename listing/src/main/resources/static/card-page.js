@@ -208,8 +208,10 @@ function renderListings(listings) {
     listings.forEach((listing, idx) => {
         const isOwn      = loggedUsername && listing.sellerUsername === loggedUsername;
         const rating     = ratingsCache[listing.sellerUsername] || { avg: 0, count: 0 };
-        const unitPrice  = listing.price / Math.max(listing.quantity, 1);
-        const totalPrice = listing.price;
+
+        // NUOVA LOGICA PREZZI: il database salva il prezzo unitario
+        const unitPrice  = listing.price;
+        const totalPrice = unitPrice * listing.quantity; // Totale massimo disponibile
 
         const row = document.createElement('div');
         row.className = `listing-row${isOwn ? ' own-listing' : ''}`;
@@ -225,7 +227,7 @@ function renderListings(listings) {
                    href="http://localhost:8081/seller-profile.html?username=${encodeURIComponent(listing.sellerUsername)}">
                     ${listing.sellerUsername}
                 </a>
-                ${isOwn ? '<span class="own-badge"></span>' : ''}
+                ${isOwn ? '<span class="own-badge">Non puoi acquistare le tue carte</span>' : ''}
                 ${starsHtml(rating.avg, rating.count)}
             </div>
             <div>
@@ -234,16 +236,20 @@ function renderListings(listings) {
             <div class="qty-cell">${listing.quantity}</div>
             <div class="price-cell">
                 <span class="price-unit">€ ${unitPrice.toFixed(2)}</span>
-                ${listing.quantity > 1 ? `<span class="price-total">Totale: € ${totalPrice.toFixed(2)}</span>` : ''}
+                ${listing.quantity > 1 ? `<span class="price-total">Totale disp: € ${totalPrice.toFixed(2)}</span>` : ''}
             </div>
             <div class="actions-cell">
+                ${(!isOwn && loggedUsername) ?
+            `<input type="number" class="buy-qty-input" id="qty-${listing.id}" min="1" max="${listing.quantity}" value="1">`
+            : ''}
+                
                 <button class="icon-cart-button buy-button"
                     data-listing-id="${listing.id}"
                     data-card-id="${listing.cardId}"
                     data-seller="${listing.sellerUsername}"
                     data-condition="${listing.condition}"
                     data-price="${listing.price}"
-                    data-quantity="${listing.quantity}"
+                    data-max-quantity="${listing.quantity}"
                     title="${cartTitle}"
                     ${cartDisabledAttr}
                     aria-label="Aggiungi al carrello">
@@ -273,20 +279,31 @@ function renderListings(listings) {
 function setupBuyButtons() {
     document.querySelectorAll('.buy-button:not(:disabled)').forEach(btn => {
         btn.addEventListener('click', async () => {
-            btn.disabled = true;
             const listingId = btn.dataset.listingId;
+            const maxQty    = parseInt(btn.dataset.maxQuantity);
+
+            // Leggi la quantità selezionata dall'utente
+            const qtyInput  = document.getElementById(`qty-${listingId}`);
+            const selectedQty = qtyInput ? parseInt(qtyInput.value) : 1;
+
+            // Validazione base
+            if (selectedQty > maxQty || selectedQty < 1) {
+                alert('Quantità non valida');
+                return;
+            }
+
+            btn.disabled = true;
             const cardId    = btn.dataset.cardId;
             const sellerId  = btn.dataset.seller;
             const condition = btn.dataset.condition;
             const price     = parseFloat(btn.dataset.price);
-            const quantity  = parseInt(btn.dataset.quantity);
 
             try {
-                // 1. Reserve listing
-                const rr = await fetch(`${API_LISTING}/${listingId}/reserve`, { method: 'PATCH' });
-                if (!rr.ok) throw new Error('Impossibile riservare il listing');
+                // 1. Reserve parziale (aggiunto ?qty=...)
+                const rr = await fetch(`${API_LISTING}/${listingId}/reserve?qty=${selectedQty}`, { method: 'PATCH' });
+                if (!rr.ok) throw new Error('Impossibile riservare le carte');
 
-                // 2. Add to cart
+                // 2. Add to cart (invia selectedQty invece di tutta la quantity)
                 const cr = await fetch(`${API_CART}/add`, {
                     method: 'POST',
                     headers: {
@@ -294,23 +311,21 @@ function setupBuyButtons() {
                         'Authorization': `Bearer ${token}`,
                         'username': loggedUsername
                     },
-                    body: JSON.stringify({ listingId, cardId, sellerId, condition, price, quantity })
+                    body: JSON.stringify({
+                        listingId, cardId, sellerId, condition, price,
+                        quantity: selectedQty // Qui mandiamo la quantità scelta!
+                    })
                 });
+
                 if (!cr.ok) {
-                    await fetch(`${API_LISTING}/${listingId}/release`, { method: 'PATCH' }).catch(() => {});
+                    // Se fallisce, rilascia la quantità bloccata
+                    await fetch(`${API_LISTING}/${listingId}/release?qty=${selectedQty}`, { method: 'PATCH' }).catch(() => {});
                     throw new Error('Errore aggiunta al carrello');
                 }
 
-                // 3. Visual feedback: show check, fade row
-                btn.classList.add('btn-added');
-                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>`;
-                btn.title = 'Aggiunto al carrello';
-                btn.closest('.listing-row').style.opacity = '0.4';
-                btn.closest('.listing-row').style.pointerEvents = 'none';
-
+                // 3. Ricarica gli annunci dal server per aggiornare le quantità a schermo!
+                allListings = await loadListings(cardId);
+                applyAndRender();
                 loadCartBadge();
 
             } catch (err) {

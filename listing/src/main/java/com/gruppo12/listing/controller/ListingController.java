@@ -55,19 +55,19 @@ public class ListingController {
 
     /**
      * Chiamato da cart service (o frontend) quando una carta viene aggiunta al carrello.
-     * Mette il listing in stato RESERVED così non appare negli annunci attivi.
+     * Scala la quantità richiesta. Se arriva a 0, mette il listing in stato RESERVED.
      */
     @PatchMapping("/{id}/reserve")
-    public ListingResponse reserve(@PathVariable String id) {
-        return new ListingResponse(listingService.reserve(id));
+    public ListingResponse reserve(@PathVariable String id, @RequestParam int qty) {
+        return new ListingResponse(listingService.reserve(id, qty));
     }
 
     /**
      * Chiamato quando la carta viene rimossa dal carrello.
-     * Riporta il listing ad ACTIVE.
+     * Riaggiunge la quantità al listing.
      */
     @PatchMapping("/{id}/release")
-    public ListingResponse release(@PathVariable String id) {
-        return new ListingResponse(listingService.release(id));
+    public ListingResponse release(@PathVariable String id, @RequestParam int qty) {
+        return new ListingResponse(listingService.release(id, qty));
     }
 }
