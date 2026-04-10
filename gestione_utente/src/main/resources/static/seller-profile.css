@@ -112,6 +112,9 @@ body {
     color: white;
     border: 1px solid rgba(255,255,255,0.1);
     box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
 }
 
 .btn-contact:hover {
@@ -125,6 +128,7 @@ body {
     padding: 2.8rem 2rem 2rem 2rem;
     position: relative;
     overflow: hidden;
+    z-index: 20;
 }
 
 .page-header::before {
@@ -139,7 +143,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
 }
@@ -167,48 +171,24 @@ body {
     text-transform: uppercase;
 }
 
-.seller-stats-hero {
-    display: flex;
-    gap: 0.9rem;
-    flex-wrap: wrap;
-}
-
-.hero-stat {
-    background: rgba(37,99,235,0.12);
-    border: 1px solid rgba(59,130,246,0.2);
-    border-radius: var(--radius-md);
-    padding: 0.8rem 1rem;
-    min-width: 150px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.hero-stat-label {
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    font-weight: 600;
-}
-
-.hero-stat-value {
-    font-size: 1rem;
-    color: var(--white);
-    font-weight: 700;
-}
-
 /* ─── PROFILE INFO PANEL ─── */
 .profile-info-panel {
     padding: 0 2rem 1.2rem 2rem;
+    position: relative;
+    z-index: 20;
 }
 
 .profile-info-inner {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1.4fr 1fr 1fr;
     gap: 14px;
+    align-items: stretch;
+}
+
+.profile-info-card-name {
+    min-width: 0;
 }
 
 .profile-info-card {
@@ -231,9 +211,10 @@ body {
 }
 
 .profile-info-value {
-    font-size: 1rem;
+    font-size: 1.02rem;
     color: var(--white);
     font-weight: 700;
+    line-height: 1.35;
 }
 
 /* ─── FILTERS BAR ─── */
@@ -258,7 +239,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 1rem;
     flex-wrap: wrap;
 }
@@ -341,16 +322,31 @@ body {
 .filter-group {
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
     gap: 2px;
+    min-height: 52px;
+    position: relative;
+    top: -2px;
 }
 
 .filter-label {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
     padding-left: 2px;
+    line-height: 1;
+    margin-bottom: 1px;
+    position: relative;
+    top: -2px;
+}
+
+.filters-selects {
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
 }
 
 .filter-select {
@@ -370,6 +366,7 @@ body {
     background-repeat: no-repeat;
     background-position: right 0.6rem center;
     min-width: 130px;
+    height: 44px;
 }
 
 .filter-select:focus {
@@ -799,5 +796,79 @@ body {
 
     .navbar {
         padding: 0 1rem;
+    }
+}
+
+.contact-popover-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    z-index: 2000;
+}
+
+.contact-popover {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 250px;
+    max-width: 340px;
+    background: linear-gradient(160deg, #183a7a 0%, #102a5e 100%);
+    border: 1px solid rgba(147,197,253,0.45);
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.42), 0 0 0 1px rgba(147,197,253,0.10);
+    z-index: 3000;
+    animation: popIn 0.18s ease;
+}
+
+.contact-popover.hidden {
+    display: none;
+}
+
+.contact-popover-arrow {
+    position: absolute;
+    top: -8px;
+    right: 18px;
+    width: 14px;
+    height: 14px;
+    background: #16366f;
+    border-left: 1px solid rgba(147,197,253,0.45);
+    border-top: 1px solid rgba(147,197,253,0.45);
+    transform: rotate(45deg);
+}
+
+.contact-popover-content {
+    position: relative;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.contact-popover-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #bfdbfe;
+    opacity: 0.95;
+}
+
+.contact-popover-email {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fbff;
+    word-break: break-word;
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }

@@ -17,7 +17,6 @@
   <div class="nav-buttons">
     <a href="http://localhost:8080/login.html" class="btn btn-user">Login</a>
     <a href="http://localhost:8080/register.html" class="btn btn-user">Registrati</a>
-    <button class="btn btn-contact" id="contactButton">Contatta</button>
   </div>
 </nav>
 
@@ -25,17 +24,17 @@
   <div class="page-header-inner">
     <div class="page-header-text">
       <h1 class="page-title" id="sellerUsername">Venditore</h1>
-      <p class="page-subtitle">Profilo pubblico</p>
     </div>
 
-    <div class="seller-stats-hero">
-      <div class="hero-stat">
-        <span class="hero-stat-label">Valutazione</span>
-        <span class="hero-stat-value" id="infoRating">0.0 ★</span>
-      </div>
-      <div class="hero-stat">
-        <span class="hero-stat-label">Vendite concluse</span>
-        <span class="hero-stat-value" id="infoSales">0</span>
+    <div class="contact-popover-wrap">
+      <button class="btn btn-contact" id="contactButton" type="button">Contatta</button>
+
+      <div class="contact-popover hidden" id="contactPopover">
+        <div class="contact-popover-arrow"></div>
+        <div class="contact-popover-content">
+          <span class="contact-popover-label">Email venditore</span>
+          <span class="contact-popover-email" id="contactEmailText">Non disponibile</span>
+        </div>
       </div>
     </div>
   </div>
@@ -43,19 +42,21 @@
 
 <section class="profile-info-panel">
   <div class="profile-info-inner">
-    <div class="profile-info-card">
-      <span class="profile-info-label">Username</span>
-      <span class="profile-info-value" id="infoUsername">-</span>
-    </div>
-
-    <div class="profile-info-card">
+    <div class="profile-info-card profile-info-card-name">
       <span class="profile-info-label">Nome</span>
-      <span class="profile-info-value" id="infoNome">-</span>
+      <span class="profile-info-value">
+                <span id="infoNome">-</span> <span id="infoCognome">-</span>
+            </span>
     </div>
 
     <div class="profile-info-card">
-      <span class="profile-info-label">Cognome</span>
-      <span class="profile-info-value" id="infoCognome">-</span>
+      <span class="profile-info-label">Valutazione</span>
+      <span class="profile-info-value" id="infoRating">0.0 ★</span>
+    </div>
+
+    <div class="profile-info-card">
+      <span class="profile-info-label">Vendite concluse</span>
+      <span class="profile-info-value" id="infoSales">0</span>
     </div>
   </div>
 </section>

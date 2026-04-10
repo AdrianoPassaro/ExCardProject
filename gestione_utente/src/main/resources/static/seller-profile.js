@@ -1,11 +1,12 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const sellerUsernameEl   = document.getElementById("sellerUsername");
-    const infoUsernameEl     = document.getElementById("infoUsername");
     const infoNomeEl         = document.getElementById("infoNome");
     const infoCognomeEl      = document.getElementById("infoCognome");
     const infoRatingEl       = document.getElementById("infoRating");
     const infoSalesEl        = document.getElementById("infoSales");
     const contactButton      = document.getElementById("contactButton");
+    const contactPopover = document.getElementById("contactPopover");
+    const contactEmailText = document.getElementById("contactEmailText");
 
     const filtersBar         = document.getElementById("filtersBar");
     const filterSearch       = document.getElementById("filterSearch");
@@ -132,21 +133,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ─── RENDER PROFILE ───
     function renderProfile(profile) {
         sellerUsernameEl.textContent = profile.username || "Venditore";
-        infoUsernameEl.textContent = profile.username || "-";
         infoNomeEl.textContent = profile.nome || "-";
         infoCognomeEl.textContent = profile.cognome || "-";
         infoRatingEl.textContent = `${Number(profile.averageRating || 0).toFixed(1)} ★`;
         infoSalesEl.textContent = profile.totalSales ?? 0;
         sellerEmail = profile.email || null;
+        contactEmailText.textContent = sellerEmail || "Email non disponibile";
     }
 
     function setupContactButton() {
-        contactButton.addEventListener("click", () => {
-            if (!sellerEmail) {
-                alert("Email non disponibile.");
-                return;
-            }
-            alert(`Email venditore:\n${sellerEmail}`);
+        contactButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            contactPopover.classList.toggle("hidden");
+        });
+
+        contactPopover.addEventListener("click", (event) => {
+            event.stopPropagation();
+        });
+
+        document.addEventListener("click", () => {
+            contactPopover.classList.add("hidden");
         });
     }
 
