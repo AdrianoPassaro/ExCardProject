@@ -138,9 +138,10 @@ function updateStats(listings) {
         document.getElementById('summaryAveragePrice').textContent = '-';
         return;
     }
-    const unitPrices = listings.map(l => l.price / Math.max(l.quantity, 1));
-    const lowest = Math.min(...unitPrices);
-    const totalVal = listings.reduce((s, l) => s + l.price, 0);
+    // price is already unit price (prezzo per singola carta)
+    const lowest = Math.min(...listings.map(l => l.price));
+    // Weighted average: sum(price * qty) / sum(qty) — reflects actual market volume
+    const totalVal = listings.reduce((s, l) => s + l.price * Math.max(l.quantity, 1), 0);
     const totalQty = listings.reduce((s, l) => s + Math.max(l.quantity, 1), 0);
     document.getElementById('summaryLowestPrice').textContent  = `€ ${lowest.toFixed(2)}`;
     document.getElementById('summaryAveragePrice').textContent = `€ ${(totalVal / totalQty).toFixed(2)}`;
@@ -179,8 +180,8 @@ function applyAndRender() {
 
     // Sort
     list.sort((a, b) => {
-        if (sortMode === 'price-asc')  return (a.price/Math.max(a.quantity,1)) - (b.price/Math.max(b.quantity,1));
-        if (sortMode === 'price-desc') return (b.price/Math.max(b.quantity,1)) - (a.price/Math.max(a.quantity,1));
+        if (sortMode === 'price-asc')  return a.price - b.price;
+        if (sortMode === 'price-desc') return b.price - a.price;
         if (sortMode === 'cond-asc')   return (CONDITION_ORDER[a.condition]||99) - (CONDITION_ORDER[b.condition]||99);
         if (sortMode === 'cond-desc')  return (CONDITION_ORDER[b.condition]||99) - (CONDITION_ORDER[a.condition]||99);
         return 0;
