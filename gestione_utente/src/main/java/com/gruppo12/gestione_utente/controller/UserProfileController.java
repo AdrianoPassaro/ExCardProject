@@ -185,4 +185,39 @@ public class UserProfileController {
 
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/seller/{username}")
+    public ResponseEntity<SellerProfileResponse> getSellerProfile(@PathVariable String username) {
+        try {
+            UserProfile profile = profileRepository.findByUsername(username);
+
+            // Se non hai @NoArgsConstructor, devi creare l'oggetto con parametri "dummy"
+            // e poi sovrascriverli, o aggiungere il costruttore vuoto nel DTO.
+            SellerProfileResponse res = new SellerProfileResponse();
+
+            if (profile == null) {
+                res.setUsername(username);
+                res.setAverageRating(0.0);
+                res.setTotalSales(0);
+                return ResponseEntity.ok(res);
+            }
+
+            res.setUsername(profile.getUsername());
+            res.setNome(profile.getNome() != null ? profile.getNome() : "");
+            res.setCognome(profile.getCognome() != null ? profile.getCognome() : "");
+            res.setAverageRating(profile.getAverageRating()); // double primitivo, non può essere null
+            res.setTotalSales(profile.getTotalSales());       // int primitivo, non può essere null
+            res.setEmail("email-protetta@esempio.com");
+            res.setPaese(profile.getPaese() != null ? profile.getPaese() : "");
+            res.setPaeseCode(profile.getPaeseCode() != null ? profile.getPaeseCode() : "");
+
+            return ResponseEntity.ok(res);
+
+        } catch (Exception e) {
+            // Questo scriverà l'errore REALE nei log di Docker/IntelliJ
+            System.err.println("CRASH GET_SELLER PER: " + username);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

@@ -71,14 +71,18 @@ public class OrderService {
         return new CheckoutResponse(true, "Ordini creati con successo");
     }
 
-    public Order confirm(String id, String token) { // Riceve il token
-        Order order = repo.findById(id).orElseThrow();
+    public Order confirm(String id, String token) {
+        Order order = repo.findById(id).orElseThrow(() -> new RuntimeException("Ordine non trovato"));
+
+        // CONTROLLO IDEMPOTENZA: Se è già completato, non fare nulla e restituisci l'ordine
+        if (OrderStatus.COMPLETATO.equals(order.getStatus())) {
+            return order;
+        }
+
         order.setStatus(OrderStatus.COMPLETATO);
-        order = repo.save(order);
+        order = repo.save(order); // Qui viene salvato solo se lo stato è cambiato
 
-        // Passa il token a questo metodo
         incrementSellerSales(order.getSellerUsername(), token);
-
         return order;
     }
 
@@ -95,16 +99,25 @@ public class OrderService {
         Order order = repo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
 
+        // VALIDAZIONE 1: Solo il compratore può recensire
         if (!order.getBuyerUsername().equals(buyerUsername)) {
             throw new RuntimeException("Non autorizzato a recensire questo ordine");
+        }
+
+        // VALIDAZIONE 2: Solo ordini completati (Risolve rateOrder_orderNotCompleted)
+        if (!OrderStatus.COMPLETATO.equals(order.getStatus())) {
+            throw new RuntimeException("Puoi recensire solo ordini completati");
+        }
+
+        // VALIDAZIONE 3: Range stelle 1-5 (Risolve zeroStars e sixStars)
+        if (stars < 1 || stars > 5) {
+            throw new RuntimeException("Voto non valido: inserire da 1 a 5 stelle");
         }
 
         order.setBuyerRating(stars);
         Order saved = repo.save(order);
 
-        // Passiamo anche l'ID dell'ordine e il token JWT
         sendRatingToProfile(order.getSellerUsername(), orderId, stars, token);
-
         return saved;
     }
 

@@ -104,14 +104,36 @@ async function loadListings(cardId) {
 
 // ─── LOAD SELLER RATING ───
 async function loadSellerRating(seller) {
-    if (ratingsCache[seller] !== undefined) return ratingsCache[seller];
+    if (ratingsCache[seller]) return ratingsCache[seller];
     try {
-        const res = await fetch(`${API_USER}/public/${seller}`);
-        if (!res.ok) { ratingsCache[seller] = null; return null; }
+        const headers = { 'Content-Type': 'application/json' };
+
+        // Aggiungiamo il token solo se l'utente è effettivamente loggato
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_USER}/seller/${seller}`, {
+            method: 'GET',
+            headers: headers
+        });
+
+        // Se non siamo loggati e il server ci dà 401/403,
+        // significa che il backend non è ancora stato sbloccato (punto 1 sopra)
+        if (!res.ok) {
+            console.warn(`Impossibile caricare rating per ${seller} (Status: ${res.status})`);
+            return { averageRating: 0 };
+        }
+
         const d = await res.json();
-        ratingsCache[seller] = { avg: d.averageRating || 0, count: d.ratingCount || 0 };
+        ratingsCache[seller] = {
+            averageRating: d.averageRating || 0
+        };
         return ratingsCache[seller];
-    } catch { ratingsCache[seller] = null; return null; }
+    } catch (err) {
+        console.error("Errore fetch rating:", err);
+        return { averageRating: 0 };
+    }
 }
 
 // ─── RENDER CARD ───
@@ -148,13 +170,20 @@ function updateStats(listings) {
 }
 
 // ─── STARS HTML (read-only display) ───
-function starsHtml(avg, count) {
-    if (!count) return `<span class="no-rating-label">Nessuna recensione</span>`;
-    let s = '';
-    for (let i = 1; i <= 5; i++) {
-        s += `<span class="s ${i <= Math.round(avg) ? 's-on' : 's-off'}">★</span>`;
+function starsHtml(avg) {
+    if (!avg || avg <= 0) {
+        return `<span style="color: #999; font-style: italic; font-size: 0.85rem;">Nessuna recensione</span>`;
     }
-    return `<span class="seller-stars">${s}<span class="rating-label">(${count})</span></span>`;
+
+    const fullStars = Math.round(avg);
+    const emptyStars = 5 - fullStars;
+    const stelle = '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
+
+    return `
+        <span class="seller-stars" style="color: #f39c12; font-size: 1.1rem;">
+            ${stelle}
+            <small style="color: #666; font-size: 0.8rem; margin-left: 4px;">(${avg.toFixed(1)})</small>
+        </span>`;
 }
 
 // ─── CONDITION CLASS ───
@@ -217,7 +246,8 @@ function renderListings(listings) {
 
     listings.forEach((listing, idx) => {
         const isOwn      = loggedUsername && listing.sellerUsername === loggedUsername;
-        const rating     = ratingsCache[listing.sellerUsername] || { avg: 0, count: 0 };
+        const ratingData = ratingsCache[listing.sellerUsername];
+        const avgValue = (ratingData && ratingData.averageRating) ? ratingData.averageRating : 0;
 
         // NUOVA LOGICA PREZZI: il database salva il prezzo unitario
         const unitPrice  = listing.price;
@@ -237,8 +267,8 @@ function renderListings(listings) {
                    href="http://localhost:8081/seller-profile.html?username=${encodeURIComponent(listing.sellerUsername)}">
                     ${listing.sellerUsername}
                 </a>
-                ${isOwn ? '<span class="own-badge">Non puoi acquistare le tue carte</span>' : ''}
-                ${starsHtml(rating.avg, rating.count)}
+                ${isOwn ? '<span class="own-badge">(Tu)</span>' : ''}
+                ${starsHtml(avgValue)}
             </div>
             <div>
                 <span class="condition-badge ${condClass(listing.condition)}">${listing.condition}</span>
