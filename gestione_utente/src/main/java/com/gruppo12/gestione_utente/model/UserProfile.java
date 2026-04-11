@@ -62,9 +62,6 @@ public class UserProfile {
     public String getPaeseCode()                   { return paeseCode; }
     public void setPaeseCode(String paeseCode)     { this.paeseCode = paeseCode; }
 
-    public List<Integer> getRatings()              { return ratings; }
-    public void setRatings(List<Integer> ratings)  { this.ratings = ratings != null ? ratings : new ArrayList<>(); }
-
     public void incrementSales() {
         this.totalSales++;
     }
