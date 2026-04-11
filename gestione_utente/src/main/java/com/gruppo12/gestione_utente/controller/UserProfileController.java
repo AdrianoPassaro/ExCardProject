@@ -130,7 +130,7 @@ public class UserProfileController {
 
         SellerProfileResponse resp = new SellerProfileResponse(
                 seller.getUsername(), seller.getNome(), seller.getCognome(),
-                seller.getAverageRating(), seller.getRatingCount(), null);
+                seller.getAverageRating(), seller.getTotalSales(), null);
 
         return ResponseEntity.ok(resp);
     }

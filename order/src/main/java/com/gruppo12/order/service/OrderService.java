@@ -71,20 +71,15 @@ public class OrderService {
         return new CheckoutResponse(true, "Ordini creati con successo");
     }
 
-    public Order confirm(String orderId) {
-        Order order = repo.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Ordine non trovato: " + orderId));
-
-        if (order.getStatus() == OrderStatus.COMPLETATO) return order;
-
+    public Order confirm(String id, String token) { // Riceve il token
+        Order order = repo.findById(id).orElseThrow();
         order.setStatus(OrderStatus.COMPLETATO);
-        Order saved = repo.save(order);
+        order = repo.save(order);
 
-        creditSeller(order.getSellerUsername(), order.getTotalPrice());
+        // Passa il token a questo metodo
+        incrementSellerSales(order.getSellerUsername(), token);
 
-        incrementSellerSales(order.getSellerUsername());
-
-        return saved;
+        return order;
     }
 
     /**
@@ -147,11 +142,20 @@ public class OrderService {
         }
     }
 
-    private void incrementSellerSales(String sellerUsername) {
+    private void incrementSellerSales(String sellerUsername, String token) {
         try {
-            restTemplate.postForEntity(USER_SALES_URL + sellerUsername, null, Void.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", token); // Fondamentale!
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            restTemplate.exchange(
+                    USER_SALES_URL + sellerUsername,
+                    HttpMethod.POST,
+                    entity,
+                    Void.class
+            );
         } catch (Exception e) {
-            System.err.println("Errore aggiornamento vendite: " + e.getMessage());
+            System.err.println("Errore incremento vendite: " + e.getMessage());
         }
     }
 }

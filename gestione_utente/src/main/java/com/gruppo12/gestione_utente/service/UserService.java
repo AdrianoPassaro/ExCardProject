@@ -38,6 +38,14 @@ public class UserService {
         }
         return null;
     }
+
+    public void incrementSales(String username) {
+        UserProfile profile = profileRepository.findByUsername(username);
+        if (profile != null) {
+            profile.incrementSales(); // Chiama il metodo che fa totalSales++
+            profileRepository.save(profile);
+        }
+    }
 }
 
 

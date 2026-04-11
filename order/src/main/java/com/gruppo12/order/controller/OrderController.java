@@ -36,8 +36,10 @@ public class OrderController {
     }
 
     @PutMapping("/{id}/confirm")
-    public Order confirm(@PathVariable String id) {
-        return service.confirm(id);
+    public Order confirm(
+            @PathVariable String id,
+            @RequestHeader("Authorization") String token) { // Aggiunto il token
+        return service.confirm(id, token); // Passa il token al service
     }
 
     /**
