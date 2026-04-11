@@ -191,6 +191,21 @@ body {
     min-width: 0;
 }
 
+.profile-country-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#infoCountryFlag {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+#infoCountryName {
+    display: inline-block;
+}
+
 .profile-info-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -480,6 +495,11 @@ body {
     margin-bottom: 12px;
 }
 
+.seller-listings-header-row > div:nth-child(3),
+.seller-listings-header-row > div:nth-child(4) {
+    text-align: center;
+}
+
 .seller-listing-row {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -532,6 +552,20 @@ body {
     margin-top: 3px;
 }
 
+.seller-listing-condition-cell,
+.seller-listing-qty,
+.seller-listing-price,
+.seller-listing-action-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+}
+
+.seller-listing-condition-cell {
+    justify-content: center;
+}
+
 .seller-listing-qty {
     font-weight: 700;
     color: var(--white);
@@ -541,6 +575,19 @@ body {
     font-weight: 800;
     color: #86efac;
     font-size: 0.95rem;
+}
+
+.seller-listing-qty,
+.seller-listing-price {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+}
+
+.seller-listing-action-cell {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .view-card-btn {
@@ -622,7 +669,7 @@ body {
 }
 
 /* ─── CONDITION BADGE ─── */
-.condition-badge {
+.card .condition-badge {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -634,6 +681,25 @@ body {
     border-radius: 100px;
     backdrop-filter: blur(6px);
     line-height: 1.5;
+}
+
+/* badge usata nelle righe degli annunci */
+.seller-listing-row .condition-badge {
+    position: static;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border-radius: 999px;
+    line-height: 1.2;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    white-space: nowrap;
 }
 
 .cond-mint { background: rgba(34,197,94,0.22); border: 1px solid rgba(34,197,94,0.55); color: #86efac; }
@@ -799,67 +865,69 @@ body {
     }
 }
 
-.contact-popover-wrap {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
+.contact-flip {
+    min-width: 150px;
+    width: 150px;
+    max-width: 420px;
+    height: 42px;
+    perspective: 800px;
+    cursor: pointer;
     flex-shrink: 0;
-    z-index: 2000;
+    transition: width 0.25s ease;
 }
 
-.contact-popover {
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    min-width: 250px;
-    max-width: 340px;
-    background: linear-gradient(160deg, #183a7a 0%, #102a5e 100%);
-    border: 1px solid rgba(147,197,253,0.45);
-    border-radius: 14px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.42), 0 0 0 1px rgba(147,197,253,0.10);
-    z-index: 3000;
-    animation: popIn 0.18s ease;
-}
-
-.contact-popover.hidden {
-    display: none;
-}
-
-.contact-popover-arrow {
-    position: absolute;
-    top: -8px;
-    right: 18px;
-    width: 14px;
-    height: 14px;
-    background: #16366f;
-    border-left: 1px solid rgba(147,197,253,0.45);
-    border-top: 1px solid rgba(147,197,253,0.45);
-    transform: rotate(45deg);
-}
-
-.contact-popover-content {
+.contact-flip-inner {
     position: relative;
-    padding: 14px 16px;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease;
+    transform-style: preserve-3d;
+}
+
+.contact-flip-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+/* facce */
+.contact-face {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    padding: 0 14px;
+    text-align: center;
+    white-space: nowrap;
 }
 
-.contact-popover-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #bfdbfe;
-    opacity: 0.95;
+/* FRONT */
+.contact-front {
+    background: var(--blue-bright);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
 }
 
-.contact-popover-email {
-    font-size: 0.95rem;
+.contact-front:hover {
+    background: var(--blue-glow);
+    box-shadow: 0 6px 24px rgba(59,130,246,0.55);
+}
+
+/* BACK */
+.contact-back {
+    background: linear-gradient(160deg, #183a7a 0%, #102a5e 100%);
+    color: #eaf2ff;
+    border: 1px solid rgba(147,197,253,0.4);
+    transform: rotateY(180deg);
+    font-size: 0.78rem;
     font-weight: 700;
-    color: #f8fbff;
-    word-break: break-word;
 }
 
 @keyframes popIn {

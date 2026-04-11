@@ -20,6 +20,8 @@ public class UserProfile {
     private String provincia;
     private String telefono;
     private String username;
+    private String paese;
+    private String paeseCode;
 
     /**
      * Lista dei voti ricevuti come venditore (interi da 1 a 5).
@@ -59,6 +61,12 @@ public class UserProfile {
 
     public String getTelefono()                    { return telefono; }
     public void   setTelefono(String telefono)     { this.telefono = telefono; }
+
+    public String getPaese()                       { return paese; }
+    public void setPaese(String paese)             { this.paese = paese; }
+
+    public String getPaeseCode()                   { return paeseCode; }
+    public void setPaeseCode(String paeseCode)     { this.paeseCode = paeseCode; }
 
     public List<Integer> getRatings()              { return ratings; }
     public void setRatings(List<Integer> ratings)  { this.ratings = ratings != null ? ratings : new ArrayList<>(); }

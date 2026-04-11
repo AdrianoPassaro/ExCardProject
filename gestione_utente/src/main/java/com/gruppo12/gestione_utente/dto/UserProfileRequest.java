@@ -11,6 +11,8 @@ public class UserProfileRequest {
     //private String password;
     private String provincia;
     private String username;
+    private String paese;
+    private String paeseCode;
 
     public UserProfileRequest(){
 
@@ -36,5 +38,9 @@ public class UserProfileRequest {
     public void setProvincia(String provincia) { this.provincia = provincia; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+    public String getPaese() { return paese; }
+    public void setPaese(String paese) { this.paese = paese; }
+    public String getPaeseCode() { return paeseCode; }
+    public void setPaeseCode(String paeseCode) { this.paeseCode = paeseCode; }
 
 }

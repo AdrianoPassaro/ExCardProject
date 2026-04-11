@@ -5,8 +5,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const infoRatingEl       = document.getElementById("infoRating");
     const infoSalesEl        = document.getElementById("infoSales");
     const contactButton      = document.getElementById("contactButton");
-    const contactPopover = document.getElementById("contactPopover");
+    const contactFlip = document.getElementById("contactFlip");
+    const contactFlipInner = document.getElementById("contactFlipInner");
     const contactEmailText = document.getElementById("contactEmailText");
+    const infoCountryFlagEl = document.getElementById("infoCountryFlag");
+    const infoCountryNameEl = document.getElementById("infoCountryName");
 
     const filtersBar         = document.getElementById("filtersBar");
     const filterSearch       = document.getElementById("filterSearch");
@@ -130,6 +133,44 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
     }
 
+    function adaptContactFlipWidth(email) {
+        const contactFlip = document.getElementById("contactFlip");
+        if (!contactFlip) return;
+
+        const text = email && email.trim() ? email.trim() : "Email non disponibile";
+
+        const temp = document.createElement("span");
+        temp.style.position = "absolute";
+        temp.style.visibility = "hidden";
+        temp.style.whiteSpace = "nowrap";
+        temp.style.fontSize = "0.78rem";
+        temp.style.fontWeight = "700";
+        temp.style.fontFamily = "'DM Sans', 'Segoe UI', sans-serif";
+        temp.textContent = text;
+
+        document.body.appendChild(temp);
+
+        const measuredWidth = Math.ceil(temp.getBoundingClientRect().width);
+        document.body.removeChild(temp);
+
+        const minWidth = 150;
+        const horizontalPadding = 36; // padding + bordo + un po' di margine visivo
+        const maxWidth = 420;
+
+        const finalWidth = Math.max(minWidth, Math.min(measuredWidth + horizontalPadding, maxWidth));
+
+        contactFlip.style.width = `${finalWidth}px`;
+    }
+
+    function countryCodeToFlagEmoji(code) {
+        if (!code || code.length !== 2) return "🏳️";
+        return code
+            .toUpperCase()
+            .split("")
+            .map(char => String.fromCodePoint(127397 + char.charCodeAt()))
+            .join("");
+    }
+
     // ─── RENDER PROFILE ───
     function renderProfile(profile) {
         sellerUsernameEl.textContent = profile.username || "Venditore";
@@ -137,22 +178,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         infoCognomeEl.textContent = profile.cognome || "-";
         infoRatingEl.textContent = `${Number(profile.averageRating || 0).toFixed(1)} ★`;
         infoSalesEl.textContent = profile.totalSales ?? 0;
-        sellerEmail = profile.email || null;
-        contactEmailText.textContent = sellerEmail || "Email non disponibile";
+        sellerEmail = profile.email || "Email non disponibile";
+        contactEmailText.textContent = sellerEmail;
+        adaptContactFlipWidth(sellerEmail);
+        infoCountryNameEl.textContent = profile.paese || "-";
+        infoCountryFlagEl.textContent = countryCodeToFlagEmoji(profile.paeseCode);
     }
 
-    function setupContactButton() {
-        contactButton.addEventListener("click", (event) => {
-            event.stopPropagation();
-            contactPopover.classList.toggle("hidden");
-        });
-
-        contactPopover.addEventListener("click", (event) => {
-            event.stopPropagation();
-        });
-
-        document.addEventListener("click", () => {
-            contactPopover.classList.add("hidden");
+    function setupContactFlip() {
+        contactFlip.addEventListener("click", () => {
+            contactFlipInner.classList.toggle("flipped");
         });
     }
 
@@ -449,7 +484,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         const profile = await loadSellerProfile();
         renderProfile(profile);
-        setupContactButton();
+        setupContactFlip();
 
         const rawListings = await loadSellerListings();
         listings = await enrichListings(rawListings);

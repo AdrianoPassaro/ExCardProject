@@ -7,17 +7,21 @@ public class SellerProfileResponse {
     private Double averageRating;
     private Integer totalSales;
     private String email;
+    private String paese;
+    private String paeseCode;
 
     public SellerProfileResponse() {
     }
 
-    public SellerProfileResponse(String username, String nome, String cognome, Double averageRating, Integer totalSales, String email) {
+    public SellerProfileResponse(String username, String nome, String cognome, Double averageRating, Integer totalSales, String email, String paese, String paeseCode) {
         this.username = username;
         this.nome = nome;
         this.cognome = cognome;
         this.averageRating = averageRating;
         this.totalSales = totalSales;
         this.email = email;
+        this.paese = paese;
+        this.paeseCode = paeseCode;
     }
 
     public String getUsername() {
@@ -44,6 +48,14 @@ public class SellerProfileResponse {
         return email;
     }
 
+    public String getPaese() {
+        return paese;
+    }
+
+    public String getPaeseCode() {
+        return paeseCode;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -66,5 +78,13 @@ public class SellerProfileResponse {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setPaese(String paese) {
+        this.paese = paese;
+    }
+
+    public void setPaeseCode(String paeseCode) {
+        this.paeseCode = paeseCode;
     }
 }

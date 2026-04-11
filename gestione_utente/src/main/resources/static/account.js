@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populate(p) {
-        const fields = ['nome','cognome','dataNascita','telefono','indirizzo','citta','cap','provincia'];
+        const fields = ['nome','cognome','dataNascita','telefono','indirizzo','citta','cap','provincia', 'paese'];
         fields.forEach(f => {
             const el = document.getElementById(f);
             if (el) {
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // sections: { personal: ['nome','cognome','dataNascita','telefono'], address: ['indirizzo','citta','cap','provincia'] }
     const sections = {
         personal: { fields: ['nome','cognome','dataNascita','telefono'], editBtn: 'editPersonalBtn', actions: 'actionsPersonal', saveBtn: 'savePersonalBtn', cancelBtn: 'cancelPersonalBtn', error: 'errorPersonal' },
-        address:  { fields: ['indirizzo','citta','cap','provincia'],     editBtn: 'editAddressBtn',  actions: 'actionsAddress',  saveBtn: 'saveAddressBtn',  cancelBtn: 'cancelAddressBtn',  error: 'errorAddress'  }
+        address:  { fields: ['indirizzo','citta','cap','provincia', 'paese'],     editBtn: 'editAddressBtn',  actions: 'actionsAddress',  saveBtn: 'saveAddressBtn',  cancelBtn: 'cancelAddressBtn',  error: 'errorAddress'  }
     };
 
     Object.entries(sections).forEach(([key, cfg]) => {
