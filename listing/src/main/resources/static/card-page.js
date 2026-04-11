@@ -320,30 +320,47 @@ function setupBuyButtons() {
     document.querySelectorAll('.buy-button:not(:disabled)').forEach(btn => {
         btn.addEventListener('click', async () => {
             const listingId = btn.dataset.listingId;
-            const maxQty    = parseInt(btn.dataset.maxQuantity);
-
-            // Leggi la quantità selezionata dall'utente
-            const qtyInput  = document.getElementById(`qty-${listingId}`);
+            const maxQty = parseInt(btn.dataset.maxQuantity);
+            const qtyInput = document.getElementById(`qty-${listingId}`);
             const selectedQty = qtyInput ? parseInt(qtyInput.value) : 1;
 
-            // Validazione base
             if (selectedQty > maxQty || selectedQty < 1) {
                 alert('Quantità non valida');
                 return;
             }
 
             btn.disabled = true;
-            const cardId    = btn.dataset.cardId;
-            const sellerId  = btn.dataset.seller;
+            const cardId = btn.dataset.cardId;
+            const sellerId = btn.dataset.seller;
             const condition = btn.dataset.condition;
-            const price     = parseFloat(btn.dataset.price);
+            const price = parseFloat(btn.dataset.price);
 
             try {
-                // 1. Reserve parziale (aggiunto ?qty=...)
+                // 1. Reserve parziale
                 const rr = await fetch(`${API_LISTING}/${listingId}/reserve?qty=${selectedQty}`, { method: 'PATCH' });
                 if (!rr.ok) throw new Error('Impossibile riservare le carte');
 
-                // 2. Add to cart (invia selectedQty invece di tutta la quantity)
+                // 2. Leggi il carrello attuale
+                const getCartRes = await fetch(API_CART, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'username': loggedUsername }
+                });
+                if (!getCartRes.ok) throw new Error('Impossibile leggere il carrello');
+                const cart = await getCartRes.json();
+
+                // 3. Cerca se esiste già un item con questo listingId
+                const existingItem = cart.items?.find(item => item.listingId === listingId);
+                let finalQty = selectedQty;
+
+                if (existingItem) {
+                    finalQty = existingItem.quantity + selectedQty;
+                    // Rimuovi l'item vecchio
+                    await fetch(`${API_CART}/${listingId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}`, 'username': loggedUsername }
+                    });
+                }
+
+                // 4. Aggiungi il nuovo item con la quantità totale
                 const cr = await fetch(`${API_CART}/add`, {
                     method: 'POST',
                     headers: {
@@ -353,17 +370,16 @@ function setupBuyButtons() {
                     },
                     body: JSON.stringify({
                         listingId, cardId, sellerId, condition, price,
-                        quantity: selectedQty // Qui mandiamo la quantità scelta!
+                        quantity: finalQty
                     })
                 });
 
                 if (!cr.ok) {
-                    // Se fallisce, rilascia la quantità bloccata
                     await fetch(`${API_LISTING}/${listingId}/release?qty=${selectedQty}`, { method: 'PATCH' }).catch(() => {});
                     throw new Error('Errore aggiunta al carrello');
                 }
 
-                // 3. Ricarica gli annunci dal server per aggiornare le quantità a schermo!
+                // 5. Ricarica gli annunci
                 allListings = await loadListings(cardId);
                 applyAndRender();
                 loadCartBadge();

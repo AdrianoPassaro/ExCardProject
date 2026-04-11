@@ -253,10 +253,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // ─── OFFERS RENDER ───
-    function createListingRow(listing) {
+    function createListingRow(listing, index) {
         const row = document.createElement("div");
         row.classList.add("seller-listing-row"); // usa la stessa del card-page
-
+        row.style.animationDelay = `${Math.min(index * 30, 300)}ms`;
         row.innerHTML = `
         <div class="seller-listing-card-cell">
             <a href="http://localhost:8084/card-page.html?cardId=${encodeURIComponent(listing.cardId)}"
@@ -331,7 +331,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             </button>
         </div>
     `;
-
         return row;
     }
 
@@ -474,7 +473,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             listingContainer.innerHTML = '';
             filtered.forEach((listing, i) => {
-                const el = createListingRow(listing);
+                const el = createListingRow(listing, i);
                 el.style.animationDelay = `${Math.min(i * 30, 300)}ms`;
                 listingContainer.appendChild(el);
             });
