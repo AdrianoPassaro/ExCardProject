@@ -167,41 +167,35 @@ function condClass(c) {
 function applyAndRender() {
     let copy = [...allListings];
 
-    // 1. FILTRI (Condizione e Rating)
+    // 1. FILTRI
     if (filterCond) {
+        // Filtra per condizione esatta (Mint, Near Mint, ecc.)
         copy = copy.filter(l => l.condition === filterCond);
     }
+
     if (filterRating > 0) {
         copy = copy.filter(l => {
             const data = ratingsCache[l.sellerUsername];
+            // Mostra solo se il rating è >= a quello selezionato
             return data && data.averageRating >= filterRating;
         });
     }
 
-    // 2. ORDINAMENTO (Logica Dinamica)
+    // 2. ORDINAMENTO
     copy.sort((a, b) => {
-        if (sortMode === 'price-asc') {
-            return a.price - b.price;
-        }
-        else if (sortMode === 'price-desc') {
-            return b.price - a.price;
-        }
-        else if (sortMode === 'cond-asc') {
-            // Dalla migliore (Mint = 0) alla peggiore (Poor = 5)
+        if (sortMode === 'price-asc')  return a.price - b.price;
+        if (sortMode === 'price-desc') return b.price - a.price;
+
+        if (sortMode === 'cond-asc' || sortMode === 'cond-desc') {
+            // Usa l'oggetto CONDITION_ORDER definito in alto nel file
             const valA = CONDITION_ORDER[a.condition] !== undefined ? CONDITION_ORDER[a.condition] : 99;
             const valB = CONDITION_ORDER[b.condition] !== undefined ? CONDITION_ORDER[b.condition] : 99;
-            return valA - valB;
-        }
-        else if (sortMode === 'cond-desc') {
-            // Dalla peggiore alla migliore
-            const valA = CONDITION_ORDER[a.condition] !== undefined ? CONDITION_ORDER[a.condition] : 99;
-            const valB = CONDITION_ORDER[b.condition] !== undefined ? CONDITION_ORDER[b.condition] : 99;
-            return valB - valA;
+
+            return sortMode === 'cond-asc' ? valA - valB : valB - valA;
         }
         return 0;
     });
 
-    // 3. RENDERIZZA I RISULTATI FILTRATI E ORDINATI
     renderListings(copy);
 }
 
@@ -369,36 +363,62 @@ function setupSortAndFilter(cardId) {
     const pBtn = document.getElementById('sortPriceButton');
     const cBtn = document.getElementById('sortCondButton');
 
+    // Ordinamento per Prezzo
     pBtn.addEventListener('click', () => {
-        if (sortMode === 'price-asc') { sortMode = 'price-desc'; pBtn.textContent = 'Prezzo ↓'; }
-        else                          { sortMode = 'price-asc';  pBtn.textContent = 'Prezzo ↑'; }
+        if (sortMode === 'price-asc') {
+            sortMode = 'price-desc';
+            pBtn.textContent = 'Prezzo ↓';
+        } else {
+            sortMode = 'price-asc';
+            pBtn.textContent = 'Prezzo ↑';
+        }
         pBtn.classList.add('sort-active');
         cBtn.classList.remove('sort-active');
+        cBtn.textContent = 'Condizione'; // Reset testo dell'altro bottone
         applyAndRender();
     });
 
+    // Ordinamento per Condizione
     cBtn.addEventListener('click', () => {
-        if (sortMode === 'cond-asc') { sortMode = 'cond-desc'; cBtn.textContent = 'Condizione ↓'; }
-        else                          { sortMode = 'cond-asc';  cBtn.textContent = 'Condizione ↑'; }
+        if (sortMode === 'cond-asc') {
+            sortMode = 'cond-desc';
+            cBtn.textContent = 'Condizione ↓';
+        } else {
+            sortMode = 'cond-asc';
+            cBtn.textContent = 'Condizione ↑';
+        }
         cBtn.classList.add('sort-active');
         pBtn.classList.remove('sort-active');
+        pBtn.textContent = 'Prezzo'; // Reset testo dell'altro bottone
         applyAndRender();
     });
 
+    // Filtro Dropdown Condizione
     document.getElementById('filterCondition').addEventListener('change', e => {
         filterCond = e.target.value;
         applyAndRender();
     });
+
+    // Filtro Dropdown Rating
     document.getElementById('filterRating').addEventListener('change', e => {
         filterRating = parseInt(e.target.value) || 0;
         applyAndRender();
     });
+
+    // Tasto Reset
     document.getElementById('resetFilters').addEventListener('click', () => {
-        filterCond = ''; filterRating = 0; sortMode = 'price-asc';
+        filterCond = '';
+        filterRating = 0;
+        sortMode = 'price-asc';
+
         document.getElementById('filterCondition').value = '';
         document.getElementById('filterRating').value = '0';
-        pBtn.textContent = 'Prezzo ↑'; pBtn.classList.add('sort-active');
-        cBtn.textContent = 'Condizione'; cBtn.classList.remove('sort-active');
+
+        pBtn.textContent = 'Prezzo ↑';
+        pBtn.classList.add('sort-active');
+        cBtn.textContent = 'Condizione';
+        cBtn.classList.remove('sort-active');
+
         applyAndRender();
     });
 }
