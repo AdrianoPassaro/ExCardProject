@@ -22,6 +22,7 @@ public class UserProfile {
 
     // Mappa: Key = orderId, Value = stars
     private Map<String, Integer> ratings = new HashMap<>();
+    private int totalSales = 0;
 
     public UserProfile() {}
     public UserProfile(String username) { this.username = username; }
@@ -49,6 +50,13 @@ public class UserProfile {
 
     public Map<String, Integer> getRatings() { return ratings; }
     public void setRatings(Map<String, Integer> ratings) { this.ratings = ratings; }
+
+    public int getTotalSales() { return totalSales; }
+    public void setTotalSales(int totalSales) { this.totalSales = totalSales; }
+
+    public void incrementSales() {
+        this.totalSales++;
+    }
 
     // LOGICA DI AGGIORNAMENTO/MODIFICA
     public void addOrUpdateRating(String orderId, int stars) {

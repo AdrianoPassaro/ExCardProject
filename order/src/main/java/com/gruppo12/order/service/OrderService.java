@@ -18,6 +18,7 @@ public class OrderService {
 
     private final String PAYMENT_ADD_URL  = "http://payment-service:8085/api/payment/add";
     private final String USER_RATE_URL    = "http://management-service:8081/api/user/rate/";
+    private final String USER_SALES_URL = "http://management-service:8081/api/user/sales/";
 
     @Autowired
     private OrderRepository repo;
@@ -81,6 +82,8 @@ public class OrderService {
 
         creditSeller(order.getSellerUsername(), order.getTotalPrice());
 
+        incrementSellerSales(order.getSellerUsername());
+
         return saved;
     }
 
@@ -141,6 +144,14 @@ public class OrderService {
             restTemplate.exchange(USER_RATE_URL + sellerUsername, HttpMethod.POST, entity, Void.class);
         } catch (Exception e) {
             System.err.println("Errore invio rating a profilo " + sellerUsername + ": " + e.getMessage());
+        }
+    }
+
+    private void incrementSellerSales(String sellerUsername) {
+        try {
+            restTemplate.postForEntity(USER_SALES_URL + sellerUsername, null, Void.class);
+        } catch (Exception e) {
+            System.err.println("Errore aggiornamento vendite: " + e.getMessage());
         }
     }
 }

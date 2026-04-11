@@ -66,7 +66,7 @@ public class UserProfileController {
                 profile.getCognome(),
                 profile.getAverageRating(),
                 profile.getRatingCount(),
-                0   // totalSales placeholder
+                profile.getTotalSales()
         );
         return ResponseEntity.ok(resp);
     }
@@ -128,5 +128,16 @@ public class UserProfileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Errore interno: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/sales/{username}")
+    public ResponseEntity<Void> incrementSales(@PathVariable String username) {
+        UserProfile seller = profileRepository.findByUsername(username);
+        if (seller == null) return ResponseEntity.notFound().build();
+
+        seller.incrementSales();
+        profileRepository.save(seller);
+
+        return ResponseEntity.ok().build();
     }
 }
