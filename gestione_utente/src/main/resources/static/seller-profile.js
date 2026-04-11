@@ -34,6 +34,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const listingContainer   = document.getElementById("listingContainer");
     const collectionGrid     = document.getElementById("collectionGrid");
 
+    const API_LISTING = "http://localhost:8084/listings";
+    const API_CART = "http://localhost:8085/api/cart";
+    const API_USER    = 'http://localhost:8081/api/user';
+
+    const token = localStorage.getItem("token");
+    const loggedUsername = localStorage.getItem("username");
+
     let sellerEmail = null;
     let activeTab = "offers";
     let listings = [];
@@ -240,23 +247,82 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ─── OFFERS RENDER ───
     function createListingRow(listing) {
         const row = document.createElement("div");
-        row.classList.add("seller-listing-row");
+        row.classList.add("seller-listing-row"); // usa la stessa del card-page
 
         row.innerHTML = `
-            <div class="seller-listing-card-cell">
-                <img class="seller-listing-thumb" src="${listing.card?.imageUrl || ''}" alt="${listing.card?.name || ''}">
+        <div class="seller-listing-card-cell">
+            <a href="http://localhost:8084/card-page.html?cardId=${encodeURIComponent(listing.cardId)}"
+            style="display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;">
+
+                <img class="seller-listing-thumb"
+                     src="${listing.card?.imageUrl || ''}"
+                     alt="">
+
                 <div class="seller-listing-card-text">
-                    <div class="seller-listing-card-name">${listing.card?.name || ''}</div>
-                    <div class="seller-listing-card-meta">${listing.card?.setName || ''} • ${listing.card?.rarity || ''}</div>
+                    <div class="seller-listing-card-name">
+                       ${listing.card?.name || 'Carta'}
+                 </div>
+                    <div class="seller-listing-card-meta">
+                     ${listing.card?.setName || ''}
+                    </div>
                 </div>
-            </div>
-            <div><span class="condition-badge ${conditionClass(listing.condition)}">${listing.condition || '-'}</span></div>
-            <div class="seller-listing-qty">${listing.quantity}</div>
-            <div class="seller-listing-price">€ ${Number(listing.price).toFixed(2)}</div>
-            <div>
-                <a class="view-card-btn" href="http://localhost:8084/card-page.html?cardId=${listing.cardId}">Vedi carta</a>
-            </div>
-        `;
+            </a>
+        </div>
+
+        <div>
+            <span class="condition-badge ${conditionClass(listing.condition)}">
+                ${listing.condition || '-'}
+            </span>
+        </div>
+
+        <div class="qty-cell">
+            ${listing.quantity}
+        </div>
+
+        <div class="price-cell">
+            € ${Number(listing.price).toFixed(2)}
+        </div>
+
+        <div class="actions-cell">
+
+            <!-- INPUT QUANTITÀ (COME CARD-PAGE) -->
+            <input
+                id="qty-${listing.id}"
+                type="number"
+                class="buy-qty-input"
+                min="1"
+                max="${listing.quantity}"
+                value="1"
+            >
+
+            <!-- BOTTONE CARRELLO -->
+            <button class="icon-cart-button buy-button"
+                data-listing-id="${listing.id}"
+                data-card-id="${listing.cardId}"
+                data-seller="${listing.sellerUsername}"
+                data-condition="${listing.condition}"
+                data-price="${listing.price}"
+                data-max-quantity="${listing.quantity}"
+                aria-label="Aggiungi al carrello">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                     viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="21" r="1"/>
+                    <circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+            </button>
+
+            <!-- TRADE -->
+            <button class="trade-button"
+                data-listing-id="${listing.id}"
+                data-seller="${listing.sellerUsername}">
+                Scambia
+            </button>
+        </div>
+    `;
 
         return row;
     }
@@ -268,7 +334,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         div.innerHTML = `
             <span class="condition-badge ${conditionClass(card.condition)}">${card.condition || ''}</span>
-            <img src="${card.imageUrl || ''}" alt="${card.name || ''}">
+            <a href="http://localhost:8084/card-page.html?cardId=${card.cardId}">
+                <img src="${card.imageUrl || ''}" alt="${card.name || ''}">
+            </a>
             <div class="card-info">
                 <span class="card-name" title="${card.name || ''}">${card.name || ''}</span>
                 <span class="card-rarity">${card.rarity || ''}</span>
@@ -402,6 +470,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 el.style.animationDelay = `${Math.min(i * 30, 300)}ms`;
                 listingContainer.appendChild(el);
             });
+            setupBuyButtons();
+            setupTradeButtons();
 
             resultsBar.textContent = `${filtered.length} offerte`;
             offersSection.classList.remove("hidden");
@@ -508,5 +578,76 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (err) {
         console.error("Errore init seller profile:", err);
         alert("Errore nel caricamento del profilo venditore");
+    }
+
+    function setupTradeButtons() {
+        document.querySelectorAll('.trade-button:not(:disabled)').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!token) { window.location.href = 'http://localhost:8080/login.html'; return; }
+                const listingId = btn.dataset.listingId;
+                const seller    = btn.dataset.seller;
+                window.location.href = `http://localhost:8088/trade.html?listingId=${encodeURIComponent(listingId)}&seller=${encodeURIComponent(seller)}`;
+            });
+        });
+    }
+
+    function setupBuyButtons() {
+        document.querySelectorAll('.buy-button:not(:disabled)').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const listingId = btn.dataset.listingId;
+                const maxQty    = parseInt(btn.dataset.maxQuantity);
+
+                // Leggi la quantità selezionata dall'utente
+                const qtyInput  = document.getElementById(`qty-${listingId}`);
+                const selectedQty = qtyInput ? parseInt(qtyInput.value) : 1;
+
+                // Validazione base
+                if (selectedQty > maxQty || selectedQty < 1) {
+                    alert('Quantità non valida');
+                    return;
+                }
+
+                btn.disabled = true;
+                const cardId    = btn.dataset.cardId;
+                const sellerId  = btn.dataset.seller;
+                const condition = btn.dataset.condition;
+                const price     = parseFloat(btn.dataset.price);
+
+                try {
+                    // 1. Reserve parziale (aggiunto ?qty=...)
+                    const rr = await fetch(`${API_LISTING}/${listingId}/reserve?qty=${selectedQty}`, { method: 'PATCH' });
+                    if (!rr.ok) throw new Error('Impossibile riservare le carte');
+
+                    // 2. Add to cart (invia selectedQty invece di tutta la quantity)
+                    const cr = await fetch(`${API_CART}/add`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
+                            'username': loggedUsername
+                        },
+                        body: JSON.stringify({
+                            listingId, cardId, sellerId, condition, price,
+                            quantity: selectedQty // Qui mandiamo la quantità scelta!
+                        })
+                    });
+
+                    if (!cr.ok) {
+                        // Se fallisce, rilascia la quantità bloccata
+                        await fetch(`${API_LISTING}/${listingId}/release?qty=${selectedQty}`, { method: 'PATCH' }).catch(() => {});
+                        throw new Error('Errore aggiunta al carrello');
+                    }
+
+                    // 3. Ricarica gli annunci dal server per aggiornare le quantità a schermo!
+                    const rawListings = await loadSellerListings();
+                    listings = await enrichListings(rawListings);
+                    applyFilters();
+
+                } catch (err) {
+                    alert('Errore: ' + err.message);
+                    btn.disabled = false;
+                }
+            });
+        });
     }
 });
