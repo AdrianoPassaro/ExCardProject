@@ -51,6 +51,8 @@ public class UserProfileController {
                 case "cap": profile.setCap(value); break;
                 case "citta": profile.setCitta(value); break;
                 case "provincia": profile.setProvincia(value); break;
+                case "paese": profile.setPaese(value); break;
+                case "paeseCode": profile.setPaeseCode(value); break;
                 case "telefono": profile.setTelefono(value); break;
             }
         });
@@ -96,7 +98,9 @@ public class UserProfileController {
                 profile.getCognome(),
                 profile.getAverageRating(),
                 profile.getTotalSales(),
-                email
+                email,
+                profile.getPaese(),
+                profile.getPaeseCode()
         );
         return ResponseEntity.ok(response);
     }
@@ -130,8 +134,7 @@ public class UserProfileController {
 
         SellerProfileResponse resp = new SellerProfileResponse(
                 seller.getUsername(), seller.getNome(), seller.getCognome(),
-                seller.getAverageRating(), seller.getTotalSales(), null);
-
+                seller.getAverageRating(), seller.getTotalSales(), null, seller.getPaese(), seller.getPaeseCode());
         return ResponseEntity.ok(resp);
     }
 
@@ -154,6 +157,8 @@ public class UserProfileController {
             newProfile.setCap(profileRequest.getCap());
             newProfile.setCitta(profileRequest.getCitta());
             newProfile.setProvincia(profileRequest.getProvincia());
+            newProfile.setPaese(profileRequest.getPaese());
+            newProfile.setPaeseCode(profileRequest.getPaeseCode());
             newProfile.setTelefono(profileRequest.getTelefono());
 
             // Salva il profilo nel database

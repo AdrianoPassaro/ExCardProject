@@ -19,12 +19,15 @@ public class UserProfile {
     private String provincia;
     private String telefono;
     private String username;
+    private String paese;
+    private String paeseCode;
 
     // Mappa: Key = orderId, Value = stars
     private Map<String, Integer> ratings = new HashMap<>();
     private int totalSales = 0;
 
     public UserProfile() {}
+
     public UserProfile(String username) { this.username = username; }
 
     // Getter e Setter standard
@@ -53,6 +56,14 @@ public class UserProfile {
 
     public int getTotalSales() { return totalSales; }
     public void setTotalSales(int totalSales) { this.totalSales = totalSales; }
+    public String getPaese()                       { return paese; }
+    public void setPaese(String paese)             { this.paese = paese; }
+
+    public String getPaeseCode()                   { return paeseCode; }
+    public void setPaeseCode(String paeseCode)     { this.paeseCode = paeseCode; }
+
+    public List<Integer> getRatings()              { return ratings; }
+    public void setRatings(List<Integer> ratings)  { this.ratings = ratings != null ? ratings : new ArrayList<>(); }
 
     public void incrementSales() {
         this.totalSales++;

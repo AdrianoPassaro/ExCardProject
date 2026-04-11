@@ -54,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const citta       = document.getElementById('citta').value.trim();
         const provincia   = document.getElementById('provincia').value.trim().toUpperCase();
         const telefono    = document.getElementById('telefono').value.trim();
+        const paese = document.getElementById("paese").value;
+        const paeseCode = getSelectedCountryCode(paese);
 
         // Basic validation
         if (!username || !email || !password) {
@@ -69,6 +71,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        function getSelectedCountryCode(countryName) {
+            const options = document.querySelectorAll("#countries-list option");
+            const match = [...options].find(option => option.value === countryName);
+            return match ? match.dataset.code : null;
+        }
+
+        function isValidCountry(value) {
+            return !!getSelectedCountryCode(value);
+        }
+
+        if (!isValidCountry(paese)) {
+            alert("Seleziona un Paese valido dalla lista.");
+            return;
+        }
+
         submitBtn.disabled    = true;
         submitBtn.textContent = 'Registrazione in corso…';
 
@@ -79,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     username, email, password,
                     nome, cognome, dataNascita,
-                    indirizzo, cap, citta, provincia, telefono
+                    indirizzo, cap, citta, provincia, paese, paeseCode, telefono
                 })
             });
 

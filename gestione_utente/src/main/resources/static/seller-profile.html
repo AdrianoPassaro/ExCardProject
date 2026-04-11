@@ -26,15 +26,19 @@
       <h1 class="page-title" id="sellerUsername">Venditore</h1>
     </div>
 
-    <div class="contact-popover-wrap">
-      <button class="btn btn-contact" id="contactButton" type="button">Contatta</button>
+    <div class="contact-flip" id="contactFlip">
+      <div class="contact-flip-inner" id="contactFlipInner">
 
-      <div class="contact-popover hidden" id="contactPopover">
-        <div class="contact-popover-arrow"></div>
-        <div class="contact-popover-content">
-          <span class="contact-popover-label">Email venditore</span>
-          <span class="contact-popover-email" id="contactEmailText">Non disponibile</span>
+        <!-- FRONT -->
+        <div class="contact-face contact-front">
+          <span>Contatta</span>
         </div>
+
+        <!-- BACK -->
+        <div class="contact-face contact-back">
+          <span id="contactEmailText">email@email.com</span>
+        </div>
+
       </div>
     </div>
   </div>
@@ -47,6 +51,14 @@
       <span class="profile-info-value">
                 <span id="infoNome">-</span> <span id="infoCognome">-</span>
             </span>
+    </div>
+
+    <div class="profile-info-card profile-info-card-country">
+      <span class="profile-info-label">Paese</span>
+      <span class="profile-info-value profile-country-value">
+        <span id="infoCountryFlag">🏳️</span>
+        <span id="infoCountryName">-</span>
+      </span>
     </div>
 
     <div class="profile-info-card">
