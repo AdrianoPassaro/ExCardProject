@@ -306,48 +306,6 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
     window.location.href = "http://localhost:8080/login.html";
 });
 
-// ─── DEBUG PANEL ───
-document.getElementById("debugToggle").addEventListener("click", () => {
-    const open = document.getElementById("debugBody").classList.toggle("open");
-    document.getElementById("debugArrow").classList.toggle("open", open);
-});
-
-document.getElementById("debugAdd").addEventListener("click", async () => {
-    const feedback  = document.getElementById("debugFeedback");
-    const listingId = document.getElementById("dbListingId").value.trim();
-    const cardId    = document.getElementById("dbCardId").value.trim();
-    const sellerId  = document.getElementById("dbSellerId").value.trim();
-    const condition = document.getElementById("dbCondition").value;
-    const price     = parseFloat(document.getElementById("dbPrice").value) || 0;
-    const quantity  = parseInt(document.getElementById("dbQuantity").value) || 1;
-
-    if (!listingId || !cardId) {
-        feedback.textContent = "⚠ Listing ID e Card ID sono obbligatori";
-        feedback.className   = "debug-feedback err";
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_CART}/add`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-                "username": username
-            },
-            body: JSON.stringify({ listingId, cardId, sellerId, condition, price, quantity })
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        feedback.textContent = "✓ Carta aggiunta al carrello";
-        feedback.className   = "debug-feedback ok";
-        setTimeout(() => { feedback.textContent = ""; }, 3000);
-        await loadCart();
-    } catch (err) {
-        feedback.textContent = `✕ Errore: ${err.message}`;
-        feedback.className   = "debug-feedback err";
-    }
-});
-
 // ─── INIT ───
 (async () => {
     await loadCatalog();
