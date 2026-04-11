@@ -138,9 +138,10 @@ function updateStats(listings) {
         document.getElementById('summaryAveragePrice').textContent = '-';
         return;
     }
-    const unitPrices = listings.map(l => l.price / Math.max(l.quantity, 1));
-    const lowest = Math.min(...unitPrices);
-    const totalVal = listings.reduce((s, l) => s + l.price, 0);
+    // price is already unit price (prezzo per singola carta)
+    const lowest = Math.min(...listings.map(l => l.price));
+    // Weighted average: sum(price * qty) / sum(qty) — reflects actual market volume
+    const totalVal = listings.reduce((s, l) => s + l.price * Math.max(l.quantity, 1), 0);
     const totalQty = listings.reduce((s, l) => s + Math.max(l.quantity, 1), 0);
     document.getElementById('summaryLowestPrice').textContent  = `€ ${lowest.toFixed(2)}`;
     document.getElementById('summaryAveragePrice').textContent = `€ ${(totalVal / totalQty).toFixed(2)}`;
@@ -164,29 +165,38 @@ function condClass(c) {
 
 // ─── APPLY FILTERS + SORT → RENDER ───
 function applyAndRender() {
-    let list = [...allListings];
+    let copy = [...allListings];
 
-    // Filter by condition
-    if (filterCond) list = list.filter(l => l.condition === filterCond);
+    // 1. FILTRI
+    if (filterCond) {
+        // Filtra per condizione esatta (Mint, Near Mint, ecc.)
+        copy = copy.filter(l => l.condition === filterCond);
+    }
 
-    // Filter by rating
     if (filterRating > 0) {
-        list = list.filter(l => {
-            const r = ratingsCache[l.sellerUsername];
-            return r && r.count > 0 && r.avg >= filterRating;
+        copy = copy.filter(l => {
+            const data = ratingsCache[l.sellerUsername];
+            // Mostra solo se il rating è >= a quello selezionato
+            return data && data.averageRating >= filterRating;
         });
     }
 
-    // Sort
-    list.sort((a, b) => {
-        if (sortMode === 'price-asc')  return (a.price/Math.max(a.quantity,1)) - (b.price/Math.max(b.quantity,1));
-        if (sortMode === 'price-desc') return (b.price/Math.max(b.quantity,1)) - (a.price/Math.max(a.quantity,1));
-        if (sortMode === 'cond-asc')   return (CONDITION_ORDER[a.condition]||99) - (CONDITION_ORDER[b.condition]||99);
-        if (sortMode === 'cond-desc')  return (CONDITION_ORDER[b.condition]||99) - (CONDITION_ORDER[a.condition]||99);
+    // 2. ORDINAMENTO
+    copy.sort((a, b) => {
+        if (sortMode === 'price-asc')  return a.price - b.price;
+        if (sortMode === 'price-desc') return b.price - a.price;
+
+        if (sortMode === 'cond-asc' || sortMode === 'cond-desc') {
+            // Usa l'oggetto CONDITION_ORDER definito in alto nel file
+            const valA = CONDITION_ORDER[a.condition] !== undefined ? CONDITION_ORDER[a.condition] : 99;
+            const valB = CONDITION_ORDER[b.condition] !== undefined ? CONDITION_ORDER[b.condition] : 99;
+
+            return sortMode === 'cond-asc' ? valA - valB : valB - valA;
+        }
         return 0;
     });
 
-    renderListings(list);
+    renderListings(copy);
 }
 
 // ─── RENDER LISTINGS ───
@@ -208,8 +218,10 @@ function renderListings(listings) {
     listings.forEach((listing, idx) => {
         const isOwn      = loggedUsername && listing.sellerUsername === loggedUsername;
         const rating     = ratingsCache[listing.sellerUsername] || { avg: 0, count: 0 };
-        const unitPrice  = listing.price / Math.max(listing.quantity, 1);
-        const totalPrice = listing.price;
+
+        // NUOVA LOGICA PREZZI: il database salva il prezzo unitario
+        const unitPrice  = listing.price;
+        const totalPrice = unitPrice * listing.quantity; // Totale massimo disponibile
 
         const row = document.createElement('div');
         row.className = `listing-row${isOwn ? ' own-listing' : ''}`;
@@ -225,7 +237,7 @@ function renderListings(listings) {
                    href="http://localhost:8081/seller-profile.html?username=${encodeURIComponent(listing.sellerUsername)}">
                     ${listing.sellerUsername}
                 </a>
-                ${isOwn ? '<span class="own-badge">le tue carte</span>' : ''}
+                ${isOwn ? '<span class="own-badge">Non puoi acquistare le tue carte</span>' : ''}
                 ${starsHtml(rating.avg, rating.count)}
             </div>
             <div>
@@ -234,16 +246,20 @@ function renderListings(listings) {
             <div class="qty-cell">${listing.quantity}</div>
             <div class="price-cell">
                 <span class="price-unit">€ ${unitPrice.toFixed(2)}</span>
-                ${listing.quantity > 1 ? `<span class="price-total">Totale: € ${totalPrice.toFixed(2)}</span>` : ''}
+                ${listing.quantity > 1 ? `<span class="price-total">Totale disp: € ${totalPrice.toFixed(2)}</span>` : ''}
             </div>
             <div class="actions-cell">
+                ${(!isOwn && loggedUsername) ?
+            `<input type="number" class="buy-qty-input" id="qty-${listing.id}" min="1" max="${listing.quantity}" value="1">`
+            : ''}
+                
                 <button class="icon-cart-button buy-button"
                     data-listing-id="${listing.id}"
                     data-card-id="${listing.cardId}"
                     data-seller="${listing.sellerUsername}"
                     data-condition="${listing.condition}"
                     data-price="${listing.price}"
-                    data-quantity="${listing.quantity}"
+                    data-max-quantity="${listing.quantity}"
                     title="${cartTitle}"
                     ${cartDisabledAttr}
                     aria-label="Aggiungi al carrello">
@@ -273,20 +289,31 @@ function renderListings(listings) {
 function setupBuyButtons() {
     document.querySelectorAll('.buy-button:not(:disabled)').forEach(btn => {
         btn.addEventListener('click', async () => {
-            btn.disabled = true;
             const listingId = btn.dataset.listingId;
+            const maxQty    = parseInt(btn.dataset.maxQuantity);
+
+            // Leggi la quantità selezionata dall'utente
+            const qtyInput  = document.getElementById(`qty-${listingId}`);
+            const selectedQty = qtyInput ? parseInt(qtyInput.value) : 1;
+
+            // Validazione base
+            if (selectedQty > maxQty || selectedQty < 1) {
+                alert('Quantità non valida');
+                return;
+            }
+
+            btn.disabled = true;
             const cardId    = btn.dataset.cardId;
             const sellerId  = btn.dataset.seller;
             const condition = btn.dataset.condition;
             const price     = parseFloat(btn.dataset.price);
-            const quantity  = parseInt(btn.dataset.quantity);
 
             try {
-                // 1. Reserve listing
-                const rr = await fetch(`${API_LISTING}/${listingId}/reserve`, { method: 'PATCH' });
-                if (!rr.ok) throw new Error('Impossibile riservare il listing');
+                // 1. Reserve parziale (aggiunto ?qty=...)
+                const rr = await fetch(`${API_LISTING}/${listingId}/reserve?qty=${selectedQty}`, { method: 'PATCH' });
+                if (!rr.ok) throw new Error('Impossibile riservare le carte');
 
-                // 2. Add to cart
+                // 2. Add to cart (invia selectedQty invece di tutta la quantity)
                 const cr = await fetch(`${API_CART}/add`, {
                     method: 'POST',
                     headers: {
@@ -294,23 +321,21 @@ function setupBuyButtons() {
                         'Authorization': `Bearer ${token}`,
                         'username': loggedUsername
                     },
-                    body: JSON.stringify({ listingId, cardId, sellerId, condition, price, quantity })
+                    body: JSON.stringify({
+                        listingId, cardId, sellerId, condition, price,
+                        quantity: selectedQty // Qui mandiamo la quantità scelta!
+                    })
                 });
+
                 if (!cr.ok) {
-                    await fetch(`${API_LISTING}/${listingId}/release`, { method: 'PATCH' }).catch(() => {});
+                    // Se fallisce, rilascia la quantità bloccata
+                    await fetch(`${API_LISTING}/${listingId}/release?qty=${selectedQty}`, { method: 'PATCH' }).catch(() => {});
                     throw new Error('Errore aggiunta al carrello');
                 }
 
-                // 3. Visual feedback: show check, fade row
-                btn.classList.add('btn-added');
-                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>`;
-                btn.title = 'Aggiunto al carrello';
-                btn.closest('.listing-row').style.opacity = '0.4';
-                btn.closest('.listing-row').style.pointerEvents = 'none';
-
+                // 3. Ricarica gli annunci dal server per aggiornare le quantità a schermo!
+                allListings = await loadListings(cardId);
+                applyAndRender();
                 loadCartBadge();
 
             } catch (err) {
@@ -338,36 +363,62 @@ function setupSortAndFilter(cardId) {
     const pBtn = document.getElementById('sortPriceButton');
     const cBtn = document.getElementById('sortCondButton');
 
+    // Ordinamento per Prezzo
     pBtn.addEventListener('click', () => {
-        if (sortMode === 'price-asc') { sortMode = 'price-desc'; pBtn.textContent = 'Prezzo ↓'; }
-        else                          { sortMode = 'price-asc';  pBtn.textContent = 'Prezzo ↑'; }
+        if (sortMode === 'price-asc') {
+            sortMode = 'price-desc';
+            pBtn.textContent = 'Prezzo ↓';
+        } else {
+            sortMode = 'price-asc';
+            pBtn.textContent = 'Prezzo ↑';
+        }
         pBtn.classList.add('sort-active');
         cBtn.classList.remove('sort-active');
+        cBtn.textContent = 'Condizione'; // Reset testo dell'altro bottone
         applyAndRender();
     });
 
+    // Ordinamento per Condizione
     cBtn.addEventListener('click', () => {
-        if (sortMode === 'cond-asc') { sortMode = 'cond-desc'; cBtn.textContent = 'Condizione ↓'; }
-        else                          { sortMode = 'cond-asc';  cBtn.textContent = 'Condizione ↑'; }
+        if (sortMode === 'cond-asc') {
+            sortMode = 'cond-desc';
+            cBtn.textContent = 'Condizione ↓';
+        } else {
+            sortMode = 'cond-asc';
+            cBtn.textContent = 'Condizione ↑';
+        }
         cBtn.classList.add('sort-active');
         pBtn.classList.remove('sort-active');
+        pBtn.textContent = 'Prezzo'; // Reset testo dell'altro bottone
         applyAndRender();
     });
 
+    // Filtro Dropdown Condizione
     document.getElementById('filterCondition').addEventListener('change', e => {
         filterCond = e.target.value;
         applyAndRender();
     });
+
+    // Filtro Dropdown Rating
     document.getElementById('filterRating').addEventListener('change', e => {
         filterRating = parseInt(e.target.value) || 0;
         applyAndRender();
     });
+
+    // Tasto Reset
     document.getElementById('resetFilters').addEventListener('click', () => {
-        filterCond = ''; filterRating = 0; sortMode = 'price-asc';
+        filterCond = '';
+        filterRating = 0;
+        sortMode = 'price-asc';
+
         document.getElementById('filterCondition').value = '';
         document.getElementById('filterRating').value = '0';
-        pBtn.textContent = 'Prezzo ↑'; pBtn.classList.add('sort-active');
-        cBtn.textContent = 'Condizione'; cBtn.classList.remove('sort-active');
+
+        pBtn.textContent = 'Prezzo ↑';
+        pBtn.classList.add('sort-active');
+        cBtn.textContent = 'Condizione';
+        cBtn.classList.remove('sort-active');
+
         applyAndRender();
     });
 }

@@ -97,17 +97,37 @@ public class ListingService {
         return listingRepository.findBySellerUsernameAndStatus(sellerUsername, ListingStatus.ACTIVE);
     }
 
-    // ── RESERVE: listing → RESERVED (added to cart) ──
-    public ListingDocument reserve(String id) {
+    // ── RESERVE: scala la quantità (added to cart) ──
+    public ListingDocument reserve(String id, int qtyToReserve) {
         ListingDocument listing = getListing(id);
-        listing.setStatus(ListingStatus.RESERVED);
+
+        if (listing.getQuantity() < qtyToReserve) {
+            throw new RuntimeException("Quantità richiesta non disponibile");
+        }
+
+        // Sottrai la quantità
+        listing.setQuantity(listing.getQuantity() - qtyToReserve);
+
+        // Se la quantità arriva a 0, metti il listing in stato RESERVED
+        if (listing.getQuantity() == 0) {
+            listing.setStatus(ListingStatus.RESERVED);
+        }
+
         return listingRepository.save(listing);
     }
 
-    // ── RELEASE: listing → ACTIVE (removed from cart) ──
-    public ListingDocument release(String id) {
+    // ── RELEASE: riaggiunge la quantità (removed from cart) ──
+    public ListingDocument release(String id, int qtyToRelease) {
         ListingDocument listing = getListing(id);
-        listing.setStatus(ListingStatus.ACTIVE);
+
+        // Aggiungi di nuovo la quantità
+        listing.setQuantity(listing.getQuantity() + qtyToRelease);
+
+        // Se era in RESERVED ma ora ha di nuovo quantità, torna ACTIVE
+        if (listing.getStatus() == ListingStatus.RESERVED && listing.getQuantity() > 0) {
+            listing.setStatus(ListingStatus.ACTIVE);
+        }
+
         return listingRepository.save(listing);
     }
 }

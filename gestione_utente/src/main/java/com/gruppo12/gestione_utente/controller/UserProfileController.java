@@ -94,8 +94,9 @@ public class UserProfileController {
                 profile.getUsername(),
                 profile.getNome(),
                 profile.getCognome(),
-                0.0,   // placeholder finché non implementi recensioni
-                0,      // placeholder finché non colleghi gli ordini
+                profile.getAverageRating(),
+                profile.getRatingCount(),
+                profile.getTotalSales()
                 email
         );
         return ResponseEntity.ok(response);
@@ -110,27 +111,28 @@ public class UserProfileController {
     @PostMapping("/rate/{sellerUsername}")
     public ResponseEntity<SellerProfileResponse> rateSeller(
             @PathVariable String sellerUsername,
-            @RequestBody Map<String, Integer> body,
+            @RequestBody Map<String, Object> body,
             @AuthenticationPrincipal String reviewerUsername) {
 
-        if (sellerUsername.equals(reviewerUsername)) {
-            return ResponseEntity.badRequest().build(); // non puoi valutare te stesso
+        // Recuperiamo i dati dal body
+        String orderId = (String) body.get("orderId");
+        Integer stars = (Integer) body.get("stars");
+
+        if (orderId == null || stars == null) {
+            return ResponseEntity.badRequest().build();
         }
 
         UserProfile seller = profileRepository.findByUsername(sellerUsername);
         if (seller == null) return ResponseEntity.notFound().build();
 
-        int stars = body.getOrDefault("stars", 0);
-        if (stars < 1 || stars > 5) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        seller.addRating(stars);
+        // Aggiorna o aggiunge il rating usando l'orderId come chiave
+        seller.addOrUpdateRating(orderId, stars);
         profileRepository.save(seller);
 
         SellerProfileResponse resp = new SellerProfileResponse(
                 seller.getUsername(), seller.getNome(), seller.getCognome(),
                 seller.getAverageRating(), seller.getRatingCount(), 0);
+
         return ResponseEntity.ok(resp);
     }
 
@@ -167,5 +169,16 @@ public class UserProfileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Errore interno durante la creazione del profilo");
         }
+    }
+
+    @PostMapping("/sales/{username}")
+    public ResponseEntity<Void> incrementSales(@PathVariable String username) {
+        UserProfile seller = profileRepository.findByUsername(username);
+        if (seller == null) return ResponseEntity.notFound().build();
+
+        seller.incrementSales();
+        profileRepository.save(seller);
+
+        return ResponseEntity.ok().build();
     }
 }

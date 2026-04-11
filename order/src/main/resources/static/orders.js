@@ -25,7 +25,6 @@ let sales       = [];
 let pendingConfirmId  = null;   // orderId in attesa di conferma modal
 let pendingSellerUsername = null; // sellerUsername per la recensione
 let pendingOrderId_forRating = null; // used for lazy/edit rating
-const orderRatings = {};  // orderId → stars given (0 = not rated)
 
 // ─── CATALOG ───
 async function loadCatalog() {
@@ -96,7 +95,7 @@ function buildPurchaseCard(order, idx) {
         ? `<button class="btn-confirm-receipt" data-id="${order.id}">Conferma ricezione</button>`
         : '';
 
-    const starsGiven  = orderRatings[order.id] || 0;
+    const starsGiven  = order.buyerRating || 0;   // from server — persists across refreshes
     const ratingBlock = order.status === "COMPLETATO" ? buildRatingBlock(order.id, starsGiven) : "";
 
     card.innerHTML = `
@@ -161,7 +160,7 @@ function buildPurchaseCard(order, idx) {
             ratingBtn.addEventListener("click", () => {
                 pendingOrderId_forRating  = order.id;
                 pendingSellerUsername     = order.sellerUsername;
-                selectedRating            = orderRatings[order.id] || 0;
+                selectedRating            = order.buyerRating || 0;   // pre-fill with saved value
                 updateStarUI(0);
                 document.getElementById("ratingSubmitBtn").disabled = selectedRating === 0;
                 document.getElementById("ratingModal").style.display = "flex";
@@ -197,8 +196,8 @@ function buildSaleCard(order, idx) {
     card.classList.add("order-card");
     card.style.animationDelay = `${idx * 60}ms`;
 
-    // For sales: show the rating given by the buyer (stored in orderRatings)
-    const saleRating = orderRatings[order.id] || 0;
+    // For sales: show the rating given by the buyer (persisted in order.buyerRating)
+    const saleRating = order.buyerRating || 0;
     let saleRatingHtml;
     if (order.status !== "COMPLETATO") {
         saleRatingHtml = `<div class="order-rating-row"><span class="no-rating-yet">Nessuna recensione</span></div>`;
@@ -380,28 +379,38 @@ document.querySelectorAll(".rating-star").forEach(star => {
 });
 
 document.getElementById("ratingSubmitBtn").addEventListener("click", async () => {
-    if (!selectedRating || !pendingSellerUsername) return;
+    if (!selectedRating) return;
+    const targetOrderId = pendingOrderId_forRating || pendingConfirmId;
+    if (!targetOrderId) return;
+
     const btn = document.getElementById("ratingSubmitBtn");
     btn.disabled = true; btn.textContent = "Invio…";
+
     try {
-        await fetch(`${API_USER}/rate/${pendingSellerUsername}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        // Single call to order service: saves rating in Order.buyerRating AND sends to user profile
+        const res = await fetch(`${API_ORDER}/${targetOrderId}/rate`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+                "username": username
+            },
             body: JSON.stringify({ stars: selectedRating })
         });
-        // Save locally so re-render shows the correct stars
-        if (pendingOrderId_forRating) {
-            orderRatings[pendingOrderId_forRating] = selectedRating;
-        } else if (pendingConfirmId) {
-            orderRatings[pendingConfirmId] = selectedRating;
-        }
+        if (!res.ok) throw new Error("Errore invio recensione");
+
+        // Update local purchase/sale objects so re-render shows the right stars without re-fetching
+        const update = (list) => {
+            const o = list.find(x => x.id === targetOrderId);
+            if (o) o.buyerRating = selectedRating;
+        };
+        update(purchases);
+        update(sales);
+
     } catch (err) {
         console.warn("Errore invio recensione:", err);
     } finally {
         document.getElementById("ratingModal").style.display = "none";
-        // Refresh to update displayed stars
-        await loadPurchases();
-        await loadSales();
         renderPurchases();
         renderSales();
         pendingConfirmId          = null;

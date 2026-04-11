@@ -2,9 +2,8 @@ package com.gruppo12.gestione_utente.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Document(collection = "users")
 public class UserProfile {
@@ -21,60 +20,55 @@ public class UserProfile {
     private String telefono;
     private String username;
 
-    /**
-     * Lista dei voti ricevuti come venditore (interi da 1 a 5).
-     * Ogni voto viene aggiunto quando un compratore conferma la ricezione dell'ordine.
-     */
-    private List<Integer> ratings = new ArrayList<>();
+    // Mappa: Key = orderId, Value = stars
+    private Map<String, Integer> ratings = new HashMap<>();
+    private int totalSales = 0;
 
     public UserProfile() {}
-
     public UserProfile(String username) { this.username = username; }
 
-    public String getId()                          { return id; }
+    // Getter e Setter standard
+    public String getId() { return id; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public String getCognome() { return cognome; }
+    public void setCognome(String cognome) { this.cognome = cognome; }
+    public String getDataNascita() { return dataNascita; }
+    public void setDataNascita(String dataNascita) { this.dataNascita = dataNascita; }
+    public String getIndirizzo() { return indirizzo; }
+    public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
+    public String getCap() { return cap; }
+    public void setCap(String cap) { this.cap = cap; }
+    public String getCitta() { return citta; }
+    public void setCitta(String citta) { this.citta = citta; }
+    public String getProvincia() { return provincia; }
+    public void setProvincia(String provincia) { this.provincia = provincia; }
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
 
-    public String getUsername()                    { return username; }
-    public void   setUsername(String username)     { this.username = username; }
+    public Map<String, Integer> getRatings() { return ratings; }
+    public void setRatings(Map<String, Integer> ratings) { this.ratings = ratings; }
 
-    public String getNome()                        { return nome; }
-    public void   setNome(String nome)             { this.nome = nome; }
+    public int getTotalSales() { return totalSales; }
+    public void setTotalSales(int totalSales) { this.totalSales = totalSales; }
 
-    public String getCognome()                     { return cognome; }
-    public void   setCognome(String cognome)       { this.cognome = cognome; }
-
-    public String getDataNascita()                 { return dataNascita; }
-    public void   setDataNascita(String v)         { this.dataNascita = v; }
-
-    public String getIndirizzo()                   { return indirizzo; }
-    public void   setIndirizzo(String indirizzo)   { this.indirizzo = indirizzo; }
-
-    public String getCap()                         { return cap; }
-    public void   setCap(String cap)               { this.cap = cap; }
-
-    public String getCitta()                       { return citta; }
-    public void   setCitta(String citta)           { this.citta = citta; }
-
-    public String getProvincia()                   { return provincia; }
-    public void   setProvincia(String provincia)   { this.provincia = provincia; }
-
-    public String getTelefono()                    { return telefono; }
-    public void   setTelefono(String telefono)     { this.telefono = telefono; }
-
-    public List<Integer> getRatings()              { return ratings; }
-    public void setRatings(List<Integer> ratings)  { this.ratings = ratings != null ? ratings : new ArrayList<>(); }
-
-    // Utility: aggiungi un singolo voto
-    public void addRating(int stars) {
-        if (stars < 1) stars = 1;
-        if (stars > 5) stars = 5;
-        if (this.ratings == null) this.ratings = new ArrayList<>();
-        this.ratings.add(stars);
+    public void incrementSales() {
+        this.totalSales++;
     }
 
-    // Utility: media voti (0.0 se nessun voto)
+    // LOGICA DI AGGIORNAMENTO/MODIFICA
+    public void addOrUpdateRating(String orderId, int stars) {
+        if (stars < 1) stars = 1;
+        if (stars > 5) stars = 5;
+        if (this.ratings == null) this.ratings = new HashMap<>();
+        this.ratings.put(orderId, stars); // Se l'orderId esiste già, sovrascrive il voto precedente
+    }
+
     public double getAverageRating() {
         if (ratings == null || ratings.isEmpty()) return 0.0;
-        return ratings.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+        return ratings.values().stream().mapToInt(Integer::intValue).average().orElse(0.0);
     }
 
     public int getRatingCount() {
