@@ -93,25 +93,19 @@ public class OrderService {
      * Il controllo anti-duplicato vero è che l'ordine ha già buyerRating, quindi il frontend
      * non chiama questo endpoint per ordini già valutati a meno che l'utente usi "Modifica".
      */
-    public Order rateOrder(String orderId, String buyerUsername, int stars) {
+    public Order rateOrder(String orderId, String buyerUsername, int stars, String token) {
         Order order = repo.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Ordine non trovato: " + orderId));
+                .orElseThrow(() -> new RuntimeException("Ordine non trovato"));
 
         if (!order.getBuyerUsername().equals(buyerUsername)) {
-            throw new RuntimeException("Non autorizzato");
-        }
-        if (order.getStatus() != OrderStatus.COMPLETATO) {
-            throw new RuntimeException("Puoi valutare solo ordini completati");
-        }
-        if (stars < 1 || stars > 5) {
-            throw new RuntimeException("Voto non valido (1–5)");
+            throw new RuntimeException("Non autorizzato a recensire questo ordine");
         }
 
         order.setBuyerRating(stars);
         Order saved = repo.save(order);
 
-        // Invia la recensione al profilo venditore
-        sendRatingToProfile(order.getSellerUsername(), stars);
+        // Passiamo anche l'ID dell'ordine e il token JWT
+        sendRatingToProfile(order.getSellerUsername(), orderId, stars, token);
 
         return saved;
     }
@@ -132,15 +126,18 @@ public class OrderService {
         }
     }
 
-    private void sendRatingToProfile(String sellerUsername, int stars) {
+    private void sendRatingToProfile(String sellerUsername, String orderId, int stars, String token) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            // Risolve l'errore 401 Unauthorized
+            headers.set("Authorization", token);
 
-            Map<String, Integer> body = new HashMap<>();
+            Map<String, Object> body = new HashMap<>();
             body.put("stars", stars);
+            body.put("orderId", orderId);
 
-            HttpEntity<Map<String, Integer>> entity = new HttpEntity<>(body, headers);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             restTemplate.exchange(USER_RATE_URL + sellerUsername, HttpMethod.POST, entity, Void.class);
         } catch (Exception e) {
             System.err.println("Errore invio rating a profilo " + sellerUsername + ": " + e.getMessage());

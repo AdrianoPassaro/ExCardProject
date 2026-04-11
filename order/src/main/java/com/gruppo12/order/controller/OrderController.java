@@ -7,6 +7,7 @@ import com.gruppo12.order.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -49,13 +50,15 @@ public class OrderController {
     public ResponseEntity<Order> rate(
             @PathVariable String id,
             @RequestHeader String username,
+            @RequestHeader("Authorization") String token, // Prende il Bearer token dal browser
             @RequestBody Map<String, Integer> body) {
         try {
             int stars = body.getOrDefault("stars", 0);
-            Order updated = service.rateOrder(id, username, stars);
+            // Passa il token al service
+            Order updated = service.rateOrder(id, username, stars, token);
             return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }
