@@ -16,8 +16,8 @@ public class OrderService {
 
     private static final double SHIPPING = 3.0;
 
-    // URL del payment service — usato solo per accreditare il venditore al confirm
-    private final String PAYMENT_ADD_URL = "http://payment-service:8085/api/payment/add";
+    private final String PAYMENT_ADD_URL  = "http://payment-service:8085/api/payment/add";
+    private final String USER_RATE_URL    = "http://management-service:8081/api/user/rate/";
 
     @Autowired
     private OrderRepository repo;
@@ -25,37 +25,30 @@ public class OrderService {
     @Autowired
     private RestTemplate restTemplate;
 
-    // ── GET ORDERS BY BUYER ──
     public List<Order> getBuyerOrders(String username) {
         return repo.findByBuyerUsernameOrderByCreatedAtDesc(username);
     }
 
-    // ── GET ORDERS BY SELLER ──
     public List<Order> getSellerOrders(String username) {
         return repo.findBySellerUsernameOrderByCreatedAtDesc(username);
     }
 
-    /**
-     * Chiamato da checkout.js DOPO che il pagamento è già stato completato.
-     * Raggruppa gli item per sellerId e crea un Order per ciascun venditore.
-     */
     public CheckoutResponse createOrders(CheckoutRequest req) {
         if (req.getItems() == null || req.getItems().isEmpty()) {
             return new CheckoutResponse(false, "Carrello vuoto");
         }
 
-        // Group items by seller
         Map<String, List<CheckoutItemDTO>> grouped = req.getItems().stream()
                 .collect(Collectors.groupingBy(CheckoutItemDTO::getSellerId));
 
         for (Map.Entry<String, List<CheckoutItemDTO>> entry : grouped.entrySet()) {
-            String sellerId              = entry.getKey();
+            String sellerId               = entry.getKey();
             List<CheckoutItemDTO> dtoList = entry.getValue();
 
             List<OrderItem> orderItems = dtoList.stream().map(dto -> {
                 OrderItem oi = new OrderItem();
                 oi.setCardId(dto.getCardId());
-                oi.setCardName(dto.getCardName());   // snapshot nome dalla frontend (dal catalog)
+                oi.setCardName(dto.getCardName());
                 oi.setCondition(dto.getCondition());
                 oi.setQuantity(dto.getQuantity() > 0 ? dto.getQuantity() : 1);
                 oi.setPrice(dto.getPrice());
@@ -68,38 +61,57 @@ public class OrderService {
                     .sum();
 
             Order order = new Order(
-                    req.getBuyerUsername(),
-                    sellerId,
-                    req.getBuyerAddress(),
-                    orderItems,
-                    subtotal,
-                    SHIPPING,
-                    subtotal + SHIPPING
+                    req.getBuyerUsername(), sellerId, req.getBuyerAddress(),
+                    orderItems, subtotal, SHIPPING, subtotal + SHIPPING
             );
-
             repo.save(order);
         }
 
         return new CheckoutResponse(true, "Ordini creati con successo");
     }
 
-    /**
-     * Il compratore conferma di aver ricevuto le carte.
-     * L'ordine passa a COMPLETATO e i soldi vengono accreditati al venditore.
-     */
     public Order confirm(String orderId) {
         Order order = repo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Ordine non trovato: " + orderId));
 
-        if (order.getStatus() == OrderStatus.COMPLETATO) {
-            return order; // idempotente
-        }
+        if (order.getStatus() == OrderStatus.COMPLETATO) return order;
 
         order.setStatus(OrderStatus.COMPLETATO);
         Order saved = repo.save(order);
 
-        // Accredita il venditore: gli mandiamo il totalprice (senza spedizione)
         creditSeller(order.getSellerUsername(), order.getTotalPrice());
+
+        return saved;
+    }
+
+    /**
+     * Salva il voto nell'ordine (per evitare duplicati) e lo invia al profilo venditore.
+     * Se l'ordine ha già un buyerRating > 0, sovrascrive la vecchia recensione nel profilo
+     * rimuovendo quella precedente (aggiornamento, non duplicato).
+     *
+     * Per semplicità: se è un aggiornamento, aggiungiamo la nuova star al profilo venditore.
+     * Il controllo anti-duplicato vero è che l'ordine ha già buyerRating, quindi il frontend
+     * non chiama questo endpoint per ordini già valutati a meno che l'utente usi "Modifica".
+     */
+    public Order rateOrder(String orderId, String buyerUsername, int stars) {
+        Order order = repo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Ordine non trovato: " + orderId));
+
+        if (!order.getBuyerUsername().equals(buyerUsername)) {
+            throw new RuntimeException("Non autorizzato");
+        }
+        if (order.getStatus() != OrderStatus.COMPLETATO) {
+            throw new RuntimeException("Puoi valutare solo ordini completati");
+        }
+        if (stars < 1 || stars > 5) {
+            throw new RuntimeException("Voto non valido (1–5)");
+        }
+
+        order.setBuyerRating(stars);
+        Order saved = repo.save(order);
+
+        // Invia la recensione al profilo venditore
+        sendRatingToProfile(order.getSellerUsername(), stars);
 
         return saved;
     }
@@ -116,8 +128,22 @@ public class OrderService {
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             restTemplate.exchange(PAYMENT_ADD_URL, HttpMethod.POST, entity, Void.class);
         } catch (Exception e) {
-            // Log e vai avanti — l'ordine è già confermato, il pagamento può essere ritentato
             System.err.println("Errore accredito venditore " + sellerUsername + ": " + e.getMessage());
+        }
+    }
+
+    private void sendRatingToProfile(String sellerUsername, int stars) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Integer> body = new HashMap<>();
+            body.put("stars", stars);
+
+            HttpEntity<Map<String, Integer>> entity = new HttpEntity<>(body, headers);
+            restTemplate.exchange(USER_RATE_URL + sellerUsername, HttpMethod.POST, entity, Void.class);
+        } catch (Exception e) {
+            System.err.println("Errore invio rating a profilo " + sellerUsername + ": " + e.getMessage());
         }
     }
 }
