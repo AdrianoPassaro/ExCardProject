@@ -9,11 +9,12 @@ const API_USER    = 'http://localhost:8081/api/user';
 const CONDITION_ORDER = { 'Mint': 0, 'Near Mint': 1, 'Excellent': 2, 'Good': 3, 'Played': 4, 'Poor': 5 };
 
 // ─── STATE ───
-let allListings   = [];   // raw from API (always full list)
-let sortMode      = 'price-asc';  // 'price-asc' | 'price-desc' | 'cond-asc' | 'cond-desc'
+let allListings   = [];
+let sortMode      = 'price-asc';
 let filterCond    = '';
 let filterRating  = 0;
-const ratingsCache = {};  // sellerUsername → { averageRating, ratingCount }
+let filterCountry = '';  // ← AGGIUNGI QUESTA VARIABILE
+const ratingsCache = {};
 let loggedUsername = null;
 const token        = localStorage.getItem('jwtToken');
 
@@ -102,13 +103,11 @@ async function loadListings(cardId) {
     return res.json();
 }
 
-// ─── LOAD SELLER RATING ───
+// ─── LOAD SELLER RATING (CORRETTA) ───
 async function loadSellerRating(seller) {
     if (ratingsCache[seller]) return ratingsCache[seller];
     try {
         const headers = { 'Content-Type': 'application/json' };
-
-        // Aggiungiamo il token solo se l'utente è effettivamente loggato
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
@@ -118,22 +117,24 @@ async function loadSellerRating(seller) {
             headers: headers
         });
 
-        // Se non siamo loggati e il server ci dà 401/403,
-        // significa che il backend non è ancora stato sbloccato (punto 1 sopra)
         if (!res.ok) {
             console.warn(`Impossibile caricare rating per ${seller} (Status: ${res.status})`);
-            return { averageRating: 0 };
+            ratingsCache[seller] = { averageRating: 0, paese: '', paeseCode: '' };
+            return ratingsCache[seller];
         }
 
         const d = await res.json();
-        ratingsCache[seller] = { avg: d.averageRating || 0, count: d.ratingCount || 0, paese: d.paese || '', paeseCode: d.paeseCode || '' };
         ratingsCache[seller] = {
-            averageRating: d.averageRating || 0
+            averageRating: d.averageRating || 0,
+            ratingCount: d.ratingCount || 0,
+            paese: d.paese || '',
+            paeseCode: d.paeseCode || ''
         };
         return ratingsCache[seller];
     } catch (err) {
         console.error("Errore fetch rating:", err);
-        return { averageRating: 0 };
+        ratingsCache[seller] = { averageRating: 0, paese: '', paeseCode: '' };
+        return ratingsCache[seller];
     }
 }
 
@@ -174,7 +175,7 @@ function renderCard(card) {
     img.src = card.imageUrl || ''; img.alt = card.name || 'Carta';
 }
 
-// ─── STATS (quantity-weighted average) ───
+// ─── STATS ───
 function updateStats(listings) {
     const n = listings.length;
     document.getElementById('summaryListings').textContent = n;
@@ -184,25 +185,21 @@ function updateStats(listings) {
         document.getElementById('summaryAveragePrice').textContent = '-';
         return;
     }
-    // price is already unit price (prezzo per singola carta)
     const lowest = Math.min(...listings.map(l => l.price));
-    // Weighted average: sum(price * qty) / sum(qty) — reflects actual market volume
     const totalVal = listings.reduce((s, l) => s + l.price * Math.max(l.quantity, 1), 0);
     const totalQty = listings.reduce((s, l) => s + Math.max(l.quantity, 1), 0);
     document.getElementById('summaryLowestPrice').textContent  = `€ ${lowest.toFixed(2)}`;
     document.getElementById('summaryAveragePrice').textContent = `€ ${(totalVal / totalQty).toFixed(2)}`;
 }
 
-// ─── STARS HTML (read-only display) ───
+// ─── STARS HTML ───
 function starsHtml(avg) {
     if (!avg || avg <= 0) {
         return `<span style="color: #999; font-style: italic; font-size: 0.85rem;">Nessuna recensione</span>`;
     }
-
     const fullStars = Math.round(avg);
     const emptyStars = 5 - fullStars;
     const stelle = '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
-
     return `
         <span class="seller-stars" style="color: #f39c12; font-size: 1.1rem;">
             ${stelle}
@@ -216,20 +213,17 @@ function condClass(c) {
     return m[c] || 'condition-default';
 }
 
-// ─── APPLY FILTERS + SORT → RENDER ───
+// ─── APPLY FILTERS + SORT ───
 function applyAndRender() {
     let copy = [...allListings];
 
-    // 1. FILTRI
     if (filterCond) {
-        // Filtra per condizione esatta (Mint, Near Mint, ecc.)
         copy = copy.filter(l => l.condition === filterCond);
     }
 
     if (filterRating > 0) {
         copy = copy.filter(l => {
             const data = ratingsCache[l.sellerUsername];
-            // Mostra solo se il rating è >= a quello selezionato
             return data && data.averageRating >= filterRating;
         });
     }
@@ -241,16 +235,12 @@ function applyAndRender() {
         });
     }
 
-    // 2. ORDINAMENTO
     copy.sort((a, b) => {
         if (sortMode === 'price-asc')  return a.price - b.price;
         if (sortMode === 'price-desc') return b.price - a.price;
-
         if (sortMode === 'cond-asc' || sortMode === 'cond-desc') {
-            // Usa l'oggetto CONDITION_ORDER definito in alto nel file
             const valA = CONDITION_ORDER[a.condition] !== undefined ? CONDITION_ORDER[a.condition] : 99;
             const valB = CONDITION_ORDER[b.condition] !== undefined ? CONDITION_ORDER[b.condition] : 99;
-
             return sortMode === 'cond-asc' ? valA - valB : valB - valA;
         }
         return 0;
@@ -259,7 +249,7 @@ function applyAndRender() {
     renderListings(copy);
 }
 
-// ─── RENDER LISTINGS ───
+// ─── RENDER LISTINGS (CORRETTA) ───
 function renderListings(listings) {
     const container = document.getElementById('listingContainer');
     container.innerHTML = '';
@@ -277,12 +267,11 @@ function renderListings(listings) {
 
     listings.forEach((listing, idx) => {
         const isOwn      = loggedUsername && listing.sellerUsername === loggedUsername;
-        const ratingData = ratingsCache[listing.sellerUsername];
-        const avgValue = (ratingData && ratingData.averageRating) ? ratingData.averageRating : 0;
+        const ratingData = ratingsCache[listing.sellerUsername] || { averageRating: 0, paese: '', paeseCode: '' };
+        const avgValue = ratingData.averageRating || 0;
 
-        // NUOVA LOGICA PREZZI: il database salva il prezzo unitario
         const unitPrice  = listing.price;
-        const totalPrice = unitPrice * listing.quantity; // Totale massimo disponibile
+        const totalPrice = unitPrice * listing.quantity;
 
         const row = document.createElement('div');
         row.className = `listing-row${isOwn ? ' own-listing' : ''}`;
@@ -299,11 +288,7 @@ function renderListings(listings) {
                         href="http://localhost:8081/seller-profile.html?username=${encodeURIComponent(listing.sellerUsername)}">
                         ${listing.sellerUsername}
                     </a>
-                    ${
-                        rating.paeseCode
-                            ? `<img class="seller-flag" src="flags/${rating.paeseCode.toLowerCase()}.png" alt="${rating.paese || 'Bandiera'}" title="${rating.paese || ''}">`
-                            : ''
-                    }
+                    ${ratingData.paeseCode ? `<img class="seller-flag" src="flags/${ratingData.paeseCode.toLowerCase()}.png" alt="${ratingData.paese || 'Bandiera'}" title="${ratingData.paese || ''}">` : ''}
                 </div>
                 ${isOwn ? '<span class="own-badge">(Tu)</span>' : ''}
                 ${starsHtml(avgValue)}
@@ -374,31 +359,26 @@ function setupBuyButtons() {
             const price = parseFloat(btn.dataset.price);
 
             try {
-                // 1. Reserve parziale
                 const rr = await fetch(`${API_LISTING}/${listingId}/reserve?qty=${selectedQty}`, { method: 'PATCH' });
                 if (!rr.ok) throw new Error('Impossibile riservare le carte');
 
-                // 2. Leggi il carrello attuale
                 const getCartRes = await fetch(API_CART, {
                     headers: { 'Authorization': `Bearer ${token}`, 'username': loggedUsername }
                 });
                 if (!getCartRes.ok) throw new Error('Impossibile leggere il carrello');
                 const cart = await getCartRes.json();
 
-                // 3. Cerca se esiste già un item con questo listingId
                 const existingItem = cart.items?.find(item => item.listingId === listingId);
                 let finalQty = selectedQty;
 
                 if (existingItem) {
                     finalQty = existingItem.quantity + selectedQty;
-                    // Rimuovi l'item vecchio
                     await fetch(`${API_CART}/${listingId}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}`, 'username': loggedUsername }
                     });
                 }
 
-                // 4. Aggiungi il nuovo item con la quantità totale
                 const cr = await fetch(`${API_CART}/add`, {
                     method: 'POST',
                     headers: {
@@ -417,7 +397,6 @@ function setupBuyButtons() {
                     throw new Error('Errore aggiunta al carrello');
                 }
 
-                // 5. Ricarica gli annunci
                 allListings = await loadListings(cardId);
                 applyAndRender();
                 loadCartBadge();
@@ -447,7 +426,6 @@ function setupSortAndFilter(cardId) {
     const pBtn = document.getElementById('sortPriceButton');
     const cBtn = document.getElementById('sortCondButton');
 
-    // Ordinamento per Prezzo
     pBtn.addEventListener('click', () => {
         if (sortMode === 'price-asc') {
             sortMode = 'price-desc';
@@ -458,11 +436,10 @@ function setupSortAndFilter(cardId) {
         }
         pBtn.classList.add('sort-active');
         cBtn.classList.remove('sort-active');
-        cBtn.textContent = 'Condizione'; // Reset testo dell'altro bottone
+        cBtn.textContent = 'Condizione';
         applyAndRender();
     });
 
-    // Ordinamento per Condizione
     cBtn.addEventListener('click', () => {
         if (sortMode === 'cond-asc') {
             sortMode = 'cond-desc';
@@ -473,17 +450,15 @@ function setupSortAndFilter(cardId) {
         }
         cBtn.classList.add('sort-active');
         pBtn.classList.remove('sort-active');
-        pBtn.textContent = 'Prezzo'; // Reset testo dell'altro bottone
+        pBtn.textContent = 'Prezzo';
         applyAndRender();
     });
 
-    // Filtro Dropdown Condizione
     document.getElementById('filterCondition').addEventListener('change', e => {
         filterCond = e.target.value;
         applyAndRender();
     });
 
-    // Filtro Dropdown Rating
     document.getElementById('filterRating').addEventListener('change', e => {
         filterRating = parseInt(e.target.value) || 0;
         applyAndRender();
@@ -494,7 +469,6 @@ function setupSortAndFilter(cardId) {
         applyAndRender();
     });
 
-    // Tasto Reset
     document.getElementById('resetFilters').addEventListener('click', () => {
         filterCond = '';
         filterRating = 0;
@@ -546,7 +520,6 @@ function setupSellForm(cardId) {
             msg.textContent = '✓ Annuncio creato con successo!';
             msg.className   = 'sell-message success';
             e.target.reset();
-            // Reload listings
             allListings = await loadListings(cardId);
             const sellers = [...new Set(allListings.map(l => l.sellerUsername))];
             await Promise.all(sellers.map(loadSellerRating));
@@ -570,13 +543,12 @@ async function initPage() {
         const [card, listings] = await Promise.all([loadCard(cardId), loadListings(cardId)]);
         allListings = listings;
 
-        // Load all seller ratings in parallel
         const sellers = [...new Set(allListings.map(l => l.sellerUsername))];
         await Promise.all(sellers.map(loadSellerRating));
 
         renderCard(card);
         populateCountryFilter();
-        applyAndRender();           // initial render (price asc)
+        applyAndRender();
         setupSortAndFilter(cardId);
         setupSellButton();
         setupSellForm(cardId);
