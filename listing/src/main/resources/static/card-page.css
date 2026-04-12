@@ -344,6 +344,22 @@ body {
     color:rgba(251,191,36,0.75);
 }
 
+.seller-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.seller-flag {
+    width: 18px;
+    height: 12px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+}
+
 /* ── SELLER STARS ── */
 .seller-stars {
     display:inline-flex; align-items:center; gap:3px;

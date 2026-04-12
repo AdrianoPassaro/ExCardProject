@@ -5,26 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Risultati ricerca - ExCard</title>
   <link rel="stylesheet" href="search-results.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<header class="navbar">
-  <a href="http://localhost:8080/homepage.html" class="logo">ExCard</a>
-
-  <form class="search-bar" action="search-results.html" method="get">
-    <input type="text" id="searchInput" name="q" placeholder="Cerca una carta..." />
-    <button type="submit" aria-label="Cerca">🔍</button>
-  </form>
+<nav class="navbar">
+  <a href="http://localhost:8080/homepage.html" class="logo">
+    <img src="logo.png" alt="ExCard Logo" class="logo-img">
+  </a>
 
   <div class="nav-buttons">
-    <a href="http://localhost:8080/login.html" class="btn">Login</a>
-    <a href="http://localhost:8080/register.html" class="btn">Registrati</a>
+    <a href="http://localhost:8080/login.html" class="btn btn-user">Login</a>
+    <a href="http://localhost:8080/register.html" class="btn btn-user">Registrati</a>
   </div>
-</header>
+</nav>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-header-text">
+      <h1 class="page-title" id="resultsTitle">Risultati ricerca</h1>
+      <p class="page-subtitle" id="resultsSubtitle">Esplora le carte trovate</p>
+    </div>
+  </div>
+</div>
+
+<div class="filters-bar" id="filtersBar">
+  <div class="filters-inner">
+
+    <form class="filter-search-wrap" action="search-results.html" method="get">
+      <span class="filter-search-icon">⌕</span>
+      <input
+              type="text"
+              id="searchInput"
+              name="q"
+              class="filter-search"
+              placeholder="Cerca una carta..."
+              autocomplete="off">
+    </form>
+
+    <div class="filters-selects">
+      <div class="filter-group">
+        <label class="filter-label">Set</label>
+        <select id="filterSet" class="filter-select">
+          <option value="">Tutti</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Ordina per</label>
+        <select id="filterSort" class="filter-select">
+          <option value="name-asc">Nome A–Z</option>
+          <option value="name-desc">Nome Z–A</option>
+          <option value="set-asc">Set A–Z</option>
+          <option value="set-desc">Set Z–A</option>
+          <option value="price-asc">Prezzo ↑</option>
+          <option value="price-desc">Prezzo ↓</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="filter-reset" id="resetFilters" type="button" title="Resetta filtri">✕ Reset</button>
+  </div>
+
+  <div class="active-filters" id="activeFilters"></div>
+</div>
+
+<div class="results-bar" id="resultsBar"></div>
 
 <main class="main-content">
-  <h1 id="resultsTitle">Risultati ricerca</h1>
   <div id="resultsContainer" class="results-grid"></div>
+
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">🃏</div>
+    <p class="empty-title">Nessuna carta trovata</p>
+    <p class="empty-sub">Prova a cambiare ricerca o filtri</p>
+  </div>
 </main>
 
 <script src="search-results.js"></script>

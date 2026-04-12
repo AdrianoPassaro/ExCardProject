@@ -8,8 +8,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const contactFlip = document.getElementById("contactFlip");
     const contactFlipInner = document.getElementById("contactFlipInner");
     const contactEmailText = document.getElementById("contactEmailText");
-    const infoCountryFlagEl = document.getElementById("infoCountryFlag");
     const infoCountryNameEl = document.getElementById("infoCountryName");
+    const infoCountryFlagImg = document.getElementById("infoCountryFlagImg");
 
     const filtersBar         = document.getElementById("filtersBar");
     const filterSearch       = document.getElementById("filterSearch");
@@ -162,13 +162,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         contactFlip.style.width = `${finalWidth}px`;
     }
 
-    function countryCodeToFlagEmoji(code) {
-        if (!code || code.length !== 2) return "🏳️";
-        return code
-            .toUpperCase()
-            .split("")
-            .map(char => String.fromCodePoint(127397 + char.charCodeAt()))
-            .join("");
+    function getFlagUrl(code) {
+        if (!code || code.length !== 2) return null;
+        return `/flags/${code.toLowerCase()}.png`;
     }
 
     // ─── RENDER PROFILE ───
@@ -182,7 +178,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         contactEmailText.textContent = sellerEmail;
         adaptContactFlipWidth(sellerEmail);
         infoCountryNameEl.textContent = profile.paese || "-";
-        infoCountryFlagEl.textContent = countryCodeToFlagEmoji(profile.paeseCode);
+        const flagUrl = getFlagUrl(profile.paeseCode);
+        if (flagUrl) {
+            infoCountryFlagImg.onload = () => {
+                infoCountryFlagImg.style.display = "inline-block";
+            };
+
+            infoCountryFlagImg.onerror = () => {
+                console.warn("Bandiera locale non trovata:", flagUrl);
+                infoCountryFlagImg.style.display = "none";
+            };
+
+            infoCountryFlagImg.src = flagUrl;
+        } else {
+            infoCountryFlagImg.removeAttribute("src");
+            infoCountryFlagImg.style.display = "none";
+        }
+
+        console.log("paeseCode:", profile.paeseCode);
+        console.log("flagUrl:", getFlagUrl(profile.paeseCode));
     }
 
     function setupContactFlip() {

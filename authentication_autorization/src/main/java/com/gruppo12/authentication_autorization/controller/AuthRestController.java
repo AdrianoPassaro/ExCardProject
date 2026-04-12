@@ -83,6 +83,7 @@ public class AuthRestController {
             profile.setProvincia(request.getProvincia());
             profile.setIndirizzo(request.getIndirizzo());
             profile.setPaese(request.getPaese());
+            profile.setPaeseCode(request.getPaeseCode());
 
             // Generar token para el nuevo usuario
             String token = jwtUtil.generateToken(user.getUsername());
