@@ -461,7 +461,6 @@ body {
     box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
 }
 
-/* Rimuove le freccette nei browser Webkit (Chrome/Safari) se preferisci */
 .buy-qty-input::-webkit-outer-spin-button,
 .buy-qty-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
