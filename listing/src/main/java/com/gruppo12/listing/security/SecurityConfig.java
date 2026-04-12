@@ -68,7 +68,7 @@ public class SecurityConfig {
                 "http://localhost:8083",
                 "http://localhost:8084",
                 "http://localhost:8087",
-                "http://localhost:8089"
+                "http://localhost:8088"
         ));
 
         configuration.setAllowedMethods(Arrays.asList(

@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('jwtToken', data.token);
 
             // Propaga il token sugli altri microservizi via iframe
-            await initTokenAcrossPorts(data.token, [8081, 8083, 8084, 8085, 8086, 8087]);
+            await initTokenAcrossPorts(data.token, [8081, 8083, 8084, 8085, 8086, 8087, 8088]);
 
             window.location.replace('http://localhost:8080/homepage.html');
 

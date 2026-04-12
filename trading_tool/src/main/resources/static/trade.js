@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         try {
-            const res = await fetch("http://localhost:8089/trades", {
+            const res = await fetch("http://localhost:8088/trades", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
