@@ -159,14 +159,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // ─── CONDITION BADGE ───
+    // ─── CONDITION BADGE ───
     function conditionClass(cond) {
         if (!cond) return '';
-        const c = cond.toLowerCase().replace(/\s+/g, '-');
-        if (c.includes('near'))     return 'cond-nm';
-        if (c.includes('lightly'))  return 'cond-lp';
-        if (c.includes('moderate')) return 'cond-mp';
-        if (c.includes('heavily'))  return 'cond-hp';
-        return '';
+        const c = cond.toLowerCase().trim();
+
+        if (c === 'mint') return 'condition-mint';
+        if (c === 'near mint') return 'condition-near-mint';
+        if (c === 'excellent') return 'condition-excellent';
+        if (c === 'good') return 'condition-good';
+        if (c === 'played') return 'condition-played';
+        if (c === 'poor') return 'condition-poor';
+
+        return 'condition-default';
     }
 
     // ─── CARD ELEMENT ───
@@ -308,10 +313,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div class="modal-field">
                     <label for="selectCondition">Condizione</label>
                     <select id="selectCondition">
+                        <option value="Mint">Mint</option>
                         <option value="Near Mint">Near Mint</option>
-                        <option value="Lightly Played">Lightly Played</option>
-                        <option value="Moderately Played">Moderately Played</option>
-                        <option value="Heavily Played">Heavily Played</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Played">Played</option>
+                        <option value="Poor">Poor</option>
                     </select>
                 </div>
 
