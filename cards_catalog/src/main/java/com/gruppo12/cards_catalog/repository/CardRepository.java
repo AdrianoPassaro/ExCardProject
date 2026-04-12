@@ -16,4 +16,6 @@ public interface CardRepository extends MongoRepository<CardDocument, String> {
 
     List<CardDocument> findByNameContainingIgnoreCase(String name);
 
+    boolean existsByNameAndSetNameAndNumber(String name, String setName, String number);
+
 }
