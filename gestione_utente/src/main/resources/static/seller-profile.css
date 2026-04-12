@@ -182,8 +182,8 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr;
-    gap: 14px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
     align-items: stretch;
 }
 
@@ -194,12 +194,26 @@ body {
 .profile-country-value {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    overflow: hidden;
 }
 
-#infoCountryFlag {
-    font-size: 1.4rem;
-    line-height: 1;
+.country-flag-img {
+    width: 26px;
+    height: 18px;
+    object-fit: cover;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
+    flex-shrink: 0;
+}
+
+.country-flag-img {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.country-flag-img:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 6px rgba(59,130,246,0.6);
 }
 
 #infoCountryName {
@@ -211,14 +225,15 @@ body {
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-card);
-    padding: 1rem 1.1rem;
+    padding: 0.75rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
+    min-width: 0;
 }
 
 .profile-info-label {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--muted);
@@ -226,10 +241,13 @@ body {
 }
 
 .profile-info-value {
-    font-size: 1.02rem;
+    font-size: 0.9rem;
     color: var(--white);
     font-weight: 700;
-    line-height: 1.35;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ─── FILTERS BAR ─── */

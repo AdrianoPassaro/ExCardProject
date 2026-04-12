@@ -126,6 +126,7 @@ async function loadSellerRating(seller) {
         }
 
         const d = await res.json();
+        ratingsCache[seller] = { avg: d.averageRating || 0, count: d.ratingCount || 0, paese: d.paese || '', paeseCode: d.paeseCode || '' };
         ratingsCache[seller] = {
             averageRating: d.averageRating || 0
         };
@@ -134,6 +135,29 @@ async function loadSellerRating(seller) {
         console.error("Errore fetch rating:", err);
         return { averageRating: 0 };
     }
+}
+
+function populateCountryFilter() {
+    const select = document.getElementById('filterCountry');
+    if (!select) return;
+
+    const currentValue = select.value;
+    const countries = [...new Set(
+        Object.values(ratingsCache)
+            .filter(p => p && p.paese)
+            .map(p => p.paese)
+    )].sort((a, b) => a.localeCompare(b, 'it'));
+
+    select.innerHTML = '<option value="">Tutti i paesi</option>';
+
+    countries.forEach(country => {
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = country;
+        select.appendChild(option);
+    });
+
+    select.value = countries.includes(currentValue) ? currentValue : '';
 }
 
 // ─── RENDER CARD ───
@@ -210,6 +234,13 @@ function applyAndRender() {
         });
     }
 
+    if (filterCountry) {
+        copy = copy.filter(l => {
+            const data = ratingsCache[l.sellerUsername];
+            return data && data.paese === filterCountry;
+        });
+    }
+
     // 2. ORDINAMENTO
     copy.sort((a, b) => {
         if (sortMode === 'price-asc')  return a.price - b.price;
@@ -263,10 +294,17 @@ function renderListings(listings) {
 
         row.innerHTML = `
             <div class="seller-cell">
-                <a class="seller-link"
-                   href="http://localhost:8081/seller-profile.html?username=${encodeURIComponent(listing.sellerUsername)}">
-                    ${listing.sellerUsername}
-                </a>
+                <div class="seller-name-row">
+                    <a class="seller-link"
+                        href="http://localhost:8081/seller-profile.html?username=${encodeURIComponent(listing.sellerUsername)}">
+                        ${listing.sellerUsername}
+                    </a>
+                    ${
+                        rating.paeseCode
+                            ? `<img class="seller-flag" src="flags/${rating.paeseCode.toLowerCase()}.png" alt="${rating.paese || 'Bandiera'}" title="${rating.paese || ''}">`
+                            : ''
+                    }
+                </div>
                 ${isOwn ? '<span class="own-badge">(Tu)</span>' : ''}
                 ${starsHtml(avgValue)}
             </div>
@@ -451,14 +489,21 @@ function setupSortAndFilter(cardId) {
         applyAndRender();
     });
 
+    document.getElementById('filterCountry').addEventListener('change', e => {
+        filterCountry = e.target.value;
+        applyAndRender();
+    });
+
     // Tasto Reset
     document.getElementById('resetFilters').addEventListener('click', () => {
         filterCond = '';
         filterRating = 0;
+        filterCountry = '';
         sortMode = 'price-asc';
 
         document.getElementById('filterCondition').value = '';
         document.getElementById('filterRating').value = '0';
+        document.getElementById('filterCountry').value = '';
 
         pBtn.textContent = 'Prezzo ↑';
         pBtn.classList.add('sort-active');
@@ -505,6 +550,7 @@ function setupSellForm(cardId) {
             allListings = await loadListings(cardId);
             const sellers = [...new Set(allListings.map(l => l.sellerUsername))];
             await Promise.all(sellers.map(loadSellerRating));
+            populateCountryFilter();
             applyAndRender();
         } catch (err) {
             msg.textContent = '✕ Errore: ' + err.message;
@@ -529,6 +575,7 @@ async function initPage() {
         await Promise.all(sellers.map(loadSellerRating));
 
         renderCard(card);
+        populateCountryFilter();
         applyAndRender();           // initial render (price asc)
         setupSortAndFilter(cardId);
         setupSellButton();

@@ -13,6 +13,7 @@ public class UserRegistrationRequest {
     private String username;
     private String password;
     private String paese;
+    private String paeseCode;
 
     public String getUsername() { return username; }
     public String getPassword() { return password; }
@@ -37,6 +38,7 @@ public class UserRegistrationRequest {
     public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
     public String getPaese() { return paese; }
     public void setPaese(String paese) { this.paese = paese; }
-
+    public String getPaeseCode() { return paeseCode; }
+    public void setPaeseCode(String paeseCode) { this.paeseCode = paeseCode; }
 }
 
