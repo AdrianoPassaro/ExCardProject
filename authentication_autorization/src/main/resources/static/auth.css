@@ -170,3 +170,10 @@
     .field-full { grid-column: 1; }
     .auth-card { padding: 1.8rem 1.3rem; }
 }
+
+.logo-img {
+    height: 90px !important;   /* uguale a collection */
+    width: auto;
+    object-fit: contain;
+    filter: brightness(1.1);
+}

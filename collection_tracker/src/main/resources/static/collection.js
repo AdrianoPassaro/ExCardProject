@@ -180,7 +180,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         div.classList.add("card");
         div.innerHTML = `
             <span class="condition-badge ${conditionClass(card.condition)}">${card.condition || ''}</span>
-            <img src="${card.imageUrl || ''}" alt="${card.name || ''}">
+            <a href="http://localhost:8084/card-page.html?cardId=${encodeURIComponent(card.cardId || card.id || '')}"
+               class="card-img-link" title="Vedi carta">
+                <img src="${card.imageUrl || ''}" alt="${card.name || ''}">
+                <span class="card-img-overlay">Vedi carta</span>
+            </a>
             <div class="card-info">
                 <span class="card-name" title="${card.name || ''}">${card.name || ''}</span>
                 <span class="card-rarity">${card.rarity || ''}</span>
@@ -375,35 +379,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     addBtn.addEventListener("click", openAddCardModal);
 
-    // ─── LOGOUT ───
-    logoutBtn.addEventListener("click", () => {
-        localStorage.removeItem("jwtToken");
-        window.location.href = "http://localhost:8080/login.html";
-    });
+    // logout gestito da navbar.js
 
     // ─── INIT ───
     await loadCatalog();
     await loadCollection();
-    // ─── CART BADGE ───
-    async function loadCartBadge() {
-        try {
-            const res = await fetch("http://localhost:8087/api/cart", {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "username": username
-                }
-            });
-            if (!res.ok) return;
-            const cart = await res.json();
-            const count = (cart.items || []).length;
-            const badge = document.getElementById("cartBadge");
-            animateBadge(badge, count);
-        }
-        catch (err) {
-            console.error("Errore loadCartBadge:", err);
-        }
-    }
-
+    // cart badge gestito da navbar.js
     function animateBadge(badge, count) {
         if (count > 0) {
             badge.style.display = "flex";

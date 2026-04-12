@@ -790,3 +790,142 @@ body {
     from { transform: scale(0); opacity: 0; }
     to   { transform: scale(1); opacity: 1; }
 }
+/* ══════════════════════════════════════════════════════
+   NAVBAR ESTESA — wallet, search, user-menu dropdown
+   (aggiunto per supportare la navbar universale)
+   ══════════════════════════════════════════════════════ */
+
+/* ── Search form ── */
+.search-form {
+    display: flex;
+    align-items: center;
+    background: rgba(10,31,69,0.7);
+    border: 1px solid rgba(59,130,246,0.22);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    flex: 0 1 340px;
+    transition: var(--transition);
+}
+.search-form:focus-within {
+    border-color: rgba(59,130,246,0.55);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+.search-form input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.84rem;
+    padding: 0.5rem 0.85rem;
+    outline: none;
+}
+.search-form input::placeholder { color: var(--muted); opacity: 0.7; }
+.search-form button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+}
+.search-form button:hover { color: var(--white); }
+
+/* ── Wallet pill ── */
+.wallet-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    background: rgba(37,99,235,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 100px;
+    color: var(--sky);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+.wallet-pill:hover {
+    background: rgba(37,99,235,0.24);
+    border-color: rgba(59,130,246,0.5);
+    color: var(--white);
+}
+
+/* ── User menu ── */
+.user-menu-wrap { position: relative; }
+
+.user-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    background: rgba(37,99,235,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: var(--radius-sm);
+    color: var(--sky);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+.user-menu-trigger:hover,
+.user-menu-trigger.open {
+    background: rgba(37,99,235,0.24);
+    border-color: rgba(59,130,246,0.5);
+    color: var(--white);
+}
+.chevron {
+    font-size: 0.6rem;
+    opacity: 0.7;
+    transition: transform 0.2s;
+}
+.user-menu-trigger.open .chevron { transform: rotate(180deg); }
+
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 200px;
+    background: rgba(8,22,54,0.97);
+    border: 1px solid rgba(59,130,246,0.22);
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    backdrop-filter: blur(12px);
+    z-index: 2000;
+    overflow: hidden;
+    animation: ddIn 0.15s ease;
+}
+.user-dropdown.open { display: block; }
+@keyframes ddIn {
+    from { opacity:0; transform:translateY(-6px); }
+    to   { opacity:1; transform:none; }
+}
+
+.dd-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1rem;
+    color: var(--text-body);
+    font-size: 0.84rem;
+    font-weight: 500;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.dd-item:hover { background: rgba(37,99,235,0.15); color: var(--white); }
+.dd-divider { border: none; border-top: 1px solid rgba(59,130,246,0.12); margin: 0.2rem 0; }
+.dd-logout { color: #fca5a5; }
+.dd-logout:hover { background: rgba(239,68,68,0.1); color: #ff8080; }

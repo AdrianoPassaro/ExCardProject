@@ -62,14 +62,6 @@ body {
     height: 100%;
     flex-shrink: 0;
 }
-.logo-img { height: 48px; width: auto; object-fit: contain; filter: brightness(1.1); }
-.logo-text {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: var(--white);
-    letter-spacing: -0.02em;
-}
 
 /* ── SEARCH BAR ── */
 .search-form {
