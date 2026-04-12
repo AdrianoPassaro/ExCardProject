@@ -130,4 +130,27 @@ public class ListingService {
 
         return listingRepository.save(listing);
     }
+
+    public void updateQuantity(String listingId, int delta) {
+        ListingDocument listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ListingNotFoundException(listingId));
+
+        int newQuantity = listing.getQuantity() + delta;
+
+        if (newQuantity < 0) {
+            throw new RuntimeException("La quantity non può diventare negativa");
+        }
+
+        listing.setQuantity(newQuantity);
+
+        // Se la quantity arriva a 0, imposta lo status a SOLD_OUT
+        if (newQuantity == 0) {
+            listing.setStatus(ListingStatus.SOLD_OUT);
+        }
+
+        listingRepository.save(listing);
+
+        System.out.println("Listing " + listingId + " quantity aggiornata: " +
+                (delta > 0 ? "+" : "") + delta + " → " + newQuantity);
+    }
 }

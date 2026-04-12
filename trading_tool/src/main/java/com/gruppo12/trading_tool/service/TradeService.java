@@ -18,7 +18,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TradeService {
@@ -31,7 +33,7 @@ public class TradeService {
     }
 
     public TradeOfferDocument createTrade(String proposerUsername, String authHeader, CreateTradeRequest request) {
-        ListingDetails listing = loadListing(request.getTargetListingId());
+        ListingDetails listing = loadListing(request.getTargetListingId(), authHeader);
 
         if (!TradeStatusHelper.isListingTradable(listing)) {
             throw new RuntimeException("Il listing selezionato non è disponibile per uno scambio");
@@ -101,7 +103,7 @@ public class TradeService {
         // Salva prima di completare
         TradeOfferDocument savedTrade = tradeRepository.save(trade);
 
-        // Completa lo scambio (trasferimento carte) - passa anche authHeader
+        // Completa lo scambio (trasferimento carte e aggiornamento listing)
         completeTrade(savedTrade.getId(), username, authHeader);
 
         return savedTrade;
@@ -181,6 +183,7 @@ public class TradeService {
             throw new RuntimeException("Solo uno scambio accettato può essere completato");
         }
 
+        // 1. Trasferisci le carte tra le collezioni
         CompleteTradePayload payload = new CompleteTradePayload(
                 trade.getProposerUsername(),
                 trade.getRecipientUsername(),
@@ -189,7 +192,6 @@ public class TradeService {
         );
 
         try {
-            // Prepara headers con il token
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", authHeader);
             headers.set("Content-Type", "application/json");
@@ -207,18 +209,60 @@ public class TradeService {
             throw new RuntimeException("Errore durante l'aggiornamento della collezione: " + ex.getMessage());
         }
 
+        // 2. Aggiorna la quantity del listing (decrementa di 1)
+        try {
+            updateListingQuantity(trade.getTargetListingId(), -1, authHeader);
+        } catch (Exception ex) {
+            System.err.println("Warning: Impossibile aggiornare quantity del listing: " + ex.getMessage());
+            // Non blocchiamo lo scambio se il listing non si aggiorna
+        }
+
         trade.setStatus(TradeStatus.COMPLETED);
         trade.setUpdatedAt(Instant.now());
 
         return tradeRepository.save(trade);
     }
 
-    private ListingDetails loadListing(String listingId) {
+    private void updateListingQuantity(String listingId, int delta, String authHeader) {
         try {
-            return restTemplate.getForObject(
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", authHeader);
+            headers.set("Content-Type", "application/json");
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("listingId", listingId);
+            payload.put("delta", delta);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+            restTemplate.exchange(
+                    "http://listing-service:8084/listings/quantity",
+                    HttpMethod.PATCH,
+                    entity,
+                    Void.class
+            );
+
+            System.out.println("Listing quantity aggiornata: " + listingId + " delta=" + delta);
+        } catch (Exception ex) {
+            System.err.println("Errore aggiornamento listing quantity: " + ex.getMessage());
+            throw new RuntimeException("Errore durante l'aggiornamento del listing: " + ex.getMessage());
+        }
+    }
+
+    private ListingDetails loadListing(String listingId, String authHeader) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", authHeader);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ListingDetails> response = restTemplate.exchange(
                     "http://listing-service:8084/listings/" + listingId,
+                    HttpMethod.GET,
+                    entity,
                     ListingDetails.class
             );
+
+            return response.getBody();
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException("Listing non trovato o non raggiungibile");
@@ -238,7 +282,6 @@ public class TradeService {
                             .toList()
             );
 
-            // Prepara headers con il token
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", authHeader);
             headers.set("Content-Type", "application/json");
@@ -260,7 +303,7 @@ public class TradeService {
         }
     }
 
-    // Inner classes (invariate)
+    // Inner classes
     public static class ListingDetails {
         private String id;
         private String cardId;

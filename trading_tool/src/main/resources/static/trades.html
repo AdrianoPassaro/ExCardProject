@@ -48,6 +48,14 @@
             📤 Inviate
             <span class="tab-count" id="outgoingCount">—</span>
         </button>
+        <button class="tab-btn" id="tabCompleted" data-tab="completed">
+            ✅ Completati
+            <span class="tab-count" id="completedCount">—</span>
+        </button>
+        <button class="tab-btn" id="tabRejected" data-tab="rejected">
+            ❌ Rifiutati/Annullati
+            <span class="tab-count" id="rejectedCount">—</span>
+        </button>
     </div>
 </div>
 
@@ -70,6 +78,26 @@
             <div class="empty-icon">📤</div>
             <p class="empty-title">Nessuna proposta inviata</p>
             <p class="empty-sub">Le tue proposte di scambio appariranno qui</p>
+        </div>
+    </div>
+
+    <!-- COMPLETED PANEL -->
+    <div id="panelCompleted" class="trades-panel" style="display:none">
+        <div id="completedList"></div>
+        <div class="empty-state" id="emptyCompleted" style="display:none">
+            <div class="empty-icon">✅</div>
+            <p class="empty-title">Nessuno scambio completato</p>
+            <p class="empty-sub">Gli scambi completati appariranno qui</p>
+        </div>
+    </div>
+
+    <!-- REJECTED PANEL -->
+    <div id="panelRejected" class="trades-panel" style="display:none">
+        <div id="rejectedList"></div>
+        <div class="empty-state" id="emptyRejected" style="display:none">
+            <div class="empty-icon">❌</div>
+            <p class="empty-title">Nessuno scambio rifiutato o annullato</p>
+            <p class="empty-sub">Le proposte rifiutate o annullate appariranno qui</p>
         </div>
     </div>
 </div>

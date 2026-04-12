@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.gruppo12.listing.dto.SearchListingCardResponse;
+import java.util.Map;
 
 import java.util.List;
 
@@ -69,5 +70,12 @@ public class ListingController {
     @PatchMapping("/{id}/release")
     public ListingResponse release(@PathVariable String id, @RequestParam int qty) {
         return new ListingResponse(listingService.release(id, qty));
+    }
+
+    @PatchMapping("/quantity")
+    public void updateQuantity(@RequestBody Map<String, Object> body) {
+        String listingId = (String) body.get("listingId");
+        int delta = (int) body.get("delta");
+        listingService.updateQuantity(listingId, delta);
     }
 }
