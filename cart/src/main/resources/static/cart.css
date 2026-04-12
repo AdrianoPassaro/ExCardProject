@@ -268,11 +268,25 @@ body {
     border-radius: 100px;
 }
 
-.chip-cond-nm  { background: rgba(34,197,94,0.15);  border: 1px solid rgba(34,197,94,0.4);  color: #86efac; }
-.chip-cond-lp  { background: rgba(234,179,8,0.12);  border: 1px solid rgba(234,179,8,0.4);  color: #fde047; }
-.chip-cond-mp  { background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.4); color: #fdba74; }
-.chip-cond-hp  { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.4);  color: #fca5a5; }
-.chip-qty      { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: var(--sky); }
+.chip-cond-mint { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: #86efac; }
+
+.chip-cond-near-mint { background: rgba(22,163,74,0.12); border: 1px solid rgba(22,163,74,0.35); color: #bbf7d0; }
+
+.chip-cond-excellent { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4); color: #bfdbfe; }
+
+.chip-cond-good { background: rgba(234,179,8,0.12); border: 1px solid rgba(234,179,8,0.4); color: #fde047; }
+
+.chip-cond-played { background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.4); color: #fdba74; }
+
+.chip-cond-poor { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
+
+.chip-cond-default { background: rgba(122,163,212,0.12); border: 1px solid rgba(122,163,212,0.25); color: var(--sky); }
+
+.chip-qty {
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.3);
+    color: var(--sky);
+}
 
 .cart-item-price {
     font-size: 1.15rem;

@@ -32,14 +32,17 @@ async function loadCatalog() {
 
 // ─── CONDITION CHIP CLASS ───
 function conditionChipClass(cond) {
-    if (!cond) return 'chip-cond-nm';
-    const c = cond.toLowerCase();
-    if (c.includes('mint'))     return 'chip-cond-nm';
-    if (c.includes('excellent'))return 'chip-cond-nm';
-    if (c.includes('lightly') || c.includes('good'))   return 'chip-cond-lp';
-    if (c.includes('moderate')|| c.includes('played')) return 'chip-cond-mp';
-    if (c.includes('heavily') || c.includes('poor'))   return 'chip-cond-hp';
-    return 'chip-cond-nm';
+    if (!cond) return 'chip-cond-default';
+    const c = cond.toLowerCase().trim();
+
+    if (c === 'mint') return 'chip-cond-mint';
+    if (c === 'near mint') return 'chip-cond-near-mint';
+    if (c === 'excellent') return 'chip-cond-excellent';
+    if (c === 'good') return 'chip-cond-good';
+    if (c === 'played') return 'chip-cond-played';
+    if (c === 'poor') return 'chip-cond-poor';
+
+    return 'chip-cond-default';
 }
 
 // ─── RENDER CART (grouped by seller) ───
