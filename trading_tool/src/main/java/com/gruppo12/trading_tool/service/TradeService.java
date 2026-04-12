@@ -9,6 +9,10 @@ import com.gruppo12.trading_tool.model.TradeItem;
 import com.gruppo12.trading_tool.model.TradeOfferDocument;
 import com.gruppo12.trading_tool.model.TradeStatus;
 import com.gruppo12.trading_tool.repository.TradeRepository;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -26,7 +30,7 @@ public class TradeService {
         this.tradeRepository = tradeRepository;
     }
 
-    public TradeOfferDocument createTrade(String proposerUsername, CreateTradeRequest request) {
+    public TradeOfferDocument createTrade(String proposerUsername, String authHeader, CreateTradeRequest request) {
         ListingDetails listing = loadListing(request.getTargetListingId());
 
         if (!TradeStatusHelper.isListingTradable(listing)) {
@@ -37,7 +41,7 @@ public class TradeService {
             throw new RuntimeException("Non puoi proporre uno scambio a te stesso");
         }
 
-        validateOfferedItemsBelongToUser(proposerUsername, request.getOfferedItems());
+        validateOfferedItemsBelongToUser(proposerUsername, request.getOfferedItems(), authHeader);
 
         TradeOfferDocument trade = new TradeOfferDocument();
         trade.setProposerUsername(proposerUsername);
@@ -79,7 +83,7 @@ public class TradeService {
         return trade;
     }
 
-    public TradeOfferDocument acceptTrade(String tradeId, String username) {
+    public TradeOfferDocument acceptTrade(String tradeId, String username, String authHeader) {
         TradeOfferDocument trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new TradeNotFoundException(tradeId));
 
@@ -94,7 +98,13 @@ public class TradeService {
         trade.setStatus(TradeStatus.ACCEPTED);
         trade.setUpdatedAt(Instant.now());
 
-        return tradeRepository.save(trade);
+        // Salva prima di completare
+        TradeOfferDocument savedTrade = tradeRepository.save(trade);
+
+        // Completa lo scambio (trasferimento carte) - passa anche authHeader
+        completeTrade(savedTrade.getId(), username, authHeader);
+
+        return savedTrade;
     }
 
     public TradeOfferDocument rejectTrade(String tradeId, String username) {
@@ -133,7 +143,7 @@ public class TradeService {
         return tradeRepository.save(trade);
     }
 
-    public TradeOfferDocument counterTrade(String tradeId, String username, CounterTradeRequest request) {
+    public TradeOfferDocument counterTrade(String tradeId, String username, String authHeader, CounterTradeRequest request) {
         TradeOfferDocument trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new TradeNotFoundException(tradeId));
 
@@ -145,7 +155,7 @@ public class TradeService {
             throw new RuntimeException("Questo scambio non può essere modificato");
         }
 
-        validateOfferedItemsBelongToUser(trade.getRecipientUsername(), request.getOfferedItems());
+        validateOfferedItemsBelongToUser(trade.getRecipientUsername(), request.getOfferedItems(), authHeader);
 
         trade.setOfferedItems(
                 request.getOfferedItems().stream()
@@ -159,7 +169,7 @@ public class TradeService {
         return tradeRepository.save(trade);
     }
 
-    public TradeOfferDocument completeTrade(String tradeId, String username) {
+    public TradeOfferDocument completeTrade(String tradeId, String username, String authHeader) {
         TradeOfferDocument trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new TradeNotFoundException(tradeId));
 
@@ -179,9 +189,17 @@ public class TradeService {
         );
 
         try {
-            restTemplate.postForObject(
+            // Prepara headers con il token
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", authHeader);
+            headers.set("Content-Type", "application/json");
+
+            HttpEntity<CompleteTradePayload> entity = new HttpEntity<>(payload, headers);
+
+            restTemplate.exchange(
                     "http://collection-tracker:8083/api/collection/trades/complete",
-                    payload,
+                    HttpMethod.POST,
+                    entity,
                     Void.class
             );
         } catch (Exception ex) {
@@ -207,7 +225,7 @@ public class TradeService {
         }
     }
 
-    private void validateOfferedItemsBelongToUser(String username, List<TradeItemRequest> items) {
+    private void validateOfferedItemsBelongToUser(String username, List<TradeItemRequest> items, String authHeader) {
         try {
             String url = UriComponentsBuilder
                     .fromUriString("http://collection-tracker:8083/api/collection/user/{username}/check-trade-availability")
@@ -220,10 +238,17 @@ public class TradeService {
                             .toList()
             );
 
-            TradeAvailabilityCheckResponse response =
-                    restTemplate.postForObject(url, payload, TradeAvailabilityCheckResponse.class);
+            // Prepara headers con il token
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", authHeader);
+            headers.set("Content-Type", "application/json");
 
-            if (response == null || !response.isAvailable()) {
+            HttpEntity<TradeAvailabilityCheckRequest> entity = new HttpEntity<>(payload, headers);
+
+            ResponseEntity<TradeAvailabilityCheckResponse> response =
+                    restTemplate.exchange(url, HttpMethod.POST, entity, TradeAvailabilityCheckResponse.class);
+
+            if (response.getBody() == null || !response.getBody().isAvailable()) {
                 throw new RuntimeException("L'utente non possiede tutte le carte offerte nelle quantità richieste");
             }
 
@@ -235,6 +260,7 @@ public class TradeService {
         }
     }
 
+    // Inner classes (invariate)
     public static class ListingDetails {
         private String id;
         private String cardId;
@@ -244,98 +270,45 @@ public class TradeService {
         private int quantity;
         private String status;
 
-        public ListingDetails() {
-        }
+        public ListingDetails() {}
 
-        public String getId() {
-            return id;
-        }
+        public String getId() { return id; }
+        public String getCardId() { return cardId; }
+        public String getSellerUsername() { return sellerUsername; }
+        public String getCondition() { return condition; }
+        public double getPrice() { return price; }
+        public int getQuantity() { return quantity; }
+        public String getStatus() { return status; }
 
-        public String getCardId() {
-            return cardId;
-        }
-
-        public String getSellerUsername() {
-            return sellerUsername;
-        }
-
-        public String getCondition() {
-            return condition;
-        }
-
-        public double getPrice() {
-            return price;
-        }
-
-        public int getQuantity() {
-            return quantity;
-        }
-
-        public String getStatus() {
-            return status;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public void setCardId(String cardId) {
-            this.cardId = cardId;
-        }
-
-        public void setSellerUsername(String sellerUsername) {
-            this.sellerUsername = sellerUsername;
-        }
-
-        public void setCondition(String condition) {
-            this.condition = condition;
-        }
-
-        public void setPrice(double price) {
-            this.price = price;
-        }
-
-        public void setQuantity(int quantity) {
-            this.quantity = quantity;
-        }
-
-        public void setStatus(String status) {
-            this.status = status;
-        }
+        public void setId(String id) { this.id = id; }
+        public void setCardId(String cardId) { this.cardId = cardId; }
+        public void setSellerUsername(String sellerUsername) { this.sellerUsername = sellerUsername; }
+        public void setCondition(String condition) { this.condition = condition; }
+        public void setPrice(double price) { this.price = price; }
+        public void setQuantity(int quantity) { this.quantity = quantity; }
+        public void setStatus(String status) { this.status = status; }
     }
 
     public static class TradeAvailabilityCheckRequest {
         private List<TradeItem> items;
 
-        public TradeAvailabilityCheckRequest() {
-        }
+        public TradeAvailabilityCheckRequest() {}
 
         public TradeAvailabilityCheckRequest(List<TradeItem> items) {
             this.items = items;
         }
 
-        public List<TradeItem> getItems() {
-            return items;
-        }
-
-        public void setItems(List<TradeItem> items) {
-            this.items = items;
-        }
+        public List<TradeItem> getItems() { return items; }
+        public void setItems(List<TradeItem> items) { this.items = items; }
     }
 
     public static class TradeAvailabilityCheckResponse {
         private boolean available;
 
-        public TradeAvailabilityCheckResponse() {
-        }
+        public TradeAvailabilityCheckResponse() {}
 
-        public boolean isAvailable() {
-            return available;
-        }
-
-        public void setAvailable(boolean available) {
-            this.available = available;
-        }
+        public boolean isAvailable() { return available; }
+        public void setAvailable(boolean available) { this.available = available; }
     }
 
     public static class CompleteTradePayload {
@@ -344,8 +317,7 @@ public class TradeService {
         private List<TradeItem> itemsFromProposerToRecipient;
         private List<TradeItem> itemsFromRecipientToProposer;
 
-        public CompleteTradePayload() {
-        }
+        public CompleteTradePayload() {}
 
         public CompleteTradePayload(String proposerUsername,
                                     String recipientUsername,
@@ -357,36 +329,14 @@ public class TradeService {
             this.itemsFromRecipientToProposer = itemsFromRecipientToProposer;
         }
 
-        public String getProposerUsername() {
-            return proposerUsername;
-        }
+        public String getProposerUsername() { return proposerUsername; }
+        public String getRecipientUsername() { return recipientUsername; }
+        public List<TradeItem> getItemsFromProposerToRecipient() { return itemsFromProposerToRecipient; }
+        public List<TradeItem> getItemsFromRecipientToProposer() { return itemsFromRecipientToProposer; }
 
-        public String getRecipientUsername() {
-            return recipientUsername;
-        }
-
-        public List<TradeItem> getItemsFromProposerToRecipient() {
-            return itemsFromProposerToRecipient;
-        }
-
-        public List<TradeItem> getItemsFromRecipientToProposer() {
-            return itemsFromRecipientToProposer;
-        }
-
-        public void setProposerUsername(String proposerUsername) {
-            this.proposerUsername = proposerUsername;
-        }
-
-        public void setRecipientUsername(String recipientUsername) {
-            this.recipientUsername = recipientUsername;
-        }
-
-        public void setItemsFromProposerToRecipient(List<TradeItem> itemsFromProposerToRecipient) {
-            this.itemsFromProposerToRecipient = itemsFromProposerToRecipient;
-        }
-
-        public void setItemsFromRecipientToProposer(List<TradeItem> itemsFromRecipientToProposer) {
-            this.itemsFromRecipientToProposer = itemsFromRecipientToProposer;
-        }
+        public void setProposerUsername(String proposerUsername) { this.proposerUsername = proposerUsername; }
+        public void setRecipientUsername(String recipientUsername) { this.recipientUsername = recipientUsername; }
+        public void setItemsFromProposerToRecipient(List<TradeItem> itemsFromProposerToRecipient) { this.itemsFromProposerToRecipient = itemsFromProposerToRecipient; }
+        public void setItemsFromRecipientToProposer(List<TradeItem> itemsFromRecipientToProposer) { this.itemsFromRecipientToProposer = itemsFromRecipientToProposer; }
     }
 }

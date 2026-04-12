@@ -22,8 +22,9 @@ public class TradeController {
 
     @PostMapping
     public TradeResponse createTrade(@AuthenticationPrincipal String username,
+                                     @RequestHeader(value = "Authorization", required = false) String authHeader,
                                      @Valid @RequestBody CreateTradeRequest request) {
-        return new TradeResponse(tradeService.createTrade(username, request));
+        return new TradeResponse(tradeService.createTrade(username, authHeader, request));
     }
 
     @GetMapping("/incoming")
@@ -50,8 +51,9 @@ public class TradeController {
 
     @PostMapping("/{id}/accept")
     public TradeResponse acceptTrade(@PathVariable String id,
-                                     @AuthenticationPrincipal String username) {
-        return new TradeResponse(tradeService.acceptTrade(id, username));
+                                     @AuthenticationPrincipal String username,
+                                     @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        return new TradeResponse(tradeService.acceptTrade(id, username, authHeader));
     }
 
     @PostMapping("/{id}/reject")
@@ -69,13 +71,15 @@ public class TradeController {
     @PostMapping("/{id}/counter")
     public TradeResponse counterTrade(@PathVariable String id,
                                       @AuthenticationPrincipal String username,
+                                      @RequestHeader(value = "Authorization", required = false) String authHeader,
                                       @Valid @RequestBody CounterTradeRequest request) {
-        return new TradeResponse(tradeService.counterTrade(id, username, request));
+        return new TradeResponse(tradeService.counterTrade(id, username, authHeader, request));
     }
 
     @PostMapping("/{id}/complete")
     public TradeResponse completeTrade(@PathVariable String id,
-                                       @AuthenticationPrincipal String username) {
-        return new TradeResponse(tradeService.completeTrade(id, username));
+                                       @AuthenticationPrincipal String username,
+                                       @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        return new TradeResponse(tradeService.completeTrade(id, username, authHeader));
     }
 }

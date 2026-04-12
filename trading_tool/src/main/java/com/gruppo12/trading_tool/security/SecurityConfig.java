@@ -38,7 +38,10 @@ public class SecurityConfig {
                                 "/trade.html",
                                 "/trade.js",
                                 "/trade.css",
-                                "/init-token.html"
+                                "/init-token.html",
+                                "/trades.html",
+                                "/trades.js",
+                                "/trades.css"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/trades/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/trades/**").authenticated()
