@@ -4,5 +4,6 @@ public enum ListingStatus {
     ACTIVE,
     RESERVED,   // nel carrello di qualcuno — non visibile ad altri
     SOLD,        // venduto (futuro)
-    SOLD_OUT
+    SOLD_OUT,
+    INACTIVE
 }

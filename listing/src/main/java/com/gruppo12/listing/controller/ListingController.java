@@ -72,10 +72,11 @@ public class ListingController {
         return new ListingResponse(listingService.release(id, qty));
     }
 
-    @PatchMapping("/quantity")
+    @PutMapping("/quantity")
     public void updateQuantity(@RequestBody Map<String, Object> body) {
         String listingId = (String) body.get("listingId");
         int delta = (int) body.get("delta");
+        System.out.println("📦 [Listing] Ricevuta updateQuantity: listingId=" + listingId + ", delta=" + delta);
         listingService.updateQuantity(listingId, delta);
     }
 }

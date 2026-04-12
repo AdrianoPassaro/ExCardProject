@@ -225,6 +225,8 @@ public class TradeService {
 
     private void updateListingQuantity(String listingId, int delta, String authHeader) {
         try {
+            System.out.println("📤 [Trade] Chiamata updateListingQuantity: listingId=" + listingId + ", delta=" + delta);
+
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", authHeader);
             headers.set("Content-Type", "application/json");
@@ -237,14 +239,15 @@ public class TradeService {
 
             restTemplate.exchange(
                     "http://listing-service:8084/listings/quantity",
-                    HttpMethod.PATCH,
+                    HttpMethod.PUT,
                     entity,
                     Void.class
             );
 
-            System.out.println("Listing quantity aggiornata: " + listingId + " delta=" + delta);
+            System.out.println("✅ Listing quantity aggiornata con successo: " + listingId + " delta=" + delta);
         } catch (Exception ex) {
-            System.err.println("Errore aggiornamento listing quantity: " + ex.getMessage());
+            System.err.println("❌ Errore aggiornamento listing quantity: " + ex.getMessage());
+            ex.printStackTrace();
             throw new RuntimeException("Errore durante l'aggiornamento del listing: " + ex.getMessage());
         }
     }
