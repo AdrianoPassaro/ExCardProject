@@ -308,7 +308,7 @@ class OrderServiceTest {
         when(repo.findById("ord1")).thenReturn(Optional.of(order1));
         when(repo.findById("ord2")).thenReturn(Optional.of(order2));
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        
+
         assertThatNoException().isThrownBy(() -> service.rateOrder("ord1", "mario", 1, "mock-token"));
         assertThatNoException().isThrownBy(() -> service.rateOrder("ord2", "mario", 5, "mock-token"));
     }
