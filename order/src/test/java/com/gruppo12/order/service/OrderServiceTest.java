@@ -26,47 +26,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit test per OrderService.
- *
- * ─── COME FUNZIONANO ────────────────────────────────────────────────────────
- * @ExtendWith(MockitoExtension.class)
- *   Dice a JUnit di usare Mockito per creare automaticamente i mock.
- *
- * @Mock
- *   Crea un oggetto "finto" di OrderRepository e RestTemplate.
- *   I mock non vanno a toccare il database reale né fanno chiamate HTTP.
- *   Puoi programmarli per restituire quello che vuoi con `when(...).thenReturn(...)`.
- *
- * @InjectMocks
- *   Crea l'istanza REALE di OrderService e inietta i mock al posto delle
- *   dipendenze (@Autowired). In questo modo testi solo la logica del service,
- *   senza database né rete.
- *
- * ─── COME ESEGUIRE ──────────────────────────────────────────────────────────
- * Da terminale nella cartella del microservizio:
- *   mvn test
- *
- * Per eseguire solo questa classe:
- *   mvn test -Dtest=OrderServiceTest
- *
- * Per vedere i risultati:
- *   - Nel terminale: JUnit stampa PASSED/FAILED per ogni metodo
- *   - In target/surefire-reports/: file XML e TXT con dettaglio
- *   - Se usi IntelliJ/Eclipse: click destro sul file → Run
- *
- * ─── DIPENDENZE NECESSARIE nel pom.xml ──────────────────────────────────────
- * Spring Boot Test è già incluso con spring-boot-starter-test.
- * Assicurati di avere nel pom.xml:
- *
- *   <dependency>
- *     <groupId>org.springframework.boot</groupId>
- *     <artifactId>spring-boot-starter-test</artifactId>
- *     <scope>test</scope>
- *   </dependency>
- *
- * Questo include JUnit 5, Mockito e AssertJ automaticamente.
- */
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 
@@ -278,7 +237,6 @@ class OrderServiceTest {
         when(repo.findById("ord1")).thenReturn(Optional.of(order));
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        // AGGIUNTO: "mock-token" come 4° parametro
         Order result = service.rateOrder("ord1", "mario", 4, "mock-token");
 
         assertThat(result.getBuyerRating()).isEqualTo(4);
@@ -291,7 +249,6 @@ class OrderServiceTest {
         Order order = makeOrder("ord1", "mario", "luigi", OrderStatus.COMPLETATO, 20.0);
         when(repo.findById("ord1")).thenReturn(Optional.of(order));
 
-        // AGGIUNTO: "mock-token"
         assertThatThrownBy(() -> service.rateOrder("ord1", "peach", 5, "mock-token"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("autorizzato");
@@ -303,7 +260,6 @@ class OrderServiceTest {
         Order order = makeOrder("ord1", "mario", "luigi", OrderStatus.IN_ATTESA, 20.0);
         when(repo.findById("ord1")).thenReturn(Optional.of(order));
 
-        // AGGIUNTO: "mock-token"
         assertThatThrownBy(() -> service.rateOrder("ord1", "mario", 5, "mock-token"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("completati");
@@ -315,7 +271,6 @@ class OrderServiceTest {
         Order order = makeOrder("ord1", "mario", "luigi", OrderStatus.COMPLETATO, 20.0);
         when(repo.findById("ord1")).thenReturn(Optional.of(order));
 
-        // AGGIUNTO: "mock-token"
         assertThatThrownBy(() -> service.rateOrder("ord1", "mario", 0, "mock-token"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("valido");
@@ -327,7 +282,6 @@ class OrderServiceTest {
         Order order = makeOrder("ord1", "mario", "luigi", OrderStatus.COMPLETATO, 20.0);
         when(repo.findById("ord1")).thenReturn(Optional.of(order));
 
-        // AGGIUNTO: "mock-token"
         assertThatThrownBy(() -> service.rateOrder("ord1", "mario", 6, "mock-token"))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("valido");
@@ -341,7 +295,6 @@ class OrderServiceTest {
         when(repo.findById("ord1")).thenReturn(Optional.of(order));
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        // AGGIUNTO: "mock-token"
         Order result = service.rateOrder("ord1", "mario", 5, "mock-token");
 
         assertThat(result.getBuyerRating()).isEqualTo(5);
@@ -355,8 +308,7 @@ class OrderServiceTest {
         when(repo.findById("ord1")).thenReturn(Optional.of(order1));
         when(repo.findById("ord2")).thenReturn(Optional.of(order2));
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        // AGGIUNTO: "mock-token" in entrambe le chiamate
+        
         assertThatNoException().isThrownBy(() -> service.rateOrder("ord1", "mario", 1, "mock-token"));
         assertThatNoException().isThrownBy(() -> service.rateOrder("ord2", "mario", 5, "mock-token"));
     }
