@@ -436,6 +436,7 @@ body {
     position: absolute;
     top: 8px;
     right: 8px;
+    z-index: 10; /* Lo tiene sopra l'immagine e sopra l'overlay "Vedi carta" */
     font-size: 0.6rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -444,6 +445,7 @@ body {
     border-radius: 100px;
     backdrop-filter: blur(6px);
     line-height: 1.5;
+    pointer-events: none; /* Evita che il badge interferisca con il click sul link */
 }
 .condition-mint      { background:rgba(34,197,94,0.2);  border:1px solid rgba(34,197,94,0.5);  color:#86efac; }
 .condition-near-mint { background:rgba(22,163,74,0.18); border:1px solid rgba(22,163,74,0.45); color:#bbf7d0; }
@@ -929,3 +931,30 @@ body {
 .dd-divider { border: none; border-top: 1px solid rgba(59,130,246,0.12); margin: 0.2rem 0; }
 .dd-logout { color: #fca5a5; }
 .dd-logout:hover { background: rgba(239,68,68,0.1); color: #ff8080; }
+
+.card-img-link {
+    display: block;
+    width: 100%;
+    position: relative; /* Fondamentale per il posizionamento del badge */
+    text-decoration: none;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+}
+
+.card-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(37, 99, 235, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.card-img-link:hover .card-img-overlay {
+    opacity: 1;
+}

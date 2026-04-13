@@ -179,23 +179,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         const div = document.createElement("div");
         div.classList.add("card");
         div.innerHTML = `
+        <a href="http://localhost:8084/card-page.html?cardId=${encodeURIComponent(card.cardId || card.id || '')}"
+           class="card-img-link" title="Vedi carta">
             <span class="condition-badge ${conditionClass(card.condition)}">${card.condition || ''}</span>
-            <a href="http://localhost:8084/card-page.html?cardId=${encodeURIComponent(card.cardId || card.id || '')}"
-               class="card-img-link" title="Vedi carta">
-                <img src="${card.imageUrl || ''}" alt="${card.name || ''}">
-                <span class="card-img-overlay">Vedi carta</span>
-            </a>
-            <div class="card-info">
-                <span class="card-name" title="${card.name || ''}">${card.name || ''}</span>
-                <span class="card-rarity">${card.rarity || ''}</span>
-                <div class="card-meta">${card.setName || ''}</div>
-                <div class="quantity-controls">
-                    <button class="minus-btn" aria-label="Riduci quantità">−</button>
-                    <span class="quantity">${card.quantity}</span>
-                    <button class="plus-btn" aria-label="Aumenta quantità">+</button>
-                </div>
+            <img src="${card.imageUrl || ''}" alt="${card.name || ''}">
+            <span class="card-img-overlay">Vedi carta</span>
+        </a>
+        <div class="card-info">
+            <span class="card-name" title="${card.name || ''}">${card.name || ''}</span>
+            <span class="card-rarity">${card.rarity || ''}</span>
+            <div class="card-meta">${card.setName || ''}</div>
+            <div class="quantity-controls">
+                <button class="minus-btn" aria-label="Riduci quantità">−</button>
+                <span class="quantity">${card.quantity}</span>
+                <button class="plus-btn" aria-label="Aumenta quantità">+</button>
             </div>
-        `;
+        </div>
+    `;
         div.querySelector(".plus-btn").addEventListener("click", () => updateQuantity(card, 1));
         div.querySelector(".minus-btn").addEventListener("click", () => updateQuantity(card, -1));
         return div;

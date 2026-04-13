@@ -2,9 +2,8 @@
 const API_ORDER   = "http://localhost:8086/api/orders";
 const API_CART    = "http://localhost:8087/api/cart";
 const API_CATALOG = "http://localhost:8082/cards";
-const API_USER    = "http://localhost:8081/api/user";
 
-// ─── AUTH ───
+// ─── AUTH (navbar.js gestisce il token, ma lo riprendiamo per le API) ───
 const token = localStorage.getItem("jwtToken");
 if (!token) window.location.href = "http://localhost:8080/login.html";
 
@@ -16,15 +15,14 @@ function extractUsername(t) {
 }
 
 const username = extractUsername(token);
-document.getElementById("usernameDisplay").textContent = `👤 ${username}`;
 
 // ─── STATE ───
 let catalogMap  = {};
 let purchases   = [];
 let sales       = [];
-let pendingConfirmId  = null;   // orderId in attesa di conferma modal
-let pendingSellerUsername = null; // sellerUsername per la recensione
-let pendingOrderId_forRating = null; // used for lazy/edit rating
+let pendingConfirmId  = null;
+let pendingSellerUsername = null;
+let pendingOrderId_forRating = null;
 
 // ─── CATALOG ───
 async function loadCatalog() {
@@ -55,20 +53,6 @@ async function loadSales() {
     } catch { sales = []; }
 }
 
-// ─── CART BADGE ───
-async function loadCartBadge() {
-    try {
-        const res = await fetch(API_CART, {
-            headers: { "Authorization": `Bearer ${token}`, "username": username }
-        });
-        if (!res.ok) return;
-        const cart  = await res.json();
-        const count = (cart.items || []).length;
-        const badge = document.getElementById("cartBadge");
-        if (count > 0) { badge.textContent = count; badge.removeAttribute("style"); }
-    } catch { /* silent */ }
-}
-
 // ─── FORMAT DATE ───
 function formatDate(isoString) {
     if (!isoString) return "—";
@@ -95,7 +79,7 @@ function buildPurchaseCard(order, idx) {
         ? `<button class="btn-confirm-receipt" data-id="${order.id}">Conferma ricezione</button>`
         : '';
 
-    const starsGiven  = order.buyerRating || 0;   // from server — persists across refreshes
+    const starsGiven  = order.buyerRating || 0;
     const ratingBlock = order.status === "COMPLETATO" ? buildRatingBlock(order.id, starsGiven) : "";
 
     card.innerHTML = `
@@ -121,7 +105,6 @@ function buildPurchaseCard(order, idx) {
         ${ratingBlock}
     `;
 
-    // Render items
     const itemsContainer = card.querySelector(`#items-p-${order.id}`);
     (order.items || []).forEach(item => {
         const cat = catalogMap[item.cardId] || {};
@@ -144,7 +127,6 @@ function buildPurchaseCard(order, idx) {
         itemsContainer.appendChild(div);
     });
 
-    // Confirm button listener
     if (canConfirm) {
         card.querySelector(".btn-confirm-receipt").addEventListener("click", () => {
             pendingConfirmId      = order.id;
@@ -153,14 +135,13 @@ function buildPurchaseCard(order, idx) {
         });
     }
 
-    // Lazy rating button listener
     if (order.status === "COMPLETATO") {
         const ratingBtn = card.querySelector(".btn-open-rating");
         if (ratingBtn) {
             ratingBtn.addEventListener("click", () => {
                 pendingOrderId_forRating  = order.id;
                 pendingSellerUsername     = order.sellerUsername;
-                selectedRating            = order.buyerRating || 0;   // pre-fill with saved value
+                selectedRating            = order.buyerRating || 0;
                 updateStarUI(0);
                 document.getElementById("ratingSubmitBtn").disabled = selectedRating === 0;
                 document.getElementById("ratingModal").style.display = "flex";
@@ -171,7 +152,6 @@ function buildPurchaseCard(order, idx) {
     return card;
 }
 
-// ─── HELPER: rating block HTML ───
 function buildRatingBlock(orderId, starsGiven) {
     if (!starsGiven) {
         return `<div class="order-rating-row">
@@ -189,14 +169,11 @@ function buildRatingBlock(orderId, starsGiven) {
     </div>`;
 }
 
-// ─── BUILD ORDER CARD (SALE) ───
-// Stesso ma SENZA indirizzo e SENZA pulsante conferma
 function buildSaleCard(order, idx) {
     const card = document.createElement("div");
     card.classList.add("order-card");
     card.style.animationDelay = `${idx * 60}ms`;
 
-    // For sales: show the rating given by the buyer (persisted in order.buyerRating)
     const saleRating = order.buyerRating || 0;
     let saleRatingHtml;
     if (order.status !== "COMPLETATO") {
@@ -256,7 +233,6 @@ function buildSaleCard(order, idx) {
     return card;
 }
 
-// ─── RENDER ───
 function renderPurchases() {
     const list  = document.getElementById("purchasesList");
     const empty = document.getElementById("emptyPurchases");
@@ -320,11 +296,9 @@ document.getElementById("modalConfirmBtn").addEventListener("click", async () =>
 
         document.getElementById("confirmModal").style.display = "none";
 
-        // Ricarica acquisti aggiornati
         await loadPurchases();
         renderPurchases();
 
-        // Show rating modal
         selectedRating = 0;
         updateStarUI(0);
         document.getElementById("ratingSubmitBtn").disabled = true;
@@ -339,20 +313,12 @@ document.getElementById("modalConfirmBtn").addEventListener("click", async () =>
     }
 });
 
-// Chiudi modal cliccando fuori
 document.getElementById("confirmModal").addEventListener("click", (e) => {
     if (e.target === document.getElementById("confirmModal")) {
         document.getElementById("confirmModal").style.display = "none";
         pendingConfirmId = null;
     }
 });
-
-// ─── LOGOUT ───
-document.getElementById("logoutBtn").addEventListener("click", () => {
-    localStorage.removeItem("jwtToken");
-    window.location.href = "http://localhost:8080/login.html";
-});
-
 
 // ─── RATING MODAL ───
 let selectedRating = 0;
@@ -387,7 +353,6 @@ document.getElementById("ratingSubmitBtn").addEventListener("click", async () =>
     btn.disabled = true; btn.textContent = "Invio…";
 
     try {
-        // Single call to order service: saves rating in Order.buyerRating AND sends to user profile
         const res = await fetch(`${API_ORDER}/${targetOrderId}/rate`, {
             method: "PUT",
             headers: {
@@ -399,7 +364,6 @@ document.getElementById("ratingSubmitBtn").addEventListener("click", async () =>
         });
         if (!res.ok) throw new Error("Errore invio recensione");
 
-        // Update local purchase/sale objects so re-render shows the right stars without re-fetching
         const update = (list) => {
             const o = list.find(x => x.id === targetOrderId);
             if (o) o.buyerRating = selectedRating;
@@ -429,7 +393,6 @@ document.getElementById("ratingSkipBtn").addEventListener("click", () => {
     selectedRating           = 0;
 });
 
-// Close rating modal on backdrop click
 document.getElementById("ratingModal").addEventListener("click", (e) => {
     if (e.target === document.getElementById("ratingModal")) {
         document.getElementById("ratingModal").style.display = "none";
@@ -439,7 +402,7 @@ document.getElementById("ratingModal").addEventListener("click", (e) => {
 
 // ─── INIT ───
 (async () => {
-    await Promise.all([loadCatalog(), loadPurchases(), loadSales(), loadCartBadge()]);
+    await Promise.all([loadCatalog(), loadPurchases(), loadSales()]);
     renderPurchases();
     renderSales();
 })();
