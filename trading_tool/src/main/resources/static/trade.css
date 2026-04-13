@@ -40,110 +40,6 @@ body {
     padding-top: 72px;
 }
 
-/* ─── NAVBAR ─── */
-.navbar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 72px;
-    background: rgba(4,18,43,0.92);
-    backdrop-filter: blur(16px) saturate(1.8);
-    -webkit-backdrop-filter: blur(16px) saturate(1.8);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2rem;
-    border-bottom: 1px solid rgba(59,130,246,0.15);
-    z-index: 1000;
-    transition: var(--transition);
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    height: 100%;
-}
-
-.logo-img {
-    height: 70px;
-    width: auto;
-    object-fit: contain;
-    filter: brightness(1.1);
-}
-
-.nav-buttons {
-    display: flex;
-    gap: 0.6rem;
-    align-items: center;
-}
-
-/* ─── BUTTONS ─── */
-.btn {
-    padding: 0.45rem 1.1rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.82rem;
-    font-family: var(--font-body);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    text-decoration: none;
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 1px solid transparent;
-    white-space: nowrap;
-}
-
-.btn-user {
-    background: rgba(37,99,235,0.12);
-    color: var(--sky);
-    border-color: rgba(59,130,246,0.25);
-}
-
-.btn-user:hover {
-    background: rgba(37,99,235,0.24);
-    border-color: rgba(59,130,246,0.5);
-    color: var(--white);
-}
-
-.btn-logout {
-    background: transparent;
-    color: var(--muted);
-    border-color: rgba(122,163,212,0.25);
-}
-
-.btn-logout:hover {
-    background: rgba(255,255,255,0.06);
-    color: var(--white);
-    border-color: rgba(122,163,212,0.5);
-}
-
-.btn-add {
-    background: var(--blue-bright);
-    color: white;
-    font-size: 0.9rem;
-    padding: 0.6rem 1.4rem;
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
-    gap: 8px;
-}
-
-.btn-add:hover {
-    background: var(--blue-glow);
-    box-shadow: 0 6px 24px rgba(59,130,246,0.55);
-    transform: translateY(-2px);
-}
-
-.btn-add:active { transform: translateY(0); }
-
-.btn-icon {
-    font-size: 1.1rem;
-    font-weight: 300;
-    line-height: 1;
-}
-
 /* ─── PAGE HEADER ─── */
 .page-header {
     padding: 2.8rem 2rem 2rem 2rem;
@@ -189,6 +85,37 @@ body {
     font-weight: 400;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.btn-add {
+    background: var(--blue-bright);
+    color: white;
+    font-size: 0.9rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+    gap: 8px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-add:hover {
+    background: var(--blue-glow);
+    box-shadow: 0 6px 24px rgba(59,130,246,0.55);
+    transform: translateY(-2px);
+}
+
+.btn-add:active { transform: translateY(0); }
+
+.btn-icon {
+    font-size: 1.1rem;
+    font-weight: 300;
+    line-height: 1;
 }
 
 /* ─── TARGET PANEL ─── */
@@ -833,48 +760,4 @@ body {
         padding-left: 1rem;
         padding-right: 1rem;
     }
-
-    .navbar {
-        padding: 0 1rem;
-    }
-}
-
-/* ─── CART ICON ─── */
-.cart-icon-btn {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
-    background: rgba(37,99,235,0.12);
-    border: 1px solid rgba(59,130,246,0.25);
-    color: var(--sky);
-    text-decoration: none;
-    transition: all 0.22s ease;
-}
-
-.cart-icon-btn:hover {
-    background: rgba(37,99,235,0.24);
-    border-color: rgba(59,130,246,0.5);
-    color: var(--white);
-}
-
-.cart-badge {
-    position: absolute;
-    top: -6px; right: -6px;
-    background: #2563eb;
-    color: white;
-    font-size: 0.62rem;
-    font-weight: 700;
-    min-width: 18px;
-    height: 18px;
-    border-radius: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-    box-shadow: 0 2px 8px rgba(37,99,235,0.6);
-    border: 1.5px solid #04122b;
 }

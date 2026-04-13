@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const grid             = document.getElementById("cardGrid");
-    const usernameDisplay  = document.getElementById("usernameDisplay");
-    const logoutBtn        = document.getElementById("logoutBtn");
     const resultsBar       = document.getElementById("resultsBar");
     const emptyState       = document.getElementById("emptyState");
     const filtersBar       = document.getElementById("filtersBar");
@@ -21,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const resetFilters     = document.getElementById("resetFilters");
     const activeFiltersEl  = document.getElementById("activeFilters");
 
-    // ─── AUTH ───
+    // ─── AUTH (navbar.js gestisce token e username) ───
     const token = localStorage.getItem("jwtToken");
     if (!token) {
         window.location.href = "http://localhost:8080/login.html";
@@ -42,7 +40,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const username = extractUsername(token);
-    usernameDisplay.textContent = `👤 ${username}`;
+    // Aggiorna usernameDisplay se navbar.js non lo ha già fatto
+    const usernameDisplay = document.getElementById("usernameDisplay");
+    if (usernameDisplay && !usernameDisplay.textContent.includes(username)) {
+        usernameDisplay.textContent = `👤 ${username}`;
+    }
 
     let collection = [];
     let selectedItems = [];
@@ -97,33 +99,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         populateFilterDropdowns();
         applyFilters();
         renderSelectionChips();
-    }
-
-    // ─── CART BADGE ───
-    async function loadCartBadge() {
-        try {
-            const res = await fetch("http://localhost:8087/api/cart", {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "username": username
-                }
-            });
-
-            if (!res.ok) return;
-
-            const cart = await res.json();
-            const count = (cart.items || []).length;
-            const badge = document.getElementById("cartBadge");
-
-            if (!badge) return;
-
-            if (count > 0) {
-                badge.textContent = count;
-                badge.removeAttribute("style");
-            }
-        } catch (err) {
-            console.warn("Cart badge non caricato:", err);
-        }
     }
 
     // ─── TARGET RENDER ───
@@ -266,7 +241,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             </div>
         `;
 
-        div.addEventListener("click", () => toggleSelected(card));
+        div.addEventListener("click", (e) => {
+            if (!e.target.closest('.select-toggle-btn')) {
+                toggleSelected(card);
+            }
+        });
+
+        div.querySelector(".select-toggle-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleSelected(card);
+        });
+
         return div;
     }
 
@@ -478,19 +463,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     sendTradeBtn.addEventListener("click", sendTrade);
 
-    // ─── LOGOUT ───
-    logoutBtn.addEventListener("click", () => {
-        localStorage.removeItem("jwtToken");
-        window.location.href = "http://localhost:8080/login.html";
-    });
-
-    // ─── INIT ───
+    // ─── INIT (rimosso logout duplicato e cart badge, gestiti da navbar.js) ───
     try {
         await loadTargetListing();
         await loadTargetCard();
         renderTargetListing();
         await loadCollection();
-        await loadCartBadge();
     } catch (err) {
         console.error("Errore init trade:", err);
         alert("Errore nel caricamento della pagina di scambio");
