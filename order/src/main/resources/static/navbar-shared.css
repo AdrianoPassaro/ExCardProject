@@ -181,7 +181,8 @@
 }
 
 /* ── User menu dropdown ── */
-.user-menu-wrapper {
+.user-menu-wrapper,
+.user-menu-wrap {
     position: relative;
 }
 
