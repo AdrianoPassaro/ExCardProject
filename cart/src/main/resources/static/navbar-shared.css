@@ -4,7 +4,48 @@
    <link rel="stylesheet" href="/navbar-shared.css">
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Logo ── */
+/* ── CSS Variables (fallback per pagine che non le definiscono) ── */
+:root {
+    --navy:        #04122b;
+    --navy-mid:    #0a1f45;
+    --blue-bright: #2563eb;
+    --blue-glow:   #3b82f6;
+    --sky:         #bfdbfe;
+    --white:       #f4f8ff;
+    --muted:       #7aa3d4;
+    --text-body:   #c8dff7;
+    --radius-sm:   6px;
+    --radius-md:   12px;
+    --transition:  all 0.22s cubic-bezier(0.4,0,0.2,1);
+    --font-body:   'DM Sans', 'Segoe UI', sans-serif;
+}
+
+/* ── Navbar base ── */
+.navbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 72px;
+    background: rgba(4,18,43,0.92);
+    backdrop-filter: blur(16px) saturate(1.8);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    border-bottom: 1px solid rgba(59,130,246,0.15);
+    z-index: 1000;
+    gap: 1.5rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    height: 100%;
+    flex-shrink: 0;
+}
+
+/* ── Logo image ── */
 .logo-img {
     height: 90px !important;   /* uguale a collection */
     width: auto;
@@ -101,4 +142,214 @@
 .seller-name-link:hover {
     color: #f4f8ff;
     text-decoration: underline;
+}
+/* ── Nav buttons container ── */
+.nav-buttons {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* ── Search bar ──
+   overflow MUST be visible so the autocomplete dropdown
+   is not clipped. Any local CSS with overflow:hidden will
+   be overridden here because navbar-shared loads after. ── */
+.search-form {
+    display: flex;
+    align-items: center;
+    background: rgba(10,31,69,0.7);
+    border: 1px solid rgba(59,130,246,0.22);
+    border-radius: var(--radius-sm);
+    overflow: visible !important;   /* never clip the suggestions */
+    flex: 0 1 340px;
+    transition: var(--transition);
+    position: relative;
+}
+.search-form:focus-within {
+    border-color: rgba(59,130,246,0.55);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+.search-form input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.84rem;
+    padding: 0.5rem 0.85rem;
+    outline: none;
+}
+.search-form input::placeholder { color: var(--muted); opacity: 0.7; }
+.search-form button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+    flex-shrink: 0;
+}
+.search-form button:hover { color: var(--white); }
+
+/* ── Wallet pill ── */
+.wallet-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    background: rgba(37,99,235,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 100px;
+    color: var(--sky);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+.wallet-pill:hover {
+    background: rgba(37,99,235,0.24);
+    border-color: rgba(59,130,246,0.5);
+    color: var(--white);
+}
+
+/* ── Cart icon button ── */
+.cart-icon-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: rgba(37,99,235,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: var(--sky);
+    text-decoration: none;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+.cart-icon-btn:hover {
+    background: rgba(37,99,235,0.24);
+    border-color: rgba(59,130,246,0.5);
+    color: var(--white);
+}
+.cart-badge {
+    position: absolute;
+    top: -6px; right: -6px;
+    background: #2563eb;
+    color: white;
+    font-size: 0.62rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.6);
+    border: 1.5px solid var(--navy);
+    animation: badgePop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes badgePop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+/* ── User menu wrapper — position:relative anchors the dropdown ── */
+.user-menu-wrap {
+    position: relative;
+}
+
+/* ── User menu trigger ── */
+.user-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    background: rgba(37,99,235,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: var(--radius-sm);
+    color: var(--sky);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+.user-menu-trigger:hover,
+.user-menu-trigger.open {
+    background: rgba(37,99,235,0.24);
+    border-color: rgba(59,130,246,0.5);
+    color: var(--white);
+}
+.chevron {
+    font-size: 0.6rem;
+    opacity: 0.7;
+    transition: transform 0.2s;
+}
+.user-menu-trigger.open .chevron { transform: rotate(180deg); }
+
+#usernameDisplay {
+    color: var(--text-body);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+/* ── Dropdown ── */
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: rgba(8,22,54,0.98);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(59,130,246,0.22);
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    z-index: 2000;
+    overflow: hidden;
+    animation: ddIn 0.15s ease;
+}
+.user-dropdown.open { display: block; }
+@keyframes ddIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── Dropdown items ── */
+.dd-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1rem;
+    color: var(--text-body);
+    font-size: 0.84rem;
+    font-weight: 500;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.dd-item:hover { background: rgba(37,99,235,0.15); color: var(--white); }
+.dd-divider { border: none; border-top: 1px solid rgba(59,130,246,0.12); margin: 0.2rem 0; }
+.dd-logout { color: #fca5a5; }
+.dd-logout:hover { background: rgba(239,68,68,0.1); color: #ff8080; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .navbar { padding: 0 1rem; gap: 0.8rem; }
+    .search-form { flex: 0 1 160px; }
+    .wallet-pill { display: none; }
 }
