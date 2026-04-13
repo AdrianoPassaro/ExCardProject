@@ -2,9 +2,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ─── CONFIG ───
     const API_TRADES = "http://localhost:8088/trades";
     const API_CARDS = "http://localhost:8082/cards";
-    const API_CART = "http://localhost:8087/api/cart";
 
-    // ─── AUTH ───
+    // ─── AUTH (navbar.js gestisce token e username) ───
     const token = localStorage.getItem("jwtToken");
     if (!token) {
         window.location.href = "http://localhost:8080/login.html";
@@ -19,14 +18,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const username = extractUsername(token);
-    document.getElementById("usernameDisplay").textContent = `👤 ${username}`;
+    // Aggiorna usernameDisplay se navbar.js non lo ha già fatto
+    const usernameDisplay = document.getElementById("usernameDisplay");
+    if (usernameDisplay && !usernameDisplay.textContent.includes(username)) {
+        usernameDisplay.textContent = `👤 ${username}`;
+    }
 
     // ─── STATE ───
     let incomingTrades = [];
     let outgoingTrades = [];
     let cardsCache = new Map();
     let pendingActionId = null;
-    let pendingActionType = null;
 
     // DOM elements
     const incomingList = document.getElementById("incomingList");
@@ -333,19 +335,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ─── ACTIONS ───
     function openAcceptModal(tradeId) {
         pendingActionId = tradeId;
-        pendingActionType = "accept";
         acceptModal.style.display = "flex";
     }
 
     function openRejectModal(tradeId) {
         pendingActionId = tradeId;
-        pendingActionType = "reject";
         rejectModal.style.display = "flex";
     }
 
     function openCancelModal(tradeId) {
         pendingActionId = tradeId;
-        pendingActionType = "cancel";
         cancelModal.style.display = "flex";
     }
 
@@ -480,31 +479,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     });
 
-    // ─── CART BADGE ───
-    async function loadCartBadge() {
-        try {
-            const res = await fetch(API_CART, {
-                headers: { "Authorization": `Bearer ${token}`, "username": username }
-            });
-            if (!res.ok) return;
-            const cart = await res.json();
-            const count = (cart.items || []).length;
-            const badge = document.getElementById("cartBadge");
-            if (count > 0) {
-                badge.textContent = count;
-                badge.removeAttribute("style");
-            }
-        } catch { /* silent */ }
-    }
-
-    // ─── LOGOUT ───
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-        localStorage.removeItem("jwtToken");
-        window.location.href = "http://localhost:8080/login.html";
-    });
-
-    // ─── INIT ───
-    await Promise.all([loadIncomingTrades(), loadOutgoingTrades(), loadCartBadge()]);
+    // ─── INIT (rimosso logout duplicato, cart badge gestito da navbar.js) ───
+    await Promise.all([loadIncomingTrades(), loadOutgoingTrades()]);
     await renderIncoming();
     await renderOutgoing();
     await renderCompleted();
