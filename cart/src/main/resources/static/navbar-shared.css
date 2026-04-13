@@ -1,0 +1,104 @@
+/* ═══════════════════════════════════════════════════════════
+   navbar-shared.css
+   Includi in ogni pagina nel <head> DOPO il css locale:
+   <link rel="stylesheet" href="/navbar-shared.css">
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Logo ── */
+.logo-img {
+    height: 90px !important;   /* uguale a collection */
+    width: auto;
+    object-fit: contain;
+    filter: brightness(1.1);
+}
+
+/* ── Search autocomplete dropdown ── */
+.search-form { position: relative; }
+
+.search-suggestions {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    min-width: 320px;
+    background: rgba(7,18,46,0.97);
+    border: 1px solid rgba(59,130,246,0.28);
+    border-radius: 12px;
+    box-shadow: 0 20px 56px rgba(0,0,0,0.6);
+    backdrop-filter: blur(14px);
+    z-index: 3000;
+    overflow: hidden;
+    animation: sugIn 0.14s ease;
+}
+@keyframes sugIn {
+    from { opacity:0; transform:translateY(-5px); }
+    to   { opacity:1; transform:none; }
+}
+
+.sug-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.9rem;
+    text-decoration: none;
+    color: #c8dff7;
+    cursor: pointer;
+    outline: none;
+    border-bottom: 1px solid rgba(59,130,246,0.07);
+    transition: background 0.12s;
+}
+.sug-item:last-child { border-bottom: none; }
+.sug-item:hover,
+.sug-item:focus { background: rgba(37,99,235,0.16); color: #f4f8ff; }
+
+.sug-img {
+    width: 32px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: rgba(10,31,69,0.5);
+    flex-shrink: 0;
+}
+.sug-info   { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.sug-name   { font-size:0.83rem; font-weight:600; color:#f4f8ff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sug-meta   { font-size:0.69rem; color:#7aa3d4; }
+
+/* ── Clickable card image overlay (collection + seller-profile) ── */
+.card-img-link {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.card-img-link .card-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(37,99,235,0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transition: opacity 0.18s;
+}
+.card-img-link:hover .card-img-overlay { opacity: 1; }
+
+/* ── Seller link in cart / orders / checkout ── */
+.cart-seller-link,
+.order-seller-link,
+.seller-name-link {
+    color: #bfdbfe;
+    text-decoration: none;
+    font-weight: 700;
+}
+.cart-seller-link:hover,
+.order-seller-link:hover,
+.seller-name-link:hover {
+    color: #f4f8ff;
+    text-decoration: underline;
+}
